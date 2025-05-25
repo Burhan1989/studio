@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Users, BookCopy, FileQuestion, LineChart, Shield, ArrowRight, Loader2, MessageSquare, School } from 'lucide-react';
+import { Users, BookCopy, FileQuestion, LineChart, Shield, ArrowRight, Loader2, MessageSquare, School, UserCog } from 'lucide-react'; // Added UserCog
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
