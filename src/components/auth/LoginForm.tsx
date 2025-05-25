@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogIn, Loader2, ShieldCheck } from "lucide-react";
+import { LogIn, Loader2, ShieldCheck, User, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -29,6 +29,11 @@ const formSchema = z.object({
 
 const ADMIN_EMAIL = "admin@example.com";
 const ADMIN_PASSWORD = "adminpassword";
+const STUDENT_EMAIL = "student@example.com";
+const STUDENT_PASSWORD = "password";
+const TEACHER_EMAIL = "teacher@example.com";
+const TEACHER_PASSWORD = "password";
+
 
 export default function LoginForm() {
   const { login } = useAuth();
@@ -48,14 +53,29 @@ export default function LoginForm() {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     if (values.email === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
-      login({ id: "admin001", email: values.email, name: "Admin AdeptLearn", isAdmin: true });
+      login({ id: "admin001", email: values.email, name: "Admin AdeptLearn", isAdmin: true, username: "adminadeptlearn" });
       toast({
         title: "Login Admin Berhasil",
         description: "Selamat datang, Admin!",
         action: <ShieldCheck className="w-5 h-5 text-green-500" />
       });
-    } else if (values.email === "user@example.com" && values.password === "password") {
-      login({ id: "1", email: values.email, name: "Pengguna Tes" });
+    } else if (values.email === STUDENT_EMAIL && values.password === STUDENT_PASSWORD) {
+      login({ id: "student001", email: values.email, name: "Siswa Rajin", username: "siswarajin" });
+      toast({
+        title: "Login Siswa Berhasil",
+        description: "Selamat datang kembali di AdeptLearn!",
+         action: <User className="w-5 h-5 text-blue-500" />
+      });
+    } else if (values.email === TEACHER_EMAIL && values.password === TEACHER_PASSWORD) {
+      login({ id: "teacher001", email: values.email, name: "Guru Inovatif", username: "guruinovatif" });
+      toast({
+        title: "Login Guru Berhasil",
+        description: "Selamat datang kembali di AdeptLearn!",
+        action: <Briefcase className="w-5 h-5 text-purple-500" />
+      });
+    }
+     else if (values.email === "user@example.com" && values.password === "password") { // Generic user for backward compatibility or other roles
+      login({ id: "user001", email: values.email, name: "Pengguna Tes", username: "penggunates" });
       toast({
         title: "Login Berhasil",
         description: "Selamat datang kembali di AdeptLearn!",
@@ -117,6 +137,11 @@ export default function LoginForm() {
             </Button>
           </form>
         </Form>
+        <p className="mt-4 text-xs text-center text-muted-foreground">
+          Login sebagai Admin: admin@example.com / adminpassword <br />
+          Login sebagai Siswa: student@example.com / password <br />
+          Login sebagai Guru: teacher@example.com / password
+        </p>
         <p className="mt-6 text-sm text-center text-muted-foreground">
           Belum punya akun?{" "}
           <Link href="/register" className="font-medium text-primary hover:underline">

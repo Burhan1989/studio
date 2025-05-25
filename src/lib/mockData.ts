@@ -1,5 +1,5 @@
 
-import type { Lesson, Quiz, Question } from './types';
+import type { Lesson, Quiz, Question, StudentData, TeacherData } from './types';
 
 export const mockLessons: Lesson[] = [
   {
@@ -59,7 +59,7 @@ Hook tidak bekerja di dalam kelas — mereka memungkinkan Anda menggunakan React
     videoUrl: 'https://placehold.co/600x338.png',
     quizId: 'quiz2',
     estimatedTime: "1 jam",
-    difficulty: "Menengah", // Corrected typo
+    difficulty: "Menengah",
   },
 ];
 
@@ -123,6 +123,87 @@ export const mockQuizzes: Quiz[] = [
     questions: mockQuestionsQuiz2,
   },
 ];
+
+// Mock Students Data - ensure one matches student@example.com
+export const mockStudents: StudentData[] = [
+  {
+    ID_Siswa: "student001",
+    Nama_Lengkap: "Siswa Rajin",
+    Nama_Panggilan: "Siswa",
+    Username: "siswarajin",
+    Email: "student@example.com", // Match with login
+    NISN: "0098765432",
+    Nomor_Induk: "S1004",
+    Kelas: "Kelas 10B",
+    Jenis_Kelamin: "Perempuan",
+    Tanggal_Lahir: "2008-01-15",
+    Alamat: "Jl. Belajar No. 5, Kota Ilmu",
+    Nomor_Telepon: "081234567899",
+    Program_Studi: "IPA",
+    Tanggal_Daftar: "2023-08-01",
+    Status_Aktif: true,
+    Password_Hash: "hashed_password_siswa_rajin",
+    Profil_Foto: "https://placehold.co/100x100.png"
+  },
+  {
+    ID_Siswa: "siswa1",
+    Nama_Lengkap: "Ahmad Zulkifli Zaini",
+    Nama_Panggilan: "Zaini",
+    Username: "ahmad.zaini",
+    Email: "ahmad.z@example.com",
+    NISN: "0012345678",
+    Nomor_Induk: "S1001",
+    Kelas: "Kelas 10A",
+    Jenis_Kelamin: "Laki-laki",
+    Tanggal_Lahir: "2007-08-17",
+    Alamat: "Jl. Pelajar No. 10, Jakarta",
+    Nomor_Telepon: "085678901234",
+    Program_Studi: "IPA",
+    Tanggal_Daftar: "2023-07-01",
+    Status_Aktif: true,
+    Password_Hash: "hashed_password_siswa1",
+    Profil_Foto: "https://placehold.co/100x100.png"
+  },
+];
+
+// Mock Teachers Data - ensure one matches teacher@example.com
+export const mockTeachers: TeacherData[] = [
+  {
+    ID_Guru: "teacher001",
+    Nama_Lengkap: "Guru Inovatif, M.Pd.",
+    Username: "guruinovatif",
+    Email: "teacher@example.com", // Match with login
+    Mata_Pelajaran: "Kimia Terapan",
+    Kelas_Ajar: ["Kelas 11C", "Kelas 12A"],
+    Jenis_Kelamin: "Laki-laki",
+    Tanggal_Lahir: "1982-03-25",
+    Alamat: "Jl. Mengajar No. 10, Kota Edukasi",
+    Nomor_Telepon: "089876543210",
+    Status_Aktif: true,
+    Password_Hash: "hashed_password_guru_inovatif",
+    Tanggal_Pendaftaran: "2015-06-01",
+    Jabatan: "Guru Senior Kimia",
+    Profil_Foto: "https://placehold.co/100x100.png"
+  },
+  {
+    ID_Guru: "guru1",
+    Nama_Lengkap: "Dr. Budi Darmawan, S.Kom., M.Cs.",
+    Username: "budi.darmawan",
+    Email: "budi.d@example.com",
+    Mata_Pelajaran: "Matematika Lanjut",
+    Kelas_Ajar: ["Kelas 11A", "Kelas 12B"],
+    Jenis_Kelamin: "Laki-laki",
+    Tanggal_Lahir: "1980-05-15",
+    Alamat: "Jl. Pendidikan No. 1, Jakarta",
+    Nomor_Telepon: "081234567890",
+    Status_Aktif: true,
+    Password_Hash: "hashed_password_guru1",
+    Tanggal_Pendaftaran: "2010-08-01",
+    Jabatan: "Guru Senior Matematika",
+    Profil_Foto: "https://placehold.co/100x100.png"
+  },
+];
+
 
 export function getLessonById(id: string): Lesson | undefined {
   return mockLessons.find(lesson => lesson.id === id);
