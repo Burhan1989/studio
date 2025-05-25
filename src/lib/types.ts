@@ -70,7 +70,7 @@ export interface StudentData {
   Alamat: string;
   Email: string;
   Nomor_Telepon: string;
-  Program_Studi: string; // Jurusan
+  Program_Studi: string; // Jurusan - Ini sudah wajib, bagus.
   Kelas: string;
   Tanggal_Daftar: string;
   Status_Aktif: boolean;
@@ -118,7 +118,7 @@ export interface ClassData {
   ID_Guru: string; // ID Guru Wali Kelas
   Deskripsi_Kelas?: string;
   Waktu_Kelas?: string;
-  jurusan?: string;
+  jurusan: string; // Diubah menjadi wajib
   jumlahSiswa?: number; // Contoh field tambahan
 }
 
@@ -149,4 +149,3 @@ export interface SchoolProfileData {
   misi?: string;
   logo?: File | string; // File for upload, string for URL if already uploaded
 }
-

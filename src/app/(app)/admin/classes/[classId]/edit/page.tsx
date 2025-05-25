@@ -27,7 +27,7 @@ import { getClassById, updateClass } from "@/lib/mockData"; // Import helper fun
 const editClassSchema = z.object({
   Nama_Kelas: z.string().min(3, "Nama kelas minimal 3 karakter."),
   ID_Guru: z.string().min(1, "ID Wali Kelas harus diisi."), 
-  jurusan: z.string().optional(),
+  jurusan: z.string().min(1, "Jurusan harus diisi."), // Diubah menjadi wajib
   jumlahSiswa: z.coerce.number().int().min(0, "Jumlah siswa tidak boleh negatif.").optional(),
 });
 
@@ -60,7 +60,7 @@ export default function AdminEditClassPage() {
         form.reset({
           Nama_Kelas: classData.Nama_Kelas,
           ID_Guru: classData.ID_Guru,
-          jurusan: classData.jurusan || "",
+          jurusan: classData.jurusan, // jurusan sudah wajib di ClassData
           // Ensure jumlahSiswa is a number for the form, defaulting to 0 if undefined
           jumlahSiswa: typeof classData.jumlahSiswa === 'number' ? classData.jumlahSiswa : 0,
         });
@@ -175,9 +175,9 @@ export default function AdminEditClassPage() {
                 name="jurusan"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Jurusan (Opsional)</FormLabel>
+                    <FormLabel>Jurusan</FormLabel>
                     <FormControl>
-                      <Input placeholder="cth. IPA, IPS, Bahasa" {...field} value={field.value ?? ""} />
+                      <Input placeholder="cth. IPA, IPS, Bahasa" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

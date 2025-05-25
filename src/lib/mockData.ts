@@ -139,7 +139,7 @@ export const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2008-01-15",
     Alamat: "Jl. Belajar No. 5, Kota Ilmu",
     Nomor_Telepon: "081234567899",
-    Program_Studi: "IPA",
+    Program_Studi: "IPA", // Pastikan ada nilai
     Tanggal_Daftar: "2023-08-01",
     Status_Aktif: true,
     Password_Hash: "hashed_password_siswa_rajin",
@@ -158,7 +158,7 @@ export const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2007-08-17",
     Alamat: "Jl. Pelajar No. 10, Jakarta",
     Nomor_Telepon: "085678901234",
-    Program_Studi: "IPA",
+    Program_Studi: "IPA", // Pastikan ada nilai
     Tanggal_Daftar: "2023-07-01",
     Status_Aktif: true,
     Password_Hash: "hashed_password_siswa1",
@@ -177,7 +177,7 @@ export const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2006-05-22",
     Alamat: "Jl. Siswa No. 20, Bandung",
     Nomor_Telepon: "085678901235",
-    Program_Studi: "IPS",
+    Program_Studi: "IPS", // Pastikan ada nilai
     Tanggal_Daftar: "2022-07-01",
     Status_Aktif: true,
     Password_Hash: "hashed_password_siswa2",
@@ -196,7 +196,7 @@ export const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2005-02-10",
     Alamat: "Jl. Prestasi No. 30, Surabaya",
     Nomor_Telepon: "085678901236",
-    Program_Studi: "Bahasa",
+    Program_Studi: "Bahasa", // Pastikan ada nilai
     Tanggal_Daftar: "2021-07-01",
     Status_Aktif: false,
     Password_Hash: "hashed_password_siswa3",
@@ -317,6 +317,35 @@ export const mockParents: ParentData[] = [
     }
 ];
 
+export let mockClasses: ClassData[] = [
+  { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'guru1', jumlahSiswa: 30, jurusan: "IPA" },
+  { ID_Kelas: 'kelasB', Nama_Kelas: 'Kelas 11B', ID_Guru: 'guru2', jumlahSiswa: 28, jurusan: "IPS" },
+  { ID_Kelas: 'kelasC', Nama_Kelas: 'Kelas 12C', ID_Guru: 'guru3', jumlahSiswa: 32, jurusan: "Bahasa" },
+  { ID_Kelas: 'kelasD', Nama_Kelas: 'Kelas 10B', ID_Guru: 'guru1', jumlahSiswa: 29, jurusan: "IPA" }, // Tambahkan jurusan
+  { ID_Kelas: 'kelasE', Nama_Kelas: 'Kelas 11A', ID_Guru: 'guru2', jumlahSiswa: 31, jurusan: "IPS" }, // Tambahkan jurusan
+];
+
+
+export const mockSchoolProfile: SchoolProfileData = {
+  namaSekolah: "SMA Negeri 1 Teladan Bangsa",
+  npsn: "12345678",
+  jenjang: "SMA",
+  statusSekolah: "Negeri",
+  akreditasi: "A (Unggul)",
+  namaKepalaSekolah: "Dr. H. Budi Santoso, M.Pd.",
+  alamatJalan: "Jl. Pendidikan No. 1",
+  kota: "Jakarta Selatan",
+  provinsi: "DKI Jakarta",
+  kodePos: "12345",
+  nomorTelepon: "021-1234567",
+  emailSekolah: "info@sman1teladan.sch.id",
+  websiteSekolah: "https://sman1teladan.sch.id",
+  visi: "Menjadi sekolah unggul yang berkarakter, berprestasi, dan berwawasan global.",
+  misi: "1. Melaksanakan pembelajaran yang inovatif dan kreatif.\n2. Mengembangkan potensi siswa secara optimal.\n3. Membangun karakter siswa yang berakhlak mulia.",
+  logo: "https://placehold.co/160x40.png?text=Logo+Sekolah" // Placeholder URL for the logo
+};
+
+
 // Mock user progress data
 export const mockUserProgress: UserProgress = {
   userId: 'student001', // Corresponds to the mock logged-in student "Siswa Rajin"
@@ -355,32 +384,6 @@ export const lessonStatusChartConfig: ChartConfig = {
   Selesai: { label: 'Selesai', color: 'hsl(var(--chart-1))' },
   Dikerjakan: { label: 'Dikerjakan', color: 'hsl(var(--chart-2))' },
   'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
-};
-
-export let mockClasses: ClassData[] = [
-  { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'guru1', jumlahSiswa: 30, jurusan: "IPA" },
-  { ID_Kelas: 'kelasB', Nama_Kelas: 'Kelas 11B', ID_Guru: 'guru2', jumlahSiswa: 28, jurusan: "IPS" },
-  { ID_Kelas: 'kelasC', Nama_Kelas: 'Kelas 12C', ID_Guru: 'guru3', jumlahSiswa: 32, jurusan: "Bahasa" },
-];
-
-
-export const mockSchoolProfile: SchoolProfileData = {
-  namaSekolah: "SMA Negeri 1 Teladan Bangsa",
-  npsn: "12345678",
-  jenjang: "SMA",
-  statusSekolah: "Negeri",
-  akreditasi: "A (Unggul)",
-  namaKepalaSekolah: "Dr. H. Budi Santoso, M.Pd.",
-  alamatJalan: "Jl. Pendidikan No. 1",
-  kota: "Jakarta Selatan",
-  provinsi: "DKI Jakarta",
-  kodePos: "12345",
-  nomorTelepon: "021-1234567",
-  emailSekolah: "info@sman1teladan.sch.id",
-  websiteSekolah: "https://sman1teladan.sch.id",
-  visi: "Menjadi sekolah unggul yang berkarakter, berprestasi, dan berwawasan global.",
-  misi: "1. Melaksanakan pembelajaran yang inovatif dan kreatif.\n2. Mengembangkan potensi siswa secara optimal.\n3. Membangun karakter siswa yang berakhlak mulia.",
-  logo: "https://placehold.co/160x40.png?text=Logo+Sekolah" // Placeholder URL for the logo
 };
 
 
