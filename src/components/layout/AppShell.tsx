@@ -19,21 +19,21 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School } from 'lucide-react';
-import { useRouter } from 'next/navigation'; 
+import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon } from 'lucide-react'; // Added ParentIcon
+import { useRouter } from 'next/navigation';
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ElementType;
   adminOnly?: boolean;
-  parentOnly?: boolean; // For items ONLY parents see
-  hideForParent?: boolean; // For general items that parents should NOT see
+  parentOnly?: boolean;
+  hideForParent?: boolean;
 }
 
 const baseNavItems: NavItem[] = [
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard, hideForParent: true },
-  { href: '/parent/dashboard', label: 'Dasbor Anak', icon: Users, parentOnly: true },
+  { href: '/parent/dashboard', label: 'Dasbor Anak', icon: Users, parentOnly: true }, // Uses Users icon, can be changed
   { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit, hideForParent: true },
   { href: '/lessons', label: 'Pelajaran', icon: BookOpen, hideForParent: true },
   { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck, hideForParent: true },
@@ -43,6 +43,7 @@ const baseNavItems: NavItem[] = [
   { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
   { href: '/admin/teachers', label: 'Kelola Guru', icon: UserCog, adminOnly: true },
   { href: '/admin/students', label: 'Kelola Siswa', icon: Users, adminOnly: true },
+  { href: '/admin/parents', label: 'Kelola Orang Tua', icon: ParentIcon, adminOnly: true }, // New menu for parents
   { href: '/admin/classes', label: 'Manajemen Kelas', icon: School, adminOnly: true },
   { href: '/admin/courses', label: 'Kelola Pelajaran', icon: BookCopy, adminOnly: true },
   { href: '/admin/quizzes', label: 'Kelola Kuis', icon: FileQuestion, adminOnly: true },
@@ -52,24 +53,19 @@ const baseNavItems: NavItem[] = [
 export default function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
-  const router = useRouter(); 
+  const router = useRouter();
 
   if (!user) {
-    // This should ideally be handled by AuthContext redirecting, but as a fallback.
-    // router.replace('/login'); // This can cause infinite loops if AuthContext is also redirecting
     return <div className="flex items-center justify-center h-screen">Mengarahkan ke halaman masuk...</div>;
   }
-  
+
   let filteredNavItems: NavItem[];
 
   if (user?.isAdmin) {
-    // Admins see their admin links and general links, but not parent-specific ones
     filteredNavItems = baseNavItems.filter(item => !item.parentOnly);
   } else if (user?.role === 'parent') {
-    // Parents see only parent-specific links + profile/settings
     filteredNavItems = baseNavItems.filter(item => item.parentOnly || item.href === '/profile' || item.href === '/settings');
   } else {
-    // Students/Teachers see general links (not admin, not parent-specific, not hidden for them)
     filteredNavItems = baseNavItems.filter(item => !item.adminOnly && !item.parentOnly && !item.hideForParent);
   }
 
@@ -89,7 +85,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} legacyBehavior passHref>
                   <SidebarMenuButton
-                    isActive={pathname === item.href || (item.href !== '/dashboard' && item.href !== '/parent/dashboard' && pathname.startsWith(item.href))}
+                    isActive={pathname === item.href || 
+                                (item.href !== '/dashboard' && 
+                                 item.href !== '/parent/dashboard' &&
+                                 item.href !== '/admin' && // Ensure admin dashboard itself is exact match
+                                 pathname.startsWith(item.href))
+                              }
                     tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
                     className="justify-start"
                   >
@@ -159,7 +160,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-// Minimal DropdownMenu for AppShell, can be expanded
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -168,4 +168,3 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-

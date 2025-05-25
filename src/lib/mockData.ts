@@ -1,12 +1,12 @@
 
-import type { Lesson, Quiz, Question, StudentData, TeacherData } from './types';
+import type { Lesson, Quiz, Question, StudentData, TeacherData, ParentData } from './types';
 
 export const mockLessons: Lesson[] = [
   {
     id: '1',
     title: 'Pengenalan JavaScript',
     content: `
-JavaScript adalah bahasa pemrograman serbaguna yang banyak digunakan, terutama dikenal karena perannya dalam pengembangan web. 
+JavaScript adalah bahasa pemrograman serbaguna yang banyak digunakan, terutama dikenal karena perannya dalam pengembangan web.
 Ini memungkinkan Anda untuk menambahkan interaktivitas ke situs web, membangun server web, membuat aplikasi seluler, dan banyak lagi.
 
 ### Konsep Utama:
@@ -18,7 +18,7 @@ Ini memungkinkan Anda untuk menambahkan interaktivitas ke situs web, membangun s
 
 Pelajaran ini akan membahas dasar-dasarnya untuk memulai.
     `,
-    videoUrl: 'https://placehold.co/600x338.png', // Placeholder for video ID / URL
+    videoUrl: 'https://placehold.co/600x338.png',
     quizId: 'quiz1',
     estimatedTime: "30 menit",
     difficulty: "Pemula",
@@ -124,14 +124,13 @@ export const mockQuizzes: Quiz[] = [
   },
 ];
 
-// Mock Students Data - ensure one matches student@example.com
 export const mockStudents: StudentData[] = [
   {
     ID_Siswa: "student001",
     Nama_Lengkap: "Siswa Rajin",
     Nama_Panggilan: "Siswa",
     Username: "siswarajin",
-    Email: "student@example.com", // Match with login
+    Email: "student@example.com",
     NISN: "0098765432",
     Nomor_Induk: "S1004",
     Kelas: "Kelas 10B",
@@ -164,15 +163,52 @@ export const mockStudents: StudentData[] = [
     Password_Hash: "hashed_password_siswa1",
     Profil_Foto: "https://placehold.co/100x100.png"
   },
+   {
+    ID_Siswa: "siswa2",
+    Nama_Lengkap: "Rina Amelia Putri",
+    Nama_Panggilan: "Rina",
+    Username: "rina.amelia",
+    Email: "rina.a@example.com",
+    NISN: "0023456789",
+    Nomor_Induk: "S1002",
+    Kelas: "Kelas 11B",
+    Jenis_Kelamin: "Perempuan",
+    Tanggal_Lahir: "2006-05-22",
+    Alamat: "Jl. Siswa No. 20, Bandung",
+    Nomor_Telepon: "085678901235",
+    Program_Studi: "IPS",
+    Tanggal_Daftar: "2022-07-01",
+    Status_Aktif: true,
+    Password_Hash: "hashed_password_siswa2",
+    Profil_Foto: "https://placehold.co/100x100.png"
+  },
+  {
+    ID_Siswa: "siswa3",
+    Nama_Lengkap: "Kevin Sanjaya",
+    Nama_Panggilan: "Kevin",
+    Username: "kevin.sanjaya",
+    Email: "kevin.s@example.com",
+    NISN: "0034567890",
+    Nomor_Induk: "S1003",
+    Kelas: "Kelas 12C",
+    Jenis_Kelamin: "Laki-laki",
+    Tanggal_Lahir: "2005-02-10",
+    Alamat: "Jl. Prestasi No. 30, Surabaya",
+    Nomor_Telepon: "085678901236",
+    Program_Studi: "Bahasa",
+    Tanggal_Daftar: "2021-07-01",
+    Status_Aktif: false,
+    Password_Hash: "hashed_password_siswa3",
+    Profil_Foto: "https://placehold.co/100x100.png"
+  },
 ];
 
-// Mock Teachers Data - ensure one matches teacher@example.com
 export const mockTeachers: TeacherData[] = [
   {
     ID_Guru: "teacher001",
     Nama_Lengkap: "Guru Inovatif, M.Pd.",
     Username: "guruinovatif",
-    Email: "teacher@example.com", // Match with login
+    Email: "teacher@example.com",
     Mata_Pelajaran: "Kimia Terapan",
     Kelas_Ajar: ["Kelas 11C", "Kelas 12A"],
     Jenis_Kelamin: "Laki-laki",
@@ -202,6 +238,82 @@ export const mockTeachers: TeacherData[] = [
     Jabatan: "Guru Senior Matematika",
     Profil_Foto: "https://placehold.co/100x100.png"
   },
+  {
+    ID_Guru: "guru2",
+    Nama_Lengkap: "Siti Nurhaliza, M.Pd.",
+    Username: "siti.nurhaliza",
+    Email: "siti.n@example.com",
+    Mata_Pelajaran: "Bahasa Indonesia",
+    Kelas_Ajar: ["Kelas 10A", "Kelas 10C"],
+    Jenis_Kelamin: "Perempuan",
+    Tanggal_Lahir: "1985-11-20",
+    Alamat: "Jl. Cendekia No. 5, Bandung",
+    Nomor_Telepon: "081234567891",
+    Status_Aktif: true,
+    Password_Hash: "hashed_password_guru2",
+    Tanggal_Pendaftaran: "2012-07-15",
+    Jabatan: "Guru Bahasa Indonesia",
+    Profil_Foto: "https://placehold.co/100x100.png"
+  },
+  {
+    ID_Guru: "guru3",
+    Nama_Lengkap: "Prof. Dr. Agus Salim, M.Sc.",
+    Username: "agus.salim",
+    Email: "agus.s@example.com",
+    Mata_Pelajaran: "Fisika Dasar",
+    Kelas_Ajar: ["Kelas 11B"],
+    Jenis_Kelamin: "Laki-laki",
+    Tanggal_Lahir: "1975-03-10",
+    Alamat: "Jl. Ilmuwan No. 12, Surabaya",
+    Nomor_Telepon: "081234567892",
+    Status_Aktif: false,
+    Password_Hash: "hashed_password_guru3",
+    Tanggal_Pendaftaran: "2005-01-20",
+    Jabatan: "Kepala Jurusan IPA",
+    Profil_Foto: "https://placehold.co/100x100.png"
+  },
+];
+
+export const mockParents: ParentData[] = [
+    {
+        ID_OrangTua: "parent001",
+        Nama_Lengkap: "Orang Tua Bijak",
+        Username: "ortubijak",
+        Email: "parent@example.com",
+        Nomor_Telepon: "081122334455",
+        Status_Aktif: true,
+        Password_Hash: "hashed_password_parent",
+        Profil_Foto: "https://placehold.co/100x100.png",
+        Anak_Terkait: [
+            { ID_Siswa: "student001", Nama_Siswa: "Siswa Rajin" },
+        ]
+    },
+    {
+        ID_OrangTua: "parent002",
+        Nama_Lengkap: "Ayah Zaini",
+        Username: "ayahzaini",
+        Email: "ayah.zaini@example.com",
+        Nomor_Telepon: "085566778899",
+        Status_Aktif: true,
+        Password_Hash: "hashed_password_parent2",
+        Profil_Foto: "https://placehold.co/100x100.png",
+        Anak_Terkait: [
+            { ID_Siswa: "siswa1", Nama_Siswa: "Ahmad Zulkifli Zaini" },
+        ]
+    },
+    {
+        ID_OrangTua: "parent003",
+        Nama_Lengkap: "Bunda Rina",
+        Username: "bundarina",
+        Email: "bunda.rina@example.com",
+        Nomor_Telepon: "087711223344",
+        Status_Aktif: false,
+        Password_Hash: "hashed_password_parent3",
+        Profil_Foto: "https://placehold.co/100x100.png",
+        Anak_Terkait: [
+            { ID_Siswa: "siswa2", Nama_Siswa: "Rina Amelia Putri" },
+        ]
+    }
 ];
 
 

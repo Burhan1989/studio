@@ -3,8 +3,11 @@ export interface User {
   email: string;
   name?: string;
   isAdmin?: boolean;
-  username?: string; // Added username for basic user auth if needed
+  username?: string;
+  role?: UserRole; // Added role
 }
+
+export type UserRole = 'admin' | 'teacher' | 'student' | 'parent'; // Define UserRole
 
 export interface LearningResource {
   resourceType: string;
@@ -21,7 +24,7 @@ export interface CustomizedLearningPath {
 export interface Lesson {
   id: string;
   title: string;
-  content: string; 
+  content: string;
   videoUrl?: string;
   quizId?: string;
   estimatedTime: string;
@@ -46,75 +49,82 @@ export interface Quiz {
 export interface UserProgress {
   userId: string;
   completedLessons: string[];
-  inProgressLessons?: string[]; // Added for more detailed progress
+  inProgressLessons?: string[];
   quizScores: Array<{ quizId: string; score: number; totalQuestions: number }>;
   currentLearningPath?: CustomizedLearningPath;
 }
 
-// For Pie Chart on reports page
 export interface LessonStatusCounts {
   name: 'Selesai' | 'Dikerjakan' | 'Belum Dimulai';
   value: number;
   fill: string;
 }
 
-
-// Detailed Student Data Structure
 export interface StudentData {
-  ID_Siswa: string; // Primary Key (Integer / UUID)
-  Nama_Lengkap: string; // Varchar(100)
-  Nama_Panggilan?: string; // Varchar(50), opsional
-  Jenis_Kelamin: 'Laki-laki' | 'Perempuan' | ''; // Varchar(10) or empty
-  Tanggal_Lahir: string; // Date (string for simplicity in mock data, can be Date object)
-  Alamat: string; // Varchar(200)
-  Email: string; // Varchar(100)
-  Nomor_Telepon: string; // Varchar(20)
-  Program_Studi: string; // Varchar(50) - This will be displayed as "Jurusan"
-  Kelas: string; // Varchar(50)
-  Tanggal_Daftar: string; // Date
-  Status_Aktif: boolean; // Boolean
-  Profil_Foto?: string; // Varchar(200), path or URL
-  Username: string; // Added
-  Password_Hash: string; // Varchar(100) - Storing hash, not plaintext
-  NISN: string; // Added
-  Nomor_Induk: string; // Added
+  ID_Siswa: string;
+  Nama_Lengkap: string;
+  Nama_Panggilan?: string;
+  Jenis_Kelamin: 'Laki-laki' | 'Perempuan' | '';
+  Tanggal_Lahir: string;
+  Alamat: string;
+  Email: string;
+  Nomor_Telepon: string;
+  Program_Studi: string; // Jurusan
+  Kelas: string;
+  Tanggal_Daftar: string;
+  Status_Aktif: boolean;
+  Profil_Foto?: string;
+  Username: string;
+  Password_Hash: string;
+  NISN: string;
+  Nomor_Induk: string;
 }
 
-// Detailed Teacher Data Structure
 export interface TeacherData {
-  ID_Guru: string; // Primary Key (Integer / UUID)
-  Nama_Lengkap: string; // Varchar(100)
-  Jenis_Kelamin: 'Laki-laki' | 'Perempuan' | ''; // Varchar(10) or empty
-  Tanggal_Lahir: string; // Date
-  Alamat: string; // Varchar(200)
-  Email: string; // Varchar(100)
-  Nomor_Telepon: string; // Varchar(20)
-  Mata_Pelajaran: string; // Varchar(50)
-  Kelas_Ajar: string[]; // Varchar(50) - Can be an array of class names/IDs
-  Status_Aktif: boolean; // Boolean
-  Profil_Foto?: string; // Varchar(200)
-  Username: string; // Added
-  Password_Hash: string; // Varchar(100) - Storing hash, not plaintext
-  Tanggal_Pendaftaran: string; // Date
-  Jabatan?: string; // Varchar(50), opsional
+  ID_Guru: string;
+  Nama_Lengkap: string;
+  Jenis_Kelamin: 'Laki-laki' | 'Perempuan' | '';
+  Tanggal_Lahir: string;
+  Alamat: string;
+  Email: string;
+  Nomor_Telepon: string;
+  Mata_Pelajaran: string;
+  Kelas_Ajar: string[];
+  Status_Aktif: boolean;
+  Profil_Foto?: string;
+  Username: string;
+  Password_Hash: string;
+  Tanggal_Pendaftaran: string;
+  Jabatan?: string;
 }
 
-// Example for Class Table (Relational Data)
+export interface ParentData {
+  ID_OrangTua: string;
+  Nama_Lengkap: string;
+  Username: string;
+  Email: string;
+  Nomor_Telepon?: string;
+  Status_Aktif: boolean;
+  Password_Hash: string; // For mock consistency with other user types
+  Profil_Foto?: string;
+  Anak_Terkait?: Array<{ ID_Siswa: string, Nama_Siswa: string }>; // Optional: for linking to students
+}
+
+
 export interface ClassData {
-  ID_Kelas: string; // Primary Key
+  ID_Kelas: string;
   Nama_Kelas: string;
-  ID_Guru: string; // Foreign Key to TeacherData
+  ID_Guru: string;
   Deskripsi_Kelas?: string;
   Waktu_Kelas?: string;
-  jurusan?: string; // Added Jurusan to ClassData
-  jumlahSiswa?: number; // Added for mock data consistency
+  jurusan?: string;
+  jumlahSiswa?: number;
 }
 
-// Example for Grades Table (Relational Data)
 export interface GradeData {
-  ID_Nilai: string; // Primary Key
-  ID_Siswa: string; // Foreign Key to StudentData
-  ID_Kelas: string; // Foreign Key to ClassData
+  ID_Nilai: string;
+  ID_Siswa: string;
+  ID_Kelas: string;
   Nilai_Tugas?: number;
   Nilai_Ujian?: number;
   Nilai_Akhir?: number;
