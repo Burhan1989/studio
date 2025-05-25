@@ -7,25 +7,75 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Edit, Trash2, Network, Upload, Download } from "lucide-react";
 import type { MajorData } from "@/lib/types";
-import { mockMajors } from "@/lib/mockData"; 
+import { getMajors, addMajor, deleteMajorById } from "@/lib/mockData"; // Updated imports
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, type FormEvent } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
 
 export default function AdminMajorsPage() {
   const { toast } = useToast();
+  const router = useRouter();
   const [majors, setMajors] = useState<MajorData[]>([]);
+  const [isAddMajorDialogOpen, setIsAddMajorDialogOpen] = useState(false);
+
+  // Form state for adding new major
+  const [newMajorName, setNewMajorName] = useState("");
+  const [newMajorDescription, setNewMajorDescription] = useState("");
+  const [newMajorHead, setNewMajorHead] = useState("");
 
   useEffect(() => {
-    setMajors([...mockMajors]);
+    setMajors(getMajors());
   }, []);
 
-  const handleActionPlaceholder = (action: string, item: string) => {
-    toast({
-      title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas "${action} ${item}" akan segera hadir.`,
-    });
+  const refreshMajors = () => {
+    setMajors(getMajors());
+    router.refresh(); // To ensure Server Components re-fetch if they use this data
   };
 
+  const handleAddMajor = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!newMajorName.trim()) {
+      toast({ title: "Nama Jurusan Diperlukan", description: "Mohon isi nama jurusan.", variant: "destructive" });
+      return;
+    }
+    addMajor({
+      Nama_Jurusan: newMajorName,
+      Deskripsi_Jurusan: newMajorDescription,
+      Nama_Kepala_Program: newMajorHead,
+    });
+    toast({ title: "Jurusan Ditambahkan", description: `Jurusan "${newMajorName}" telah berhasil ditambahkan.` });
+    setNewMajorName("");
+    setNewMajorDescription("");
+    setNewMajorHead("");
+    setIsAddMajorDialogOpen(false);
+    refreshMajors();
+  };
+
+  const handleDeleteMajor = (majorId: string, majorName: string) => {
+    if (confirm(`Apakah Anda yakin ingin menghapus jurusan "${majorName}"? Tindakan ini tidak dapat diurungkan.`)) {
+      const success = deleteMajorById(majorId);
+      if (success) {
+        toast({ title: "Jurusan Dihapus", description: `Jurusan "${majorName}" telah berhasil dihapus.` });
+        refreshMajors();
+      } else {
+        toast({ title: "Gagal Menghapus", description: `Jurusan "${majorName}" tidak ditemukan.`, variant: "destructive" });
+      }
+    }
+  };
+  
   const handleExcelAction = (actionType: "Import" | "Export") => {
     let actionDescription = actionType === "Import" ? "Impor" : "Ekspor";
     toast({
@@ -69,9 +119,57 @@ export default function AdminMajorsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl">Daftar Jurusan</CardTitle>
-            <Button onClick={() => handleActionPlaceholder("Tambah", "Jurusan Baru")}>
-              <PlusCircle className="w-4 h-4 mr-2" /> Tambah Jurusan Baru
-            </Button>
+            <Dialog open={isAddMajorDialogOpen} onOpenChange={setIsAddMajorDialogOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <PlusCircle className="w-4 h-4 mr-2" /> Tambah Jurusan Baru
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Tambah Jurusan Baru</DialogTitle>
+                  <DialogDescription>
+                    Masukkan detail untuk jurusan baru. Klik simpan jika selesai.
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleAddMajor} className="space-y-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="new-major-name">Nama Jurusan</Label>
+                    <Input
+                      id="new-major-name"
+                      value={newMajorName}
+                      onChange={(e) => setNewMajorName(e.target.value)}
+                      placeholder="cth. Ilmu Pengetahuan Alam"
+                      required
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="new-major-description">Deskripsi Jurusan (Opsional)</Label>
+                    <Textarea
+                      id="new-major-description"
+                      value={newMajorDescription}
+                      onChange={(e) => setNewMajorDescription(e.target.value)}
+                      placeholder="Deskripsi singkat mengenai jurusan..."
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="new-major-head">Nama Kepala Program (Opsional)</Label>
+                    <Input
+                      id="new-major-head"
+                      value={newMajorHead}
+                      onChange={(e) => setNewMajorHead(e.target.value)}
+                      placeholder="cth. Dr. Annisa Fitri, M.Si."
+                    />
+                  </div>
+                  <DialogFooter>
+                    <DialogClose asChild>
+                       <Button type="button" variant="outline">Batal</Button>
+                    </DialogClose>
+                    <Button type="submit">Simpan Jurusan</Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
           <CardDescription>Kelola semua jurusan yang tersedia di platform.</CardDescription>
         </CardHeader>
@@ -99,8 +197,8 @@ export default function AdminMajorsPage() {
                         <Edit className="w-4 h-4" /> Edit
                       </Link>
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", `Jurusan ${major.Nama_Jurusan}`)}>
-                      <Trash2 className="w-4 h-4" />
+                    <Button variant="destructive" size="sm" onClick={() => handleDeleteMajor(major.ID_Jurusan, major.Nama_Jurusan)}>
+                      <Trash2 className="w-4 h-4" /> Hapus
                     </Button>
                   </TableCell>
                 </TableRow>

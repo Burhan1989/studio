@@ -19,7 +19,7 @@ Ini memungkinkan Anda untuk menambahkan interaktivitas ke situs web, membangun s
 
 Pelajaran ini akan membahas dasar-dasarnya untuk memulai.
     `,
-    videoUrl: 'https://placehold.co/600x338.png',
+    videoUrl: 'https://placehold.co/600x338.png?text=Video+JS',
     quizId: 'quiz1',
     estimatedTime: "30 menit",
     difficulty: "Pemula",
@@ -57,7 +57,7 @@ Hook tidak bekerja di dalam kelas — mereka memungkinkan Anda menggunakan React
 - **useContext (Konteks)**: Menerima objek konteks (nilai yang dikembalikan dari \`React.createContext\`) dan mengembalikan nilai konteks saat ini untuk konteks tersebut.
 - **useReducer (Alternatif State)**: Alternatif untuk \`useState\`. Menerima reducer tipe \`(state, action) => newState\`, dan mengembalikan status saat ini yang dipasangkan dengan metode \`dispatch\`.
     `,
-    videoUrl: 'https://placehold.co/600x338.png',
+    videoUrl: 'https://placehold.co/600x338.png?text=Video+React+Hooks',
     quizId: 'quiz2',
     estimatedTime: "1 jam",
     difficulty: "Menengah",
@@ -417,14 +417,97 @@ export const lessonStatusChartConfig: ChartConfig = {
   'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
 };
 
+const MAJORS_STORAGE_KEY = 'adeptlearn-majors';
 
-export let mockMajors: MajorData[] = [
+const initialMockMajors: MajorData[] = [
   { ID_Jurusan: "major001", Nama_Jurusan: "Ilmu Pengetahuan Alam (IPA)", Deskripsi_Jurusan: "Fokus pada studi sains seperti Fisika, Kimia, Biologi.", Nama_Kepala_Program: "Dr. Annisa Fitri, M.Si." },
   { ID_Jurusan: "major002", Nama_Jurusan: "Ilmu Pengetahuan Sosial (IPS)", Deskripsi_Jurusan: "Fokus pada studi sosial seperti Sejarah, Ekonomi, Geografi.", Nama_Kepala_Program: "Prof. Bambang W., S.Sos." },
   { ID_Jurusan: "major003", Nama_Jurusan: "Bahasa dan Budaya", Deskripsi_Jurusan: "Fokus pada studi bahasa, sastra, dan budaya.", Nama_Kepala_Program: "Dra. Endang S., M.Hum." },
   { ID_Jurusan: "major004", Nama_Jurusan: "Teknik Komputer dan Jaringan (TKJ)", Deskripsi_Jurusan: "Untuk SMK, fokus pada teknologi informasi dan jaringan.", Nama_Kepala_Program: "Rahmat Hidayat, S.Kom." },
   { ID_Jurusan: "major005", Nama_Jurusan: "Akuntansi dan Keuangan Lembaga (AKL)", Deskripsi_Jurusan: "Untuk SMK, fokus pada akuntansi dan keuangan.", Nama_Kepala_Program: "Sri Mulyani, S.E., Ak." },
 ];
+
+let mockMajors: MajorData[] = [];
+
+function loadMajorsFromStorage(): MajorData[] {
+  if (typeof window !== 'undefined') {
+    const storedMajors = localStorage.getItem(MAJORS_STORAGE_KEY);
+    if (storedMajors) {
+      try {
+        return JSON.parse(storedMajors);
+      } catch (e) {
+        console.error("Gagal memparsing jurusan dari localStorage:", e);
+        // Jika parsing gagal, kembali ke data awal dan simpan
+        localStorage.setItem(MAJORS_STORAGE_KEY, JSON.stringify(initialMockMajors));
+        return initialMockMajors;
+      }
+    } else {
+      // Jika tidak ada di localStorage, gunakan data awal dan simpan
+      localStorage.setItem(MAJORS_STORAGE_KEY, JSON.stringify(initialMockMajors));
+      return initialMockMajors;
+    }
+  }
+  return [...initialMockMajors]; // Kembalikan salinan untuk sisi server atau jika window tidak tersedia
+}
+
+function saveMajorsToStorage(majors: MajorData[]) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(MAJORS_STORAGE_KEY, JSON.stringify(majors));
+  }
+}
+
+// Inisialisasi mockMajors saat modul dimuat
+mockMajors = loadMajorsFromStorage();
+
+export function getMajors(): MajorData[] {
+  // Pastikan data terbaru dari localStorage dimuat jika ini dipanggil di client-side setelah inisialisasi modul
+  if (typeof window !== 'undefined') {
+    const storedMajors = localStorage.getItem(MAJORS_STORAGE_KEY);
+    if (storedMajors) {
+      try {
+        mockMajors = JSON.parse(storedMajors);
+      } catch (e) {
+        console.error("Gagal memparsing jurusan dari localStorage di getMajors:", e);
+      }
+    }
+  }
+  return [...mockMajors]; // Selalu kembalikan salinan agar array asli tidak termutasi secara tidak sengaja
+}
+
+export function addMajor(newMajorData: Omit<MajorData, 'ID_Jurusan'>): MajorData {
+  const newMajor: MajorData = {
+    ID_Jurusan: `major${Date.now()}${Math.floor(Math.random() * 100)}`,
+    ...newMajorData,
+  };
+  mockMajors.push(newMajor);
+  saveMajorsToStorage(mockMajors);
+  return newMajor;
+}
+
+export function getMajorById(id: string): MajorData | undefined {
+  return mockMajors.find(major => major.ID_Jurusan === id);
+}
+
+export function updateMajor(updatedMajor: MajorData): boolean {
+  const index = mockMajors.findIndex(major => major.ID_Jurusan === updatedMajor.ID_Jurusan);
+  if (index !== -1) {
+    mockMajors[index] = updatedMajor;
+    saveMajorsToStorage(mockMajors);
+    return true;
+  }
+  return false;
+}
+
+export function deleteMajorById(majorId: string): boolean {
+  const initialLength = mockMajors.length;
+  mockMajors = mockMajors.filter(major => major.ID_Jurusan !== majorId);
+  if (mockMajors.length < initialLength) {
+    saveMajorsToStorage(mockMajors);
+    return true;
+  }
+  return false;
+}
+
 
 export let mockSchedules: ScheduleItem[] = [
   {
@@ -525,9 +608,8 @@ export function updateQuiz(updatedQuiz: Quiz): boolean {
     mockQuizzes[index] = {
       ...mockQuizzes[index],
       ...updatedQuiz,
-      questions: updatedQuiz.questions.map(q => ({ // Ensure questions are properly mapped
+      questions: updatedQuiz.questions.map(q => ({ 
         ...q,
-        // If IDs are not present on new questions during edit, assign them
         id: q.id || `q_updated_${Date.now()}${Math.random().toString(36).substring(2,7)}`,
       })),
     };
@@ -551,18 +633,6 @@ export function updateClass(updatedClass: ClassData): boolean {
   return false;
 }
 
-export function getMajorById(id: string): MajorData | undefined {
-  return mockMajors.find(major => major.ID_Jurusan === id);
-}
-
-export function updateMajor(updatedMajor: MajorData): boolean {
-  const index = mockMajors.findIndex(major => major.ID_Jurusan === updatedMajor.ID_Jurusan);
-  if (index !== -1) {
-    mockMajors[index] = updatedMajor;
-    return true;
-  }
-  return false;
-}
 
 export function getTeacherById(id: string): TeacherData | undefined {
   return mockTeachers.find(teacher => teacher.ID_Guru === id);
@@ -616,7 +686,6 @@ export function getScheduleById(id: string): ScheduleItem | undefined {
 export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
   const index = mockSchedules.findIndex(schedule => schedule.id === updatedSchedule.id);
   if (index !== -1) {
-    // Enrich with names if IDs are present, similar to how it's done in schedule page display
     const classInfo = updatedSchedule.classId ? mockClasses.find(c => c.ID_Kelas === updatedSchedule.classId) : null;
     const teacherInfo = updatedSchedule.teacherId ? mockTeachers.find(t => t.ID_Guru === updatedSchedule.teacherId) : null;
     
