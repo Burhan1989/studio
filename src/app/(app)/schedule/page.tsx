@@ -6,14 +6,12 @@ import { mockSchedules, mockClasses, mockTeachers, mockStudents, getLessonById, 
 import type { ScheduleItem, ClassData, StudentData } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Clock, Tag, Info, User, Link as LinkIcon, AlertTriangle, ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
+import { CalendarDays, Clock, Tag, Info, User, Link as LinkIcon, ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
 import { 
   format, 
   parseISO, 
   isSameDay, 
   startOfWeek, 
-  endOfWeek, 
-  eachDayOfInterval, 
   addDays, 
   subDays, 
   addWeeks, 
@@ -53,9 +51,7 @@ export default function SchedulePage() {
   const [selectedClassFilter, setSelectedClassFilter] = useState<string>(""); 
 
   const [displayableSchedules, setDisplayableSchedules] = useState<ScheduleItem[]>([]);
-  
   const [weeklyViewData, setWeeklyViewData] = useState<DayWithSchedules[]>([]);
-
 
   useEffect(() => {
     const enrichedSchedules = mockSchedules.map(schedule => {
@@ -141,7 +137,7 @@ export default function SchedulePage() {
 
   const ScheduleCard = ({ item }: { item: ScheduleItem }) => {
     const scheduleDate = parseISO(item.date);
-    const isPast = scheduleDate < today && !isSameDay(scheduleDate, today); // Mark as past if before today
+    const isPast = scheduleDate < today && !isSameDay(scheduleDate, today);
     return (
         <Card className={`shadow-md overflow-hidden transition-all hover:shadow-lg ${isPast ? 'opacity-70 bg-muted/30' : 'bg-card'}`}>
         <CardHeader className="pb-3">
@@ -197,6 +193,15 @@ export default function SchedulePage() {
       </Card>
     );
   }
+
+  const dayColors: { [key: number]: string } = {
+    1: "bg-red-50", // Monday
+    2: "bg-orange-50", // Tuesday
+    3: "bg-yellow-50", // Wednesday
+    4: "bg-green-50", // Thursday
+    5: "bg-blue-50", // Friday
+    6: "bg-purple-50", // Saturday
+  };
 
   return (
     <div className="space-y-6">
@@ -284,12 +289,12 @@ export default function SchedulePage() {
           )}
 
           {viewMode === 'weekly' && (
-             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3"> {/* Adjusted to 3 cols for wider day cards */}
+             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
               {weeklyViewData.map(dayData => (
-                <div key={dayData.date.toISOString()} className="p-3 border rounded-lg bg-background/50">
+                <div key={dayData.date.toISOString()} className={`p-3 border rounded-lg ${dayColors[getDay(dayData.date)] || 'bg-background/50'}`}>
                   <h3 className="mb-3 font-semibold text-center text-md">
                     {format(dayData.date, 'EEEE', { locale: LocaleID })}
-                    <span className="block text-xs text-muted-foreground">{format(dayData.date, 'dd MMM', { locale: LocaleID })}</span>
+                    {/* Tanggal numerik dihilangkan dari sini */}
                   </h3>
                   {dayData.schedules.length > 0 ? (
                     <div className="space-y-3">
@@ -307,8 +312,6 @@ export default function SchedulePage() {
           )}
         </CardContent>
       </Card>
-
     </div>
   );
 }
-
