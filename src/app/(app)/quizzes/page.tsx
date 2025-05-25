@@ -1,5 +1,5 @@
 
-import { mockQuizzes, getLessonById } from '@/lib/mockData';
+import { getQuizzes, getLessonById } from '@/lib/mockData'; // Changed mockQuizzes to getQuizzes
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -8,6 +8,8 @@ import { FileQuestion, BookText, ArrowRight } from 'lucide-react';
 export const dynamic = 'force-dynamic'; // Menjadikan halaman ini sepenuhnya dinamis
 
 export default function QuizzesListPage() {
+  const quizzes = getQuizzes(); // Call getQuizzes to fetch data
+
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -17,9 +19,9 @@ export default function QuizzesListPage() {
         </p>
       </div>
 
-      {mockQuizzes.length > 0 ? (
+      {quizzes.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {mockQuizzes.map((quiz) => {
+          {quizzes.map((quiz) => {
             const relatedLesson = quiz.lessonId ? getLessonById(quiz.lessonId) : null;
             return (
               <Card key={quiz.id} className="flex flex-col overflow-hidden shadow-lg transition-all hover:shadow-xl hover:scale-[1.02]">
@@ -56,3 +58,4 @@ export default function QuizzesListPage() {
     </div>
   );
 }
+

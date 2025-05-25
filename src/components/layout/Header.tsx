@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { GraduationCap, LogIn, UserPlus, LogOut, Settings, UserCircle } from 'lucide-react'; // Added Settings, UserCircle
+import { GraduationCap, LogIn, UserPlus, LogOut, Settings, UserCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -14,33 +14,43 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { mockSchoolProfile } from '@/lib/mockData'; // Import data sekolah
+import { getSchoolProfile } from '@/lib/mockData'; 
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation'; 
+import { useEffect, useState } from 'react';
+import type { SchoolProfileData } from '@/lib/types';
 
 export default function Header() {
   const { user, logout } = useAuth();
-  const router = useRouter(); // Initialize router
-  const schoolLogoUrl = (typeof mockSchoolProfile.logo === 'string' && mockSchoolProfile.logo.trim() !== '') ? mockSchoolProfile.logo : null;
+  const router = useRouter(); 
+  const [currentSchoolProfile, setCurrentSchoolProfile] = useState<SchoolProfileData | null>(null);
+
+  useEffect(() => {
+    setCurrentSchoolProfile(getSchoolProfile());
+  }, []);
+
+  const schoolLogoUrl = (typeof currentSchoolProfile?.logo === 'string' && currentSchoolProfile.logo.trim() !== '') ? currentSchoolProfile.logo : null;
+  const schoolName = currentSchoolProfile?.namaSekolah || 'AdeptLearn';
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex items-center h-16 max-w-screen-2xl"> {/* Adjusted height from h-20 */}
-        <Link href="/" className="flex flex-row items-center gap-2 mr-4 sm:mr-6"> {/* Changed to flex-row and added gap */}
+      <div className="container flex items-center h-16 max-w-screen-2xl">
+        <Link href="/" className="flex flex-row items-center gap-2 mr-4 sm:mr-6">
           {schoolLogoUrl ? (
             <Image
               src={schoolLogoUrl}
-              alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
-              width={120} // Adjusted for side-by-side view, ensure aspect ratio is maintained by height or object-contain
-              height={30} // Adjusted height
-              className="h-8 w-auto object-contain" // Example: h-8 (32px)
+              alt={`${schoolName} Logo`}
+              width={120} 
+              height={30} 
+              className="h-8 w-auto object-contain" 
               data-ai-hint="school logo"
+              priority // Prioritaskan memuat logo
             />
           ) : (
-            <GraduationCap className="w-7 h-7 text-primary" /> // Slightly smaller icon
+            <GraduationCap className="w-7 h-7 text-primary" /> 
           )}
-          <span className="text-base font-semibold text-foreground"> {/* Removed mt-1 */}
-            {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
+          <span className="text-base font-semibold text-foreground"> 
+            {schoolName}
           </span>
         </Link>
 

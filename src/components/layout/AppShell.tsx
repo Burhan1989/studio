@@ -2,7 +2,7 @@
 "use client";
 
 import type { ReactNode } from 'react';
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react'; // Ditambahkan useEffect dan useState
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -22,8 +22,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud, Network, ShieldCheck, CalendarDays } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import type { UserRole } from '@/lib/types';
-import { mockSchoolProfile } from '@/lib/mockData';
+import type { UserRole, SchoolProfileData } from '@/lib/types'; // Ditambahkan SchoolProfileData
+import { getSchoolProfile } from '@/lib/mockData'; // Ditambahkan getSchoolProfile
 import Image from 'next/image';
 import {
   DropdownMenu,
@@ -42,30 +42,21 @@ interface NavItem {
   parentOnly?: boolean;
   teacherOnly?: boolean;
   studentOnly?: boolean;
-  general?: boolean; // New flag for items visible to most authenticated roles
+  general?: boolean; 
 }
 
 const baseNavItems: NavItem[] = [
-  // General items for authenticated users
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard, general: true },
   { href: '/lessons', label: 'Pelajaran', icon: BookOpen, general: true },
   { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck, general: true },
-  { href: '/schedule', label: 'Jadwal Pembelajaran', icon: CalendarDays, general: true }, // New Schedule Item
+  { href: '/schedule', label: 'Jadwal Pembelajaran', icon: CalendarDays, general: true },
   { href: '/reports', label: 'Laporan', icon: BarChart3, general: true },
   { href: '/profile', label: 'Profil', icon: UserCircle, general: true },
   { href: '/settings', label: 'Pengaturan', icon: Settings, general: true },
-
-  // Student Specific
   { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit, studentOnly: true },
-
-  // Teacher Specific
   { href: '/teacher/materials', label: 'Materi Saya', icon: UploadCloud, teacherOnly: true },
   { href: '/teacher/quizzes', label: 'Kuis Saya', icon: FileQuestion, teacherOnly: true },
-
-  // Parent Specific
   { href: '/parent/dashboard', label: 'Dasbor Anak', icon: ParentIcon, parentOnly: true },
-
-  // Admin Menu
   { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
   { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building, adminOnly: true },
   { href: '/admin/admins', label: 'Kelola Admin', icon: ShieldCheck, adminOnly: true },
@@ -75,7 +66,7 @@ const baseNavItems: NavItem[] = [
   { href: '/admin/classes', label: 'Manajemen Kelas', icon: School, adminOnly: true },
   { href: '/admin/majors', label: 'Manajemen Jurusan', icon: Network, adminOnly: true },
   { href: '/admin/courses', label: 'Kelola Pelajaran', icon: BookCopy, adminOnly: true },
-  { href: '/admin/quizzes', label: 'Kelola Kuis Admin', icon: FileQuestion, adminOnly: true }, // Admin's quiz management
+  { href: '/admin/quizzes', label: 'Kelola Kuis Admin', icon: FileQuestion, adminOnly: true },
   { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart, adminOnly: true },
 ];
 
@@ -83,56 +74,57 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const schoolLogoUrl = (typeof mockSchoolProfile.logo === 'string' && mockSchoolProfile.logo.trim() !== '') ? mockSchoolProfile.logo : null;
+  const [currentSchoolProfile, setCurrentSchoolProfile] = useState<SchoolProfileData | null>(null);
+
+  useEffect(() => {
+    setCurrentSchoolProfile(getSchoolProfile());
+  }, []);
+
+  const schoolLogoUrl = (typeof currentSchoolProfile?.logo === 'string' && currentSchoolProfile.logo.trim() !== '') ? currentSchoolProfile.logo : null;
+  const schoolName = currentSchoolProfile?.namaSekolah || 'AdeptLearn';
+
 
   const filteredNavItems = useMemo(() => {
     if (!user) return [];
     const userRole = user.role;
 
     let items = baseNavItems.filter(item => {
+      const isGeneralItem = !item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly;
+
       if (user.isAdmin) {
-        // Admin sees adminOnly items and general items
-        return item.adminOnly || item.general;
+        return item.adminOnly || isGeneralItem;
       }
       if (userRole === 'teacher') {
-        // Teacher sees teacherOnly items and general items
-        // Exclude adminOnly, parentOnly, studentOnly items
-        return (item.teacherOnly || item.general) && !item.adminOnly && !item.parentOnly && !item.studentOnly;
+        return (item.teacherOnly || isGeneralItem) && !item.adminOnly && !item.parentOnly && !item.studentOnly;
       }
       if (userRole === 'student') {
-        // Student sees studentOnly items and general items
-        // Exclude adminOnly, parentOnly, teacherOnly items
-        return (item.studentOnly || item.general) && !item.adminOnly && !item.parentOnly && !item.teacherOnly;
+        return (item.studentOnly || isGeneralItem) && !item.adminOnly && !item.parentOnly && !item.teacherOnly;
       }
       if (userRole === 'parent') {
-        // Parent sees parentOnly items and specific general items (profile, settings, dashboard for them)
-        // Exclude adminOnly, teacherOnly, studentOnly items
         if (item.parentOnly) return true;
-        return item.general && (item.href === '/profile' || item.href === '/settings'); // Parents don't see general dashboard for now
+        return isGeneralItem && (item.href === '/profile' || item.href === '/settings');
       }
-      // Fallback for any other role or if role is undefined
-      return item.general && !item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly;
+      return isGeneralItem;
     });
 
-    // Sorting logic
      items.sort((a, b) => {
         const roleSpecificOrder = (item: NavItem) => {
             if (user.isAdmin) {
-                if (item.href === '/admin') return -200; // Admin dashboard first
-                if (item.adminOnly) return -100 + item.label.localeCompare(b.label); // Then other admin items
+                if (item.href === '/admin') return -200; 
+                if (item.adminOnly) return -100 + item.label.localeCompare(b.label); 
             }
             if (userRole === 'teacher') {
-                if (item.href === '/dashboard') return -200; // Teacher dashboard first
-                if (item.teacherOnly) return -100; // Then specific teacher items
+                if (item.href === '/dashboard') return -200; 
+                if (item.teacherOnly) return -100; 
             }
             if (userRole === 'student') {
-                if (item.href === '/dashboard') return -200; // Student dashboard first
-                if (item.studentOnly) return -100; // Then specific student items
+                if (item.href === '/dashboard') return -200; 
+                if (item.studentOnly) return -100; 
             }
             if (userRole === 'parent') {
-                if (item.href === '/parent/dashboard') return -200; // Parent dashboard first
+                if (item.href === '/parent/dashboard') return -200; 
             }
-            return 0; // General items or non-primary role items
+            return 0; 
         };
 
         const orderA = roleSpecificOrder(a);
@@ -140,7 +132,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
         if (orderA !== orderB) return orderA - orderB;
 
-        // General item sorting order
         const generalOrder = ['/dashboard', '/schedule', '/lessons', '/quizzes', '/reports', '/learning-path', '/teacher/materials', '/teacher/quizzes'];
         const indexA = generalOrder.indexOf(a.href);
         const indexB = generalOrder.indexOf(b.href);
@@ -152,8 +143,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
         } else if (indexB !== -1) {
             return 1;
         }
-
-        // Settings and Profile last for general users
         const settingsProfileOrder = (item: NavItem) => {
             if (item.href === '/profile') return 100;
             if (item.href === '/settings') return 200;
@@ -163,14 +152,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
         const settingsOrderB = settingsProfileOrder(b);
         if (settingsOrderA !== settingsOrderB) return settingsOrderA - settingsOrderB;
 
-        return a.label.localeCompare(b.label); // Fallback to alphabetical
+        return a.label.localeCompare(b.label); 
     });
     return items;
   }, [user]);
 
   if (!user) {
-    console.log("AppShell: No user, rendering null (AuthProvider should have redirected).");
-    return null;
+    return null; 
   }
 
   return (
@@ -184,17 +172,18 @@ export default function AppShell({ children }: { children: ReactNode }) {
             {schoolLogoUrl ? (
               <Image
                 src={schoolLogoUrl}
-                alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
-                width={80}
-                height={20}
+                alt={`${schoolName} Logo`}
+                width={80} 
+                height={20} 
                 className="h-7 w-auto object-contain mb-1"
                 data-ai-hint="school logo"
+                priority
               />
             ) : (
               <GraduationCap className="w-8 h-8 text-primary mb-1" />
             )}
             <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">
-              {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
+              {schoolName}
             </span>
           </Link>
           <Link
@@ -204,11 +193,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
              {schoolLogoUrl ? (
               <Image
                 src={schoolLogoUrl}
-                alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
+                alt={`${schoolName} Logo`}
                 width={32}
                 height={32}
                 className="h-7 w-7 object-contain"
                 data-ai-hint="school logo"
+                priority
               />
             ) : (
               <GraduationCap className="w-7 h-7 text-primary" />
@@ -224,7 +214,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
                   <SidebarMenuButton
                     isActive={
                       pathname === item.href ||
-                      (item.href !== '/' && pathname.startsWith(item.href) && item.href.length > 1 && !item.general) || // More specific match for non-general items
+                      (pathname.startsWith(item.href) && item.href !== '/' && item.href.length > 1 && !item.general) ||
                       (item.href === '/admin' && pathname.startsWith('/admin')) ||
                       (item.href === '/teacher/quizzes' && pathname.startsWith('/teacher/quizzes')) ||
                       (item.href === '/teacher/materials' && pathname.startsWith('/teacher/materials'))

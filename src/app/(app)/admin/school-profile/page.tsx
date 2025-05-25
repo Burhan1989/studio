@@ -22,8 +22,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Building, Save, Loader2, Image as ImageIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { SchoolProfileData } from "@/lib/types";
-import { mockSchoolProfile } from "@/lib/mockData"; // Import mockSchoolProfile
-import Image from "next/image"; // Import next/image
+import { getSchoolProfile, updateSchoolProfile } from "@/lib/mockData"; // Menggunakan getter dan updater
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 const schoolProfileSchema = z.object({
   namaSekolah: z.string().min(3, "Nama sekolah minimal 3 karakter."),
@@ -36,71 +37,99 @@ const schoolProfileSchema = z.object({
   kota: z.string().min(3, "Kota minimal 3 karakter.").optional().or(z.literal("")),
   provinsi: z.string().min(3, "Provinsi minimal 3 karakter.").optional().or(z.literal("")),
   kodePos: z.string().regex(/^[0-9]{5}$/, "Kode pos harus 5 digit angka.").optional().or(z.literal("")),
-  nomorTelepon: z.string().regex(/^[0-9\-\+\(\)\s]+$/, "Format nomor telepon tidak valid.").optional().or(z.literal("")),
+  nomorTelepon: z.string().regex(/^[0-9\\-\\+\\(\\)\\s]+$/, "Format nomor telepon tidak valid.").optional().or(z.literal("")),
   emailSekolah: z.string().email("Format email tidak valid.").optional().or(z.literal("")),
   websiteSekolah: z.string().url("Format URL website tidak valid.").optional().or(z.literal("")),
   visi: z.string().max(1000, "Visi maksimal 1000 karakter.").optional(),
   misi: z.string().max(2000, "Misi maksimal 2000 karakter.").optional(),
-  logo: z.any().optional(), // Handle file upload separately
+  logo: z.any().optional(), 
 });
 
 export default function AdminSchoolProfilePage() {
   const { toast } = useToast();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [initialData, setInitialData] = useState<SchoolProfileData>(getSchoolProfile());
 
-  // Use mockSchoolProfile for initial form values
-  const initialData = mockSchoolProfile;
-  
   const form = useForm<z.infer<typeof schoolProfileSchema>>({
     resolver: zodResolver(schoolProfileSchema),
     defaultValues: {
-      ...initialData, // Spread initialData
-      // Ensure logo field in form is initially aligned with what mockData might have (URL string or undefined)
+      ...initialData,
       logo: typeof initialData.logo === 'string' ? initialData.logo : undefined,
     },
   });
 
   useEffect(() => {
-    // Set initial logo preview if a logo URL exists in mockSchoolProfile
-    if (typeof initialData.logo === 'string' && initialData.logo.trim() !== '') {
-      setLogoPreview(initialData.logo);
+    const currentProfile = getSchoolProfile();
+    setInitialData(currentProfile);
+    form.reset({
+        ...currentProfile,
+        logo: typeof currentProfile.logo === 'string' ? currentProfile.logo : undefined,
+    });
+    if (typeof currentProfile.logo === 'string' && currentProfile.logo.trim() !== '') {
+      setLogoPreview(currentProfile.logo);
     }
-  }, [initialData.logo]);
+  }, [form]);
 
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      form.setValue("logo", file); // Store the File object for potential upload
+      form.setValue("logo", file); 
       const reader = new FileReader();
       reader.onloadend = () => {
-        setLogoPreview(reader.result as string); // Show preview of the selected file
+        setLogoPreview(reader.result as string); 
       };
       reader.readAsDataURL(file);
     } else {
       form.setValue("logo", undefined);
-      // If no file is selected, and there was an existing logo URL, revert to it or clear
       setLogoPreview(typeof initialData.logo === 'string' ? initialData.logo : null);
     }
   };
 
   async function onSubmit(values: z.infer<typeof schoolProfileSchema>) {
     setIsLoading(true);
-    console.log("Data profil sekolah yang akan disimpan (simulasi):", values);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    let logoToSave: string | undefined = typeof initialData.logo === 'string' ? initialData.logo : undefined;
+
+    if (values.logo instanceof File) {
+      // Simulate file upload and get a new URL (using the preview URL for simulation)
+      logoToSave = logoPreview || undefined;
+      console.log("Simulasi unggah logo baru:", values.logo.name, "URL Baru (Simulasi):", logoToSave);
+    } else if (typeof values.logo === 'string') {
+      logoToSave = values.logo; // Use the existing URL if no new file
+    }
+
+
+    const profileToUpdate: SchoolProfileData = {
+        namaSekolah: values.namaSekolah,
+        npsn: values.npsn || "",
+        jenjang: values.jenjang || "",
+        statusSekolah: values.statusSekolah || "",
+        akreditasi: values.akreditasi || "",
+        namaKepalaSekolah: values.namaKepalaSekolah || "",
+        alamatJalan: values.alamatJalan || "",
+        kota: values.kota || "",
+        provinsi: values.provinsi || "",
+        kodePos: values.kodePos || "",
+        nomorTelepon: values.nomorTelepon || "",
+        emailSekolah: values.emailSekolah || "",
+        websiteSekolah: values.websiteSekolah,
+        visi: values.visi,
+        misi: values.misi,
+        logo: logoToSave,
+    };
+    
+    updateSchoolProfile(profileToUpdate); // This will save to localStorage
     
     toast({
-      title: "Data Sekolah Disimpan (Simulasi)",
-      description: "Informasi profil sekolah telah berhasil diperbarui (simulasi).",
+      title: "Data Sekolah Disimpan",
+      description: "Informasi profil sekolah telah berhasil diperbarui dan disimpan di localStorage.",
     });
     setIsLoading(false);
-    // In a real app, you'd update mockSchoolProfile or re-fetch if data is saved to a backend
-    // For now, if a new logo was selected via file input, it's only in logoPreview and form state.
-    // If values.logo is a File, it means a new logo was chosen.
-    // If values.logo is a string (from defaultValues), it's the existing URL.
+    setInitialData(profileToUpdate); // Update local initialData to reflect changes
+    router.refresh(); // Refresh to ensure other components (like header) pick up new profile data
   }
 
   return (
@@ -150,7 +179,7 @@ export default function AdminSchoolProfilePage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Jenjang Pendidikan</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih jenjang" />
@@ -174,7 +203,7 @@ export default function AdminSchoolProfilePage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status Sekolah</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ""} defaultValue={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih status" />
@@ -363,7 +392,7 @@ export default function AdminSchoolProfilePage() {
               <FormField
                 control={form.control}
                 name="logo"
-                render={({ field }) => ( // field is not directly used for input type file, but required by FormField
+                render={() => ( 
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
                       <ImageIcon className="w-5 h-5" /> Unggah Logo Sekolah (Opsional)
@@ -372,10 +401,10 @@ export default function AdminSchoolProfilePage() {
                       <Input 
                         type="file" 
                         accept="image/png, image/jpeg, image/svg+xml"
-                        onChange={handleLogoChange} // Use custom handler
+                        onChange={handleLogoChange}
                       />
                     </FormControl>
-                    <FormDescription>Format yang didukung: PNG, JPG, SVG. Maksimal 2MB (Contoh).</FormDescription>
+                    <FormDescription>Format yang didukung: PNG, JPG, SVG. Maksimal 2MB (Contoh). Jika logo baru diunggah, URL lama akan diganti.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -383,7 +412,7 @@ export default function AdminSchoolProfilePage() {
               {logoPreview && (
                 <div className="mt-4">
                   <p className="mb-2 text-sm font-medium">Pratinjau Logo:</p>
-                  <Image src={logoPreview} alt="Pratinjau Logo Sekolah" width={160} height={40} className="h-10 w-auto border rounded-md object-contain bg-muted p-1" data-ai-hint="school logo" />
+                  <Image src={logoPreview} alt="Pratinjau Logo Sekolah" width={160} height={40} className="h-10 w-auto border rounded-md object-contain bg-muted p-1" data-ai-hint="school logo"/>
                 </div>
               )}
             </CardContent>

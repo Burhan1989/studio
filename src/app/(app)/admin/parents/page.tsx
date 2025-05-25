@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,11 +9,16 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, Users, KeyRound, Upload, Download } from "lucide-react";
 import type { ParentData } from "@/lib/types";
-import { mockParents } from "@/lib/mockData";
+import { getParents } from "@/lib/mockData"; // Changed from mockParents
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AdminParentsPage() {
   const { toast } = useToast();
+  const [parentsList, setParentsList] = useState<ParentData[]>([]);
+
+  useEffect(() => {
+    setParentsList(getParents());
+  }, []);
 
   const handleActionPlaceholder = (action: string, item: string) => {
     toast({
@@ -91,7 +97,7 @@ export default function AdminParentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockParents.map((parent) => (
+              {parentsList.map((parent) => (
                 <TableRow key={parent.ID_OrangTua}>
                   <TableCell>
                     <Avatar className="w-10 h-10">
@@ -126,7 +132,7 @@ export default function AdminParentsPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {mockParents.length === 0 && (
+              {parentsList.length === 0 && (
                  <TableRow>
                   <TableCell colSpan={8} className="text-center text-muted-foreground">Belum ada data orang tua.</TableCell>
                 </TableRow>

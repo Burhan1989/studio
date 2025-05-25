@@ -23,7 +23,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { UserRole } from "@/lib/types";
-import { getTeachers, getStudents, mockParents } from '@/lib/mockData'; // Import mock data correctly
+import { getTeachers, getStudents, getParents } from '@/lib/mockData'; // Menggunakan getter
 
 const roles: { value: UserRole; label: string; icon?: React.ElementType }[] = [
   { value: "admin", label: "Admin", icon: ShieldCheck },
@@ -61,12 +61,12 @@ export default function LoginForm() {
     let loginSuccess = false;
     let loggedInUser: import('@/lib/types').User | null = null;
 
-    const teachers = getTeachers();
-    const students = getStudents();
-    // mockParents is already imported directly
+    const allTeachers = getTeachers();
+    const allStudents = getStudents();
+    const allParents = getParents();
 
     if (selectedRole === "admin") {
-      const adminUser = teachers.find(
+      const adminUser = allTeachers.find(
         (teacher) => teacher.Email === values.email && teacher.Password_Hash === values.password && teacher.isAdmin
       );
       if (adminUser) {
@@ -82,7 +82,7 @@ export default function LoginForm() {
         };
       }
     } else if (selectedRole === "teacher") {
-       const teacherUser = teachers.find(
+       const teacherUser = allTeachers.find(
         (teacher) => teacher.Email === values.email && teacher.Password_Hash === values.password && !teacher.isAdmin
       );
       if (teacherUser) {
@@ -98,7 +98,7 @@ export default function LoginForm() {
         };
       }
     } else if (selectedRole === "student") {
-      const studentUser = students.find(
+      const studentUser = allStudents.find(
         (student) => student.Email === values.email && student.Password_Hash === values.password
       );
       if (studentUser) {
@@ -114,7 +114,7 @@ export default function LoginForm() {
         };
       }
     } else if (selectedRole === "parent") {
-       const parentUser = mockParents.find(
+       const parentUser = allParents.find(
         (parent) => parent.Email === values.email && parent.Password_Hash === values.password
       );
       if (parentUser) {

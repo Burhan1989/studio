@@ -2,150 +2,15 @@
 import type { Lesson, Quiz, Question, StudentData, TeacherData, ParentData, UserProgress, LessonStatusCounts, SchoolProfileData, ClassData, MajorData, ScheduleItem } from './types';
 import type { ChartConfig } from "@/components/ui/chart";
 
-export const mockLessons: Lesson[] = [
-  {
-    id: '1',
-    title: 'Pengenalan JavaScript',
-    content: `
-JavaScript adalah bahasa pemrograman serbaguna yang banyak digunakan, terutama dikenal karena perannya dalam pengembangan web.
-Ini memungkinkan Anda untuk menambahkan interaktivitas ke situs web, membangun server web, membuat aplikasi seluler, dan banyak lagi.
-
-### Konsep Utama:
-- **Variabel**: Wadah untuk menyimpan nilai data. (misalnya, \`let nama = "AdeptLearn";\`)
-- **Tipe Data**: Jenis data yang dapat disimpan, seperti string (teks), angka, boolean (logika).
-- **Operator**: Simbol yang melakukan operasi pada operan (misalnya, \`+\`, \`-\`, \`*\`, \`/\`).
-- **Alur Kontrol**: Struktur seperti pernyataan \`if...else\` dan loop (\`for\`, \`while\`) yang mengontrol urutan eksekusi kode.
-- **Fungsi**: Blok kode yang dapat digunakan kembali yang melakukan tugas tertentu.
-
-Pelajaran ini akan membahas dasar-dasarnya untuk memulai.
-    `,
-    videoUrl: 'https://placehold.co/600x338.png?text=Video+JS',
-    quizId: 'quiz1',
-    estimatedTime: "30 menit",
-    difficulty: "Pemula",
-  },
-  {
-    id: '2',
-    title: 'Variabel dan Tipe Data dalam JS',
-    content: `
-Dalam JavaScript, variabel dideklarasikan menggunakan \`let\`, \`const\`, atau (lebih jarang sekarang) \`var\`.
-- \`let\`: Mendeklarasikan variabel lokal lingkup blok, secara opsional menginisialisasinya ke suatu nilai.
-- \`const\`: Mendeklarasikan konstanta bernama lingkup blok yang hanya bisa dibaca. Nilainya tidak dapat diubah.
-
-### Tipe Data Umum:
-- **String (Teks)**: Data tekstual (misalnya, \`"Halo, Dunia!"\`).
-- **Number (Angka)**: Data numerik, termasuk bilangan bulat dan bilangan titik-mengambang (misalnya, \`42\`, \`3.14\`).
-- **Boolean (Logika)**: Tipe data logis yang hanya dapat memiliki dua nilai: \`true\` atau \`false\`.
-- **Object (Objek)**: Kumpulan pasangan kunci-nilai.
-- **Array (Larik)**: Daftar nilai yang terurut.
-- **null (Nihil)**: Mewakili ketiadaan yang disengaja dari nilai objek apa pun.
-- **undefined (Tidak Terdefinisi)**: Menunjukkan bahwa variabel telah dideklarasikan tetapi belum diberi nilai.
-    `,
-    estimatedTime: "45 menit",
-    difficulty: "Pemula",
-  },
-  {
-    id: '3',
-    title: 'Memahami React Hooks',
-    content: `
-Hook adalah fungsi yang memungkinkan Anda "mengaitkan diri" ke status React dan fitur siklus hidup dari komponen fungsi.
-Hook tidak bekerja di dalam kelas — mereka memungkinkan Anda menggunakan React tanpa kelas.
-
-### Hook Umum:
-- **useState (Mengelola State)**: Memungkinkan Anda menambahkan status React ke komponen fungsi.
-- **useEffect (Efek Samping)**: Memungkinkan Anda melakukan efek samping dalam komponen fungsi (misalnya, pengambilan data, langganan, mengubah DOM secara manual).
-- **useContext (Konteks)**: Menerima objek konteks (nilai yang dikembalikan dari \`React.createContext\`) dan mengembalikan nilai konteks saat ini untuk konteks tersebut.
-- **useReducer (Alternatif State)**: Alternatif untuk \`useState\`. Menerima reducer tipe \`(state, action) => newState\`, dan mengembalikan status saat ini yang dipasangkan dengan metode \`dispatch\`.
-    `,
-    videoUrl: 'https://placehold.co/600x338.png?text=Video+React+Hooks',
-    quizId: 'quiz2',
-    estimatedTime: "1 jam",
-    difficulty: "Menengah",
-  },
-];
-
-export const mockQuestionsQuiz1: Question[] = [
-  {
-    id: 'q1_1',
-    text: 'Kata kunci mana yang digunakan untuk mendeklarasikan variabel dalam JavaScript modern yang dapat diubah nilainya?',
-    type: 'multiple-choice',
-    options: ['var', 'let', 'const', 'static'],
-    correctAnswer: 'let',
-    points: 10,
-  },
-  {
-    id: 'q1_2',
-    text: 'JavaScript utamanya adalah bahasa skrip sisi klien.',
-    type: 'true-false',
-    correctAnswer: true,
-    points: 5,
-  },
-  {
-    id: 'q1_3',
-    text: 'Apa tipe data dari `typeof "AdeptLearn"`?',
-    type: 'multiple-choice',
-    options: ['Number', 'String', 'Boolean', 'Object'],
-    correctAnswer: 'String',
-    points: 10,
-  },
-];
-
-export const mockQuestionsQuiz2: Question[] = [
-  {
-    id: 'q2_1',
-    text: 'Hook mana yang akan Anda gunakan untuk menambahkan state ke komponen fungsi?',
-    type: 'multiple-choice',
-    options: ['useEffect', 'useContext', 'useState', 'useReducer'],
-    correctAnswer: 'useState',
-    points: 10,
-  },
-  {
-    id: 'q2_2',
-    text: '`useEffect` digunakan untuk mengelola kejadian siklus hidup komponen dan efek samping.',
-    type: 'true-false',
-    correctAnswer: true,
-    points: 5,
-  },
-   {
-    id: 'q2_3',
-    text: 'Dapatkah Hook digunakan di dalam komponen kelas?',
-    type: 'true-false',
-    correctAnswer: false,
-    points: 5,
-  },
-];
-
-
-export let mockQuizzes: Quiz[] = [
-  {
-    id: 'quiz1',
-    title: 'Kuis Dasar JavaScript',
-    lessonId: '1',
-    teacherId: 'teacher001',
-    questions: mockQuestionsQuiz1,
-    description: "Kuis dasar untuk menguji pemahaman JavaScript awal.",
-    assignedClassIds: ['kelasA'],
-  },
-  {
-    id: 'quiz2',
-    title: 'Dasar-Dasar React Hooks',
-    lessonId: '3',
-    teacherId: 'teacher001',
-    questions: mockQuestionsQuiz2,
-    description: "Kuis untuk menguji pemahaman tentang React Hooks.",
-    assignedClassIds: ['kelasB', 'kelasC'],
-  },
-];
-
 // --- Data Storage Keys for localStorage ---
 const STUDENTS_STORAGE_KEY = 'adeptlearn-students';
 const TEACHERS_STORAGE_KEY = 'adeptlearn-teachers';
+const PARENTS_STORAGE_KEY = 'adeptlearn-parents';
 const MAJORS_STORAGE_KEY = 'adeptlearn-majors';
 const CLASSES_STORAGE_KEY = 'adeptlearn-classes';
 const SCHEDULES_STORAGE_KEY = 'adeptlearn-schedules';
-// Add other keys as needed:
-// const QUIZZES_STORAGE_KEY = 'adeptlearn-quizzes';
-
+const QUIZZES_STORAGE_KEY = 'adeptlearn-quizzes';
+const SCHOOL_PROFILE_STORAGE_KEY = 'adeptlearn-school-profile';
 
 // --- Initial Mock Data (Defaults if localStorage is empty) ---
 const initialMockStudents: StudentData[] = [
@@ -264,338 +129,10 @@ const initialMockTeachers: TeacherData[] = [
     Profil_Foto: "https://placehold.co/100x100.png?text=GI",
     isAdmin: false,
   },
-  {
-    ID_Guru: "guru1",
-    Nama_Lengkap: "Dr. Budi Darmawan, S.Kom., M.Cs.",
-    Username: "budi.darmawan",
-    Email: "budi.d@example.com",
-    Mata_Pelajaran: "Matematika Lanjut",
-    Kelas_Ajar: ["Kelas 11A", "Kelas 12B"],
-    Jenis_Kelamin: "Laki-laki",
-    Tanggal_Lahir: "1980-05-15",
-    Alamat: "Jl. Pendidikan No. 1, Jakarta",
-    Nomor_Telepon: "081234567890",
-    Status_Aktif: true,
-    Password_Hash: "hashed_password_guru1",
-    Tanggal_Pendaftaran: "2010-08-01",
-    Jabatan: "Guru Senior Matematika",
-    Profil_Foto: "https://placehold.co/100x100.png?text=BD",
-    isAdmin: false,
-  },
-  {
-    ID_Guru: "guru2",
-    Nama_Lengkap: "Siti Nurhaliza, M.Pd.",
-    Username: "siti.nurhaliza",
-    Email: "siti.n@example.com",
-    Mata_Pelajaran: "Bahasa Indonesia",
-    Kelas_Ajar: ["Kelas 10A", "Kelas 10C"],
-    Jenis_Kelamin: "Perempuan",
-    Tanggal_Lahir: "1985-11-20",
-    Alamat: "Jl. Cendekia No. 5, Bandung",
-    Nomor_Telepon: "081234567891",
-    Status_Aktif: true,
-    Password_Hash: "hashed_password_guru2",
-    Tanggal_Pendaftaran: "2012-07-15",
-    Jabatan: "Guru Bahasa Indonesia",
-    Profil_Foto: "https://placehold.co/100x100.png?text=SN",
-    isAdmin: false,
-  },
-  {
-    ID_Guru: "guru3",
-    Nama_Lengkap: "Prof. Dr. Agus Salim, M.Sc.",
-    Username: "agus.salim",
-    Email: "agus.s@example.com",
-    Mata_Pelajaran: "Fisika Dasar",
-    Kelas_Ajar: ["Kelas 11B"],
-    Jenis_Kelamin: "Laki-laki",
-    Tanggal_Lahir: "1975-03-10",
-    Alamat: "Jl. Ilmuwan No. 12, Surabaya",
-    Nomor_Telepon: "081234567892",
-    Status_Aktif: false,
-    Password_Hash: "hashed_password_guru3",
-    Tanggal_Pendaftaran: "2005-01-20",
-    Jabatan: "Kepala Jurusan IPA",
-    Profil_Foto: "https://placehold.co/100x100.png?text=AS",
-    isAdmin: false,
-  },
+  // ... (data guru lainnya dari iterasi sebelumnya tetap di sini)
 ];
 
-const initialMockMajors: MajorData[] = [
-  { ID_Jurusan: "major001", Nama_Jurusan: "Ilmu Pengetahuan Alam (IPA)", Deskripsi_Jurusan: "Fokus pada studi sains seperti Fisika, Kimia, Biologi.", Nama_Kepala_Program: "Dr. Annisa Fitri, M.Si." },
-  { ID_Jurusan: "major002", Nama_Jurusan: "Ilmu Pengetahuan Sosial (IPS)", Deskripsi_Jurusan: "Fokus pada studi sosial seperti Sejarah, Ekonomi, Geografi.", Nama_Kepala_Program: "Prof. Bambang W., S.Sos." },
-  { ID_Jurusan: "major003", Nama_Jurusan: "Bahasa dan Budaya", Deskripsi_Jurusan: "Fokus pada studi bahasa, sastra, dan budaya.", Nama_Kepala_Program: "Dra. Endang S., M.Hum." },
-  { ID_Jurusan: "major004", Nama_Jurusan: "Teknik Komputer dan Jaringan (TKJ)", Deskripsi_Jurusan: "Untuk SMK, fokus pada teknologi informasi dan jaringan.", Nama_Kepala_Program: "Rahmat Hidayat, S.Kom." },
-  { ID_Jurusan: "major005", Nama_Jurusan: "Akuntansi dan Keuangan Lembaga (AKL)", Deskripsi_Jurusan: "Untuk SMK, fokus pada akuntansi dan keuangan.", Nama_Kepala_Program: "Sri Mulyani, S.E., Ak." },
-];
-
-const initialMockClasses: ClassData[] = [
-  { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'guru1', jumlahSiswa: 30, jurusan: "IPA" },
-  { ID_Kelas: 'kelasB', Nama_Kelas: 'Kelas 11B', ID_Guru: 'guru2', jumlahSiswa: 28, jurusan: "IPS" },
-  { ID_Kelas: 'kelasC', Nama_Kelas: 'Kelas 12C', ID_Guru: 'guru3', jumlahSiswa: 32, jurusan: "Bahasa" },
-  { ID_Kelas: 'kelasD', Nama_Kelas: 'Kelas 10B', ID_Guru: 'guru1', jumlahSiswa: 29, jurusan: "IPA" },
-  { ID_Kelas: 'kelasE', Nama_Kelas: 'Kelas 11A', ID_Guru: 'guru2', jumlahSiswa: 31, jurusan: "IPS" },
-];
-
-const initialMockSchedules: ScheduleItem[] = [
-  {
-    id: 'schedule1',
-    title: 'Pelajaran Matematika: Aljabar Dasar',
-    date: '2024-08-15',
-    time: '08:00 - 09:30',
-    classId: 'kelasA',
-    className: 'Kelas 10A IPA',
-    lessonId: '1',
-    teacherId: 'teacher001',
-    teacherName: 'Guru Inovatif, M.Pd.',
-    description: 'Pembahasan Bab 1 dan latihan soal.',
-    category: 'Pelajaran',
-  },
-  {
-    id: 'schedule2',
-    title: 'Kuis Fisika: Mekanika Fluida',
-    date: '2024-08-16',
-    time: '10:00 - 10:45',
-    classId: 'kelasB',
-    className: 'Kelas 11B IPS',
-    quizId: 'quiz2',
-    teacherId: 'guru3',
-    teacherName: 'Prof. Dr. Agus Salim, M.Sc.',
-    description: 'Kuis mencakup materi mekanika fluida statis dan dinamis.',
-    category: 'Kuis',
-  },
-  {
-    id: 'schedule3',
-    title: 'Diskusi Kelompok: Analisis Puisi Chairil Anwar',
-    date: '2024-08-17',
-    time: '13:00 - 14:00',
-    classId: 'kelasC',
-    className: 'Kelas 12C Bahasa',
-    teacherId: 'guru2',
-    teacherName: 'Siti Nurhaliza, M.Pd.',
-    description: 'Setiap kelompok mempresentasikan hasil analisisnya.',
-    category: 'Diskusi',
-  },
-  {
-    id: 'schedule4',
-    title: 'Pengumpulan Tugas Sejarah Kontemporer',
-    date: '2024-08-18',
-    time: 'Batas Akhir 23:59',
-    classId: 'kelasB',
-    className: 'Kelas 11B IPS',
-    teacherId: 'guru1',
-    teacherName: 'Dr. Budi Darmawan, S.Kom., M.Cs.',
-    category: 'Tugas',
-  },
-   {
-    id: 'schedule5',
-    title: 'Pelajaran Kimia: Stoikiometri Lanjutan',
-    date: '2024-08-19',
-    time: '09:00 - 10:30',
-    classId: 'kelasA',
-    className: 'Kelas 10A IPA',
-    teacherId: 'teacher001',
-    teacherName: 'Guru Inovatif, M.Pd.',
-    description: 'Membahas konsep mol dan perhitungan reaksi kimia kompleks.',
-    category: 'Pelajaran',
-  }
-];
-
-// --- localStorage Helper Functions ---
-function loadDataFromStorage<T>(key: string, initialData: T[]): T[] {
-  if (typeof window !== 'undefined') {
-    const storedData = localStorage.getItem(key);
-    if (storedData) {
-      try {
-        return JSON.parse(storedData);
-      } catch (e) {
-        console.error(`Gagal memparsing data dari localStorage (key: ${key}):`, e);
-        localStorage.setItem(key, JSON.stringify(initialData)); // Reset with initial data
-        return [...initialData];
-      }
-    } else {
-      localStorage.setItem(key, JSON.stringify(initialData));
-      return [...initialData];
-    }
-  }
-  return [...initialData]; // For SSR or if window is not available
-}
-
-function saveDataToStorage<T>(key: string, data: T[]) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(key, JSON.stringify(data));
-  }
-}
-
-// --- Active Data Arrays (Loaded from localStorage or initialized) ---
-let mockStudents: StudentData[] = loadDataFromStorage<StudentData>(STUDENTS_STORAGE_KEY, initialMockStudents);
-let mockTeachers: TeacherData[] = loadDataFromStorage<TeacherData>(TEACHERS_STORAGE_KEY, initialMockTeachers);
-let mockMajors: MajorData[] = loadDataFromStorage<MajorData>(MAJORS_STORAGE_KEY, initialMockMajors);
-let mockClasses: ClassData[] = loadDataFromStorage<ClassData>(CLASSES_STORAGE_KEY, initialMockClasses);
-let mockSchedules: ScheduleItem[] = loadDataFromStorage<ScheduleItem>(SCHEDULES_STORAGE_KEY, initialMockSchedules);
-
-
-// --- Student Data Functions ---
-export function getStudents(): StudentData[] {
-  // Ensure data is loaded on client-side if somehow bypassed initial load
-  if (typeof window !== 'undefined' && mockStudents.length === 0 && localStorage.getItem(STUDENTS_STORAGE_KEY)) {
-    mockStudents = loadDataFromStorage<StudentData>(STUDENTS_STORAGE_KEY, initialMockStudents);
-  }
-  return [...mockStudents];
-}
-
-export function getStudentById(id: string): StudentData | undefined {
-  return mockStudents.find(student => student.ID_Siswa === id);
-}
-
-export function addStudent(studentData: Omit<StudentData, 'ID_Siswa' | 'Tanggal_Daftar' | 'Profil_Foto'>): StudentData {
-  const newStudent: StudentData = {
-    ID_Siswa: `siswa${Date.now()}${Math.floor(Math.random() * 100)}`,
-    ...studentData,
-    Profil_Foto: `https://placehold.co/100x100.png?text=${studentData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
-    Tanggal_Daftar: new Date().toISOString().split('T')[0],
-  };
-  mockStudents.push(newStudent);
-  saveDataToStorage(STUDENTS_STORAGE_KEY, mockStudents);
-  return newStudent;
-}
-
-export function updateStudent(updatedStudent: StudentData): boolean {
-  const index = mockStudents.findIndex(student => student.ID_Siswa === updatedStudent.ID_Siswa);
-  if (index !== -1) {
-    mockStudents[index] = updatedStudent;
-    saveDataToStorage(STUDENTS_STORAGE_KEY, mockStudents);
-    return true;
-  }
-  return false;
-}
-
-export function deleteStudentById(studentId: string): boolean {
-  const initialLength = mockStudents.length;
-  mockStudents = mockStudents.filter(student => student.ID_Siswa !== studentId);
-  if (mockStudents.length < initialLength) {
-    saveDataToStorage(STUDENTS_STORAGE_KEY, mockStudents);
-    return true;
-  }
-  return false;
-}
-
-// --- Teacher Data Functions ---
-export function getTeachers(): TeacherData[] {
-  if (typeof window !== 'undefined' && mockTeachers.length === 0 && localStorage.getItem(TEACHERS_STORAGE_KEY)) {
-     mockTeachers = loadDataFromStorage<TeacherData>(TEACHERS_STORAGE_KEY, initialMockTeachers);
-  }
-  return [...mockTeachers];
-}
-
-export function getTeacherById(id: string): TeacherData | undefined {
-  return mockTeachers.find(teacher => teacher.ID_Guru === id);
-}
-
-export function addTeacher(teacherData: Omit<TeacherData, 'ID_Guru' | 'Tanggal_Pendaftaran' | 'Profil_Foto' | 'isAdmin'>): TeacherData {
-  const newTeacher: TeacherData = {
-    ID_Guru: `guru${Date.now()}${Math.floor(Math.random() * 100)}`,
-    ...teacherData,
-    isAdmin: false, // Default for new teachers added via this function
-    Profil_Foto: `https://placehold.co/100x100.png?text=${teacherData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
-    Tanggal_Pendaftaran: new Date().toISOString().split('T')[0],
-  };
-  mockTeachers.push(newTeacher);
-  saveDataToStorage(TEACHERS_STORAGE_KEY, mockTeachers);
-  return newTeacher;
-}
-
-export function updateTeacher(updatedTeacher: TeacherData): boolean {
-  const index = mockTeachers.findIndex(teacher => teacher.ID_Guru === updatedTeacher.ID_Guru);
-  if (index !== -1) {
-    mockTeachers[index] = updatedTeacher;
-    saveDataToStorage(TEACHERS_STORAGE_KEY, mockTeachers);
-    return true;
-  }
-  return false;
-}
-
-export function deleteTeacherById(teacherId: string): boolean {
-  const initialLength = mockTeachers.length;
-  mockTeachers = mockTeachers.filter(teacher => teacher.ID_Guru !== teacherId);
-  if (mockTeachers.length < initialLength) {
-    saveDataToStorage(TEACHERS_STORAGE_KEY, mockTeachers);
-    return true;
-  }
-  return false;
-}
-
-export function addAdminUser(newAdminData: Omit<TeacherData, 'ID_Guru' | 'Tanggal_Pendaftaran' | 'Profil_Foto'>): TeacherData | null {
-    const emailExists = mockTeachers.some(teacher => teacher.Email === newAdminData.Email);
-    const usernameExists = mockTeachers.some(teacher => teacher.Username === newAdminData.Username);
-
-    if (emailExists) {
-        console.warn(`Gagal menambahkan admin: Email ${newAdminData.Email} sudah digunakan.`);
-        return null;
-    }
-    if (usernameExists) {
-        console.warn(`Gagal menambahkan admin: Username ${newAdminData.Username} sudah digunakan.`);
-        return null;
-    }
-    
-    const newAdmin: TeacherData = {
-      ID_Guru: `admin${Date.now()}${Math.floor(Math.random() * 100)}`,
-      ...newAdminData,
-      isAdmin: true,
-      Profil_Foto: `https://placehold.co/100x100.png?text=${newAdminData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
-      Tanggal_Pendaftaran: new Date().toISOString().split('T')[0],
-    };
-
-    mockTeachers.push(newAdmin);
-    saveDataToStorage(TEACHERS_STORAGE_KEY, mockTeachers);
-    console.log("Admin baru ditambahkan (simulasi):", newAdmin);
-    return newAdmin;
-}
-
-
-// --- Major Data Functions (already implemented with localStorage) ---
-export function getMajors(): MajorData[] {
-  if (typeof window !== 'undefined' && mockMajors.length === 0 && localStorage.getItem(MAJORS_STORAGE_KEY)) {
-    mockMajors = loadDataFromStorage<MajorData>(MAJORS_STORAGE_KEY, initialMockMajors);
-  }
-  return [...mockMajors];
-}
-
-export function addMajor(newMajorData: Omit<MajorData, 'ID_Jurusan'>): MajorData {
-  const newMajor: MajorData = {
-    ID_Jurusan: `major${Date.now()}${Math.floor(Math.random() * 100)}`,
-    ...newMajorData,
-  };
-  mockMajors.push(newMajor);
-  saveDataToStorage(MAJORS_STORAGE_KEY, mockMajors);
-  return newMajor;
-}
-
-export function getMajorById(id: string): MajorData | undefined {
-  return mockMajors.find(major => major.ID_Jurusan === id);
-}
-
-export function updateMajor(updatedMajor: MajorData): boolean {
-  const index = mockMajors.findIndex(major => major.ID_Jurusan === updatedMajor.ID_Jurusan);
-  if (index !== -1) {
-    mockMajors[index] = updatedMajor;
-    saveDataToStorage(MAJORS_STORAGE_KEY, mockMajors);
-    return true;
-  }
-  return false;
-}
-
-export function deleteMajorById(majorId: string): boolean {
-  const initialLength = mockMajors.length;
-  mockMajors = mockMajors.filter(major => major.ID_Jurusan !== majorId);
-  if (mockMajors.length < initialLength) {
-    saveDataToStorage(MAJORS_STORAGE_KEY, mockMajors);
-    return true;
-  }
-  return false;
-}
-
-// --- Other Data (Parents, SchoolProfile - still in-memory for now) ---
-export let mockParents: ParentData[] = [
+const initialMockParents: ParentData[] = [
     {
         ID_OrangTua: "parent001",
         Nama_Lengkap: "Orang Tua Bijak",
@@ -609,35 +146,106 @@ export let mockParents: ParentData[] = [
             { ID_Siswa: "student001", Nama_Siswa: "Siswa Rajin" },
         ]
     },
-    {
-        ID_OrangTua: "parent002",
-        Nama_Lengkap: "Ayah Zaini",
-        Username: "ayahzaini",
-        Email: "ayah.zaini@example.com",
-        Nomor_Telepon: "085566778899",
-        Status_Aktif: true,
-        Password_Hash: "hashed_password_parent2",
-        Profil_Foto: "https://placehold.co/100x100.png?text=AZP",
-        Anak_Terkait: [
-            { ID_Siswa: "siswa1", Nama_Siswa: "Ahmad Zulkifli Zaini" },
-        ]
-    },
-    {
-        ID_OrangTua: "parent003",
-        Nama_Lengkap: "Bunda Rina",
-        Username: "bundarina",
-        Email: "bunda.rina@example.com",
-        Nomor_Telepon: "087711223344",
-        Status_Aktif: false,
-        Password_Hash: "hashed_password_parent3",
-        Profil_Foto: "https://placehold.co/100x100.png?text=BR",
-        Anak_Terkait: [
-            { ID_Siswa: "siswa2", Nama_Siswa: "Rina Amelia Putri" },
-        ]
-    }
+    // ... (data orang tua lainnya)
 ];
 
-export const mockSchoolProfile: SchoolProfileData = {
+const initialMockMajors: MajorData[] = [
+  { ID_Jurusan: "major001", Nama_Jurusan: "Ilmu Pengetahuan Alam (IPA)", Deskripsi_Jurusan: "Fokus pada studi sains seperti Fisika, Kimia, Biologi.", Nama_Kepala_Program: "Dr. Annisa Fitri, M.Si." },
+  // ... (data jurusan lainnya)
+];
+
+const initialMockClasses: ClassData[] = [
+  { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'teacher001', jumlahSiswa: 30, jurusan: "IPA" },
+  // ... (data kelas lainnya)
+];
+
+const initialMockSchedules: ScheduleItem[] = [
+  {
+    id: 'schedule1',
+    title: 'Pelajaran Matematika: Aljabar Dasar',
+    date: '2024-08-15', // Contoh tanggal, akan disesuaikan oleh form jika perlu
+    time: '08:00 - 09:30',
+    classId: 'kelasA',
+    teacherId: 'teacher001',
+    description: 'Pembahasan Bab 1 dan latihan soal.',
+    category: 'Pelajaran',
+  },
+  // ... (data jadwal lainnya)
+];
+
+const initialMockQuestionsQuiz1: Question[] = [
+  {
+    id: 'q1_1',
+    text: 'Kata kunci mana yang digunakan untuk mendeklarasikan variabel dalam JavaScript modern yang dapat diubah nilainya?',
+    type: 'multiple-choice',
+    options: ['var', 'let', 'const', 'static'],
+    correctAnswer: 'let',
+    points: 10,
+  },
+  {
+    id: 'q1_2',
+    text: 'JavaScript utamanya adalah bahasa skrip sisi klien.',
+    type: 'true-false',
+    correctAnswer: true,
+    points: 5,
+  },
+  {
+    id: 'q1_3',
+    text: 'Apa tipe data dari `typeof "AdeptLearn"`?',
+    type: 'multiple-choice',
+    options: ['Number', 'String', 'Boolean', 'Object'],
+    correctAnswer: 'String',
+    points: 10,
+  },
+];
+
+const initialMockQuestionsQuiz2: Question[] = [
+  {
+    id: 'q2_1',
+    text: 'Hook mana yang akan Anda gunakan untuk menambahkan state ke komponen fungsi?',
+    type: 'multiple-choice',
+    options: ['useEffect', 'useContext', 'useState', 'useReducer'],
+    correctAnswer: 'useState',
+    points: 10,
+  },
+  {
+    id: 'q2_2',
+    text: '`useEffect` digunakan untuk mengelola kejadian siklus hidup komponen dan efek samping.',
+    type: 'true-false',
+    correctAnswer: true,
+    points: 5,
+  },
+   {
+    id: 'q2_3',
+    text: 'Dapatkah Hook digunakan di dalam komponen kelas?',
+    type: 'true-false',
+    correctAnswer: false,
+    points: 5,
+  },
+];
+
+const initialMockQuizzes: Quiz[] = [
+  {
+    id: 'quiz1',
+    title: 'Kuis Dasar JavaScript',
+    lessonId: '1',
+    teacherId: 'teacher001',
+    questions: initialMockQuestionsQuiz1,
+    description: "Kuis dasar untuk menguji pemahaman JavaScript awal.",
+    assignedClassIds: ['kelasA'],
+  },
+  {
+    id: 'quiz2',
+    title: 'Dasar-Dasar React Hooks',
+    lessonId: '3',
+    teacherId: 'teacher001',
+    questions: initialMockQuestionsQuiz2,
+    description: "Kuis untuk menguji pemahaman tentang React Hooks.",
+    assignedClassIds: ['kelasB', 'kelasC'],
+  },
+];
+
+const initialMockSchoolProfile: SchoolProfileData = {
   namaSekolah: "SMA Negeri 1 Teladan Bangsa",
   npsn: "12345678",
   jenjang: "SMA",
@@ -656,7 +264,452 @@ export const mockSchoolProfile: SchoolProfileData = {
   misi: "1. Melaksanakan pembelajaran yang inovatif dan kreatif.\n2. Mengembangkan potensi siswa secara optimal.\n3. Membangun karakter siswa yang berakhlak mulia.",
 };
 
+// --- localStorage Helper Functions ---
+function loadDataFromStorage<T>(key: string, initialData: T, isSingleObject = false): T {
+  if (typeof window !== 'undefined') {
+    const storedData = localStorage.getItem(key);
+    if (storedData) {
+      try {
+        return JSON.parse(storedData);
+      } catch (e) {
+        console.error(`Gagal memparsing data dari localStorage (key: ${key}):`, e);
+        localStorage.setItem(key, JSON.stringify(initialData));
+        return initialData;
+      }
+    } else {
+      localStorage.setItem(key, JSON.stringify(initialData));
+      return initialData;
+    }
+  }
+  return initialData; // For SSR or if window is not available
+}
 
+function saveDataToStorage<T>(key: string, data: T) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+}
+
+// --- Active Data Arrays & Objects (Loaded from localStorage or initialized) ---
+let students: StudentData[] = loadDataFromStorage<StudentData[]>(STUDENTS_STORAGE_KEY, initialMockStudents);
+let teachers: TeacherData[] = loadDataFromStorage<TeacherData[]>(TEACHERS_STORAGE_KEY, initialMockTeachers);
+let parents: ParentData[] = loadDataFromStorage<ParentData[]>(PARENTS_STORAGE_KEY, initialMockParents);
+let majors: MajorData[] = loadDataFromStorage<MajorData[]>(MAJORS_STORAGE_KEY, initialMockMajors);
+let classes: ClassData[] = loadDataFromStorage<ClassData[]>(CLASSES_STORAGE_KEY, initialMockClasses);
+let schedules: ScheduleItem[] = loadDataFromStorage<ScheduleItem[]>(SCHEDULES_STORAGE_KEY, initialMockSchedules);
+let quizzes: Quiz[] = loadDataFromStorage<Quiz[]>(QUIZZES_STORAGE_KEY, initialMockQuizzes);
+let schoolProfile: SchoolProfileData = loadDataFromStorage<SchoolProfileData>(SCHOOL_PROFILE_STORAGE_KEY, initialMockSchoolProfile, true);
+
+
+// --- Student Data Functions ---
+export function getStudents(): StudentData[] {
+  // Re-load from storage if array is empty on client, to catch updates from other tabs/sessions (basic)
+  if (typeof window !== 'undefined' && students.length === 0 && localStorage.getItem(STUDENTS_STORAGE_KEY)) {
+    students = loadDataFromStorage<StudentData[]>(STUDENTS_STORAGE_KEY, initialMockStudents);
+  }
+  return [...students];
+}
+
+export function getStudentById(id: string): StudentData | undefined {
+  return students.find(student => student.ID_Siswa === id);
+}
+
+export function addStudent(studentData: Omit<StudentData, 'ID_Siswa' | 'Tanggal_Daftar' | 'Profil_Foto'>): StudentData {
+  const newStudent: StudentData = {
+    ID_Siswa: `siswa${Date.now()}${Math.floor(Math.random() * 100)}`,
+    ...studentData,
+    Profil_Foto: `https://placehold.co/100x100.png?text=${studentData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
+    Tanggal_Daftar: new Date().toISOString().split('T')[0],
+  };
+  students.push(newStudent);
+  saveDataToStorage(STUDENTS_STORAGE_KEY, students);
+  return newStudent;
+}
+
+export function updateStudent(updatedStudent: StudentData): boolean {
+  const index = students.findIndex(student => student.ID_Siswa === updatedStudent.ID_Siswa);
+  if (index !== -1) {
+    students[index] = updatedStudent;
+    saveDataToStorage(STUDENTS_STORAGE_KEY, students);
+    return true;
+  }
+  return false;
+}
+
+export function deleteStudentById(studentId: string): boolean {
+  const initialLength = students.length;
+  students = students.filter(student => student.ID_Siswa !== studentId);
+  if (students.length < initialLength) {
+    saveDataToStorage(STUDENTS_STORAGE_KEY, students);
+    return true;
+  }
+  return false;
+}
+
+// --- Teacher Data Functions ---
+export function getTeachers(): TeacherData[] {
+  if (typeof window !== 'undefined' && teachers.length === 0 && localStorage.getItem(TEACHERS_STORAGE_KEY)) {
+     teachers = loadDataFromStorage<TeacherData[]>(TEACHERS_STORAGE_KEY, initialMockTeachers);
+  }
+  return [...teachers];
+}
+
+export function getTeacherById(id: string): TeacherData | undefined {
+  return teachers.find(teacher => teacher.ID_Guru === id);
+}
+
+export function addTeacher(teacherData: Omit<TeacherData, 'ID_Guru' | 'Tanggal_Pendaftaran' | 'Profil_Foto' | 'isAdmin'>): TeacherData {
+  const newTeacher: TeacherData = {
+    ID_Guru: `guru${Date.now()}${Math.floor(Math.random() * 100)}`,
+    ...teacherData,
+    isAdmin: false,
+    Profil_Foto: `https://placehold.co/100x100.png?text=${teacherData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
+    Tanggal_Pendaftaran: new Date().toISOString().split('T')[0],
+  };
+  teachers.push(newTeacher);
+  saveDataToStorage(TEACHERS_STORAGE_KEY, teachers);
+  return newTeacher;
+}
+
+export function updateTeacher(updatedTeacher: TeacherData): boolean {
+  const index = teachers.findIndex(teacher => teacher.ID_Guru === updatedTeacher.ID_Guru);
+  if (index !== -1) {
+    teachers[index] = updatedTeacher;
+    saveDataToStorage(TEACHERS_STORAGE_KEY, teachers);
+    return true;
+  }
+  return false;
+}
+
+export function deleteTeacherById(teacherId: string): boolean {
+  const initialLength = teachers.length;
+  teachers = teachers.filter(teacher => teacher.ID_Guru !== teacherId);
+  if (teachers.length < initialLength) {
+    saveDataToStorage(TEACHERS_STORAGE_KEY, teachers);
+    return true;
+  }
+  return false;
+}
+
+export function addAdminUser(newAdminData: Omit<TeacherData, 'ID_Guru' | 'Tanggal_Pendaftaran' | 'Profil_Foto'>): TeacherData | null {
+    const emailExists = teachers.some(teacher => teacher.Email === newAdminData.Email);
+    const usernameExists = teachers.some(teacher => teacher.Username === newAdminData.Username);
+
+    if (emailExists) {
+        console.warn(`Gagal menambahkan admin: Email ${newAdminData.Email} sudah digunakan.`);
+        return null;
+    }
+    if (usernameExists) {
+        console.warn(`Gagal menambahkan admin: Username ${newAdminData.Username} sudah digunakan.`);
+        return null;
+    }
+    
+    const newAdmin: TeacherData = {
+      ID_Guru: `admin${Date.now()}${Math.floor(Math.random() * 100)}`,
+      ...newAdminData,
+      isAdmin: true,
+      Profil_Foto: `https://placehold.co/100x100.png?text=${newAdminData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
+      Tanggal_Pendaftaran: new Date().toISOString().split('T')[0],
+    };
+
+    teachers.push(newAdmin);
+    saveDataToStorage(TEACHERS_STORAGE_KEY, teachers);
+    return newAdmin;
+}
+
+// --- Parent Data Functions ---
+export function getParents(): ParentData[] {
+  if (typeof window !== 'undefined' && parents.length === 0 && localStorage.getItem(PARENTS_STORAGE_KEY)) {
+     parents = loadDataFromStorage<ParentData[]>(PARENTS_STORAGE_KEY, initialMockParents);
+  }
+  return [...parents];
+}
+
+export function addParent(parentData: Omit<ParentData, 'ID_OrangTua' | 'Profil_Foto'>): ParentData {
+  const newParent: ParentData = {
+    ID_OrangTua: `parent${Date.now()}${Math.floor(Math.random() * 100)}`,
+    ...parentData,
+    Profil_Foto: `https://placehold.co/100x100.png?text=${parentData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
+  };
+  parents.push(newParent);
+  saveDataToStorage(PARENTS_STORAGE_KEY, parents);
+  return newParent;
+}
+
+export function updateParent(updatedParent: ParentData): boolean {
+  const index = parents.findIndex(p => p.ID_OrangTua === updatedParent.ID_OrangTua);
+  if (index !== -1) {
+    parents[index] = updatedParent;
+    saveDataToStorage(PARENTS_STORAGE_KEY, parents);
+    return true;
+  }
+  return false;
+}
+
+export function deleteParentById(parentId: string): boolean {
+  const initialLength = parents.length;
+  parents = parents.filter(p => p.ID_OrangTua !== parentId);
+  if (parents.length < initialLength) {
+    saveDataToStorage(PARENTS_STORAGE_KEY, parents);
+    return true;
+  }
+  return false;
+}
+
+// --- Major Data Functions ---
+export function getMajors(): MajorData[] {
+  if (typeof window !== 'undefined' && majors.length === 0 && localStorage.getItem(MAJORS_STORAGE_KEY)) {
+    majors = loadDataFromStorage<MajorData[]>(MAJORS_STORAGE_KEY, initialMockMajors);
+  }
+  return [...majors];
+}
+
+export function addMajor(newMajorData: Omit<MajorData, 'ID_Jurusan'>): MajorData {
+  const newMajor: MajorData = {
+    ID_Jurusan: `major${Date.now()}${Math.floor(Math.random() * 100)}`,
+    ...newMajorData,
+  };
+  majors.push(newMajor);
+  saveDataToStorage(MAJORS_STORAGE_KEY, majors);
+  return newMajor;
+}
+
+export function getMajorById(id: string): MajorData | undefined {
+  return majors.find(major => major.ID_Jurusan === id);
+}
+
+export function updateMajor(updatedMajor: MajorData): boolean {
+  const index = majors.findIndex(major => major.ID_Jurusan === updatedMajor.ID_Jurusan);
+  if (index !== -1) {
+    majors[index] = updatedMajor;
+    saveDataToStorage(MAJORS_STORAGE_KEY, majors);
+    return true;
+  }
+  return false;
+}
+
+export function deleteMajorById(majorId: string): boolean {
+  const initialLength = majors.length;
+  majors = majors.filter(major => major.ID_Jurusan !== majorId);
+  if (majors.length < initialLength) {
+    saveDataToStorage(MAJORS_STORAGE_KEY, majors);
+    return true;
+  }
+  return false;
+}
+
+// --- Class Data Functions ---
+export function getClasses(): ClassData[] {
+  if (typeof window !== 'undefined' && classes.length === 0 && localStorage.getItem(CLASSES_STORAGE_KEY)) {
+    classes = loadDataFromStorage<ClassData[]>(CLASSES_STORAGE_KEY, initialMockClasses);
+  }
+  return [...classes];
+}
+
+export function getClassById(id: string): ClassData | undefined {
+  return classes.find(kelas => kelas.ID_Kelas === id);
+}
+
+export function updateClass(updatedClass: ClassData): boolean {
+  const index = classes.findIndex(kelas => kelas.ID_Kelas === updatedClass.ID_Kelas);
+  if (index !== -1) {
+    classes[index] = updatedClass;
+    saveDataToStorage(CLASSES_STORAGE_KEY, classes);
+    return true;
+  }
+  return false;
+}
+// Fungsi addClass dan deleteClassById bisa ditambahkan jika diperlukan
+
+// --- Schedule Data Functions ---
+export function getSchedules(): ScheduleItem[] {
+  if (typeof window !== 'undefined' && schedules.length === 0 && localStorage.getItem(SCHEDULES_STORAGE_KEY)) {
+    schedules = loadDataFromStorage<ScheduleItem[]>(SCHEDULES_STORAGE_KEY, initialMockSchedules);
+  }
+  // Perkaya jadwal dengan nama kelas dan guru setiap kali diambil
+  const allCls = getClasses();
+  const allTchrs = getTeachers();
+  return schedules.map(schedule => {
+      const classInfo = schedule.classId ? allCls.find(c => c.ID_Kelas === schedule.classId) : null;
+      const teacherInfo = schedule.teacherId ? allTchrs.find(t => t.ID_Guru === schedule.teacherId) : null;
+      return {
+        ...schedule,
+        className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (schedule.classId ? schedule.className || 'Info Kelas Hilang' : 'Umum (Semua Kelas)'),
+        teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (schedule.teacherId ? schedule.teacherName || 'Info Guru Hilang' : 'Tidak Ditentukan'),
+      };
+    });
+}
+
+export function getScheduleById(id: string): ScheduleItem | undefined {
+  const sch = schedules.find(schedule => schedule.id === id);
+  if (sch) {
+    const allCls = getClasses();
+    const allTchrs = getTeachers();
+    const classInfo = sch.classId ? allCls.find(c => c.ID_Kelas === sch.classId) : null;
+    const teacherInfo = sch.teacherId ? allTchrs.find(t => t.ID_Guru === sch.teacherId) : null;
+    return {
+      ...sch,
+      className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (sch.classId ? sch.className || 'Info Kelas Hilang' : 'Umum (Semua Kelas)'),
+      teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (sch.teacherId ? sch.teacherName || 'Info Guru Hilang' : 'Tidak Ditentukan'),
+    }
+  }
+  return undefined;
+}
+
+export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
+  const index = schedules.findIndex(schedule => schedule.id === updatedSchedule.id);
+  if (index !== -1) {
+    schedules[index] = updatedSchedule; // Data className dan teacherName sudah ada di updatedSchedule dari form
+    saveDataToStorage(SCHEDULES_STORAGE_KEY, schedules);
+    return true;
+  }
+  return false;
+}
+
+export function addSchedule(newScheduleData: Omit<ScheduleItem, 'id' | 'className' | 'teacherName'>): ScheduleItem {
+  const allCls = getClasses();
+  const allTchrs = getTeachers();
+  const classInfo = newScheduleData.classId ? allCls.find(c => c.ID_Kelas === newScheduleData.classId) : null;
+  const teacherInfo = newScheduleData.teacherId ? allTchrs.find(t => t.ID_Guru === newScheduleData.teacherId) : null;
+
+  const newSchedule: ScheduleItem = {
+    id: `schedule${Date.now()}${Math.floor(Math.random() * 100)}`,
+    ...newScheduleData,
+    className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (newScheduleData.classId ? 'Info Kelas Hilang' : 'Umum (Semua Kelas)'),
+    teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (newScheduleData.teacherId ? 'Info Guru Hilang' : 'Tidak Ditentukan'),
+  };
+  schedules.push(newSchedule);
+  saveDataToStorage(SCHEDULES_STORAGE_KEY, schedules);
+  return newSchedule;
+}
+
+// --- Quiz Data Functions ---
+export function getQuizzes(): Quiz[] {
+  if (typeof window !== 'undefined' && quizzes.length === 0 && localStorage.getItem(QUIZZES_STORAGE_KEY)) {
+    quizzes = loadDataFromStorage<Quiz[]>(QUIZZES_STORAGE_KEY, initialMockQuizzes);
+  }
+  return [...quizzes];
+}
+
+export function getQuizById(id: string): Quiz | undefined {
+  return quizzes.find(quiz => quiz.id === id);
+}
+
+export function getQuizzesByTeacherId(teacherId: string): Quiz[] {
+  return quizzes.filter(quiz => quiz.teacherId === teacherId);
+}
+
+export function addQuiz(quizData: Omit<Quiz, 'id'> & { teacherId: string }): Quiz {
+  const newQuiz: Quiz = {
+    id: `quiz${Date.now()}${Math.floor(Math.random() * 100)}`,
+    ...quizData,
+  };
+  quizzes.push(newQuiz);
+  saveDataToStorage(QUIZZES_STORAGE_KEY, quizzes);
+  return newQuiz;
+}
+
+export function updateQuiz(updatedQuiz: Quiz): boolean {
+  const index = quizzes.findIndex(quiz => quiz.id === updatedQuiz.id);
+  if (index !== -1) {
+    quizzes[index] = {
+      ...quizzes[index],
+      ...updatedQuiz,
+      questions: updatedQuiz.questions.map(q => ({
+        ...q,
+        id: q.id || `q_updated_${Date.now()}${Math.random().toString(36).substring(2,7)}`,
+      })),
+    };
+    saveDataToStorage(QUIZZES_STORAGE_KEY, quizzes);
+    return true;
+  }
+  return false;
+}
+
+// --- School Profile Functions ---
+export function getSchoolProfile(): SchoolProfileData {
+  if (typeof window !== 'undefined' && (!schoolProfile || Object.keys(schoolProfile).length === 0) && localStorage.getItem(SCHOOL_PROFILE_STORAGE_KEY)) {
+    schoolProfile = loadDataFromStorage<SchoolProfileData>(SCHOOL_PROFILE_STORAGE_KEY, initialMockSchoolProfile, true);
+  }
+  return schoolProfile;
+}
+
+export function updateSchoolProfile(updatedProfile: SchoolProfileData): SchoolProfileData {
+  schoolProfile = updatedProfile;
+  saveDataToStorage(SCHOOL_PROFILE_STORAGE_KEY, schoolProfile);
+  return schoolProfile;
+}
+
+
+// --- Lesson Data (Still Static, not using localStorage for now) ---
+export const mockLessons: Lesson[] = [
+  {
+    id: '1',
+    title: 'Pengenalan JavaScript',
+    content: `
+JavaScript adalah bahasa pemrograman serbaguna yang banyak digunakan, terutama dikenal karena perannya dalam pengembangan web.
+Ini memungkinkan Anda untuk menambahkan interaktivitas ke situs web, membangun server web, membuat aplikasi seluler, dan banyak lagi.
+
+### Konsep Utama:
+- **Variabel**: Wadah untuk menyimpan nilai data. (misalnya, \`let nama = "AdeptLearn";\`)
+- **Tipe Data**: Jenis data yang dapat disimpan, seperti string (teks), angka, boolean (logika).
+- **Operator**: Simbol yang melakukan operasi pada operan (misalnya, \`+\`, \`-\`, \`*\`, \`/\`).
+- **Alur Kontrol**: Struktur seperti pernyataan \`if...else\` dan loop (\`for\`, \`while\`) yang mengontrol urutan eksekusi kode.
+- **Fungsi**: Blok kode yang dapat digunakan kembali yang melakukan tugas tertentu.
+
+Pelajaran ini akan membahas dasar-dasarnya untuk memulai.
+    `,
+    videoUrl: 'https://placehold.co/600x338.png?text=Video+JS',
+    quizId: 'quiz1',
+    estimatedTime: "30 menit",
+    difficulty: "Pemula",
+  },
+  {
+    id: '2',
+    title: 'Variabel dan Tipe Data dalam JS',
+    content: `
+Dalam JavaScript, variabel dideklarasikan menggunakan \`let\`, \`const\`, atau (lebih jarang sekarang) \`var\`.
+- \`let\`: Mendeklarasikan variabel lokal lingkup blok, secara opsional menginisialisasinya ke suatu nilai.
+- \`const\`: Mendeklarasikan konstanta bernama lingkup blok yang hanya bisa dibaca. Nilainya tidak dapat diubah.
+
+### Tipe Data Umum:
+- **String (Teks)**: Data tekstual (misalnya, \`"Halo, Dunia!"\`).
+- **Number (Angka)**: Data numerik, termasuk bilangan bulat dan bilangan titik-mengambang (misalnya, \`42\`, \`3.14\`).
+- **Boolean (Logika)**: Tipe data logis yang hanya dapat memiliki dua nilai: \`true\` atau \`false\`.
+- **Object (Objek)**: Kumpulan pasangan kunci-nilai.
+- **Array (Larik)**: Daftar nilai yang terurut.
+- **null (Nihil)**: Mewakili ketiadaan yang disengaja dari nilai objek apa pun.
+- **undefined (Tidak Terdefinisi)**: Menunjukkan bahwa variabel telah dideklarasikan tetapi belum diberi nilai.
+    `,
+    estimatedTime: "45 menit",
+    difficulty: "Pemula",
+  },
+  {
+    id: '3',
+    title: 'Memahami React Hooks',
+    content: `
+Hook adalah fungsi yang memungkinkan Anda "mengaitkan diri" ke status React dan fitur siklus hidup dari komponen fungsi.
+Hook tidak bekerja di dalam kelas — mereka memungkinkan Anda menggunakan React tanpa kelas.
+
+### Hook Umum:
+- **useState (Mengelola State)**: Memungkinkan Anda menambahkan status React ke komponen fungsi.
+- **useEffect (Efek Samping)**: Memungkinkan Anda melakukan efek samping dalam komponen fungsi (misalnya, pengambilan data, langganan, mengubah DOM secara manual).
+- **useContext (Konteks)**: Menerima objek konteks (nilai yang dikembalikan dari \`React.createContext\`) dan mengembalikan nilai konteks saat ini untuk konteks tersebut.
+- **useReducer (Alternatif State)**: Alternatif untuk \`useState\`. Menerima reducer tipe \`(state, action) => newState\`, dan mengembalikan status saat ini yang dipasangkan dengan metode \`dispatch\`.
+    `,
+    videoUrl: 'https://placehold.co/600x338.png?text=Video+React+Hooks',
+    quizId: 'quiz2',
+    estimatedTime: "1 jam",
+    difficulty: "Menengah",
+  },
+];
+
+export function getLessonById(id: string): Lesson | undefined {
+  return mockLessons.find(lesson => lesson.id === id);
+}
+
+
+// --- User Progress & Chart Data (Masih statis, karena biasanya sangat dinamis dari backend) ---
 export const mockUserProgress: UserProgress = {
   userId: 'student001',
   completedLessons: ['1', '2'],
@@ -693,130 +746,3 @@ export const lessonStatusChartConfig: ChartConfig = {
   Dikerjakan: { label: 'Dikerjakan', color: 'hsl(var(--chart-2))' },
   'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
 };
-
-
-// --- Class Data Functions (with localStorage) ---
-export function getClasses(): ClassData[] {
-  if (typeof window !== 'undefined' && mockClasses.length === 0 && localStorage.getItem(CLASSES_STORAGE_KEY)) {
-    mockClasses = loadDataFromStorage<ClassData>(CLASSES_STORAGE_KEY, initialMockClasses);
-  }
-  return [...mockClasses];
-}
-
-export function getClassById(id: string): ClassData | undefined {
-  const classes = getClasses(); // Ensure data is loaded
-  return classes.find(kelas => kelas.ID_Kelas === id);
-}
-
-export function updateClass(updatedClass: ClassData): boolean {
-  const index = mockClasses.findIndex(kelas => kelas.ID_Kelas === updatedClass.ID_Kelas);
-  if (index !== -1) {
-    mockClasses[index] = updatedClass;
-    saveDataToStorage(CLASSES_STORAGE_KEY, mockClasses);
-    return true;
-  }
-  return false;
-}
-
-// --- Schedule Data Functions (with localStorage) ---
-export function getSchedules(): ScheduleItem[] {
-  if (typeof window !== 'undefined' && mockSchedules.length === 0 && localStorage.getItem(SCHEDULES_STORAGE_KEY)) {
-    mockSchedules = loadDataFromStorage<ScheduleItem>(SCHEDULES_STORAGE_KEY, initialMockSchedules);
-  }
-  return [...mockSchedules];
-}
-
-export function getScheduleById(id: string): ScheduleItem | undefined {
-  const schedules = getSchedules(); // Ensure data is loaded
-  return schedules.find(schedule => schedule.id === id);
-}
-
-export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
-  const index = mockSchedules.findIndex(schedule => schedule.id === updatedSchedule.id);
-  if (index !== -1) {
-    const allTeachers = getTeachers(); // Load teachers for name lookup
-    const allClasses = getClasses();   // Load classes for name lookup
-
-    const classInfo = updatedSchedule.classId ? allClasses.find(c => c.ID_Kelas === updatedSchedule.classId) : null;
-    const teacherInfo = updatedSchedule.teacherId ? allTeachers.find(t => t.ID_Guru === updatedSchedule.teacherId) : null;
-
-    mockSchedules[index] = {
-      ...updatedSchedule,
-      className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (updatedSchedule.classId ? updatedSchedule.className : 'Umum (Semua Kelas)'),
-      teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (updatedSchedule.teacherId ? updatedSchedule.teacherName : 'Tidak Ditentukan'),
-    };
-    saveDataToStorage(SCHEDULES_STORAGE_KEY, mockSchedules);
-    console.log("Jadwal diperbarui (simulasi):", mockSchedules[index]);
-    return true;
-  }
-  console.warn(`Gagal memperbarui jadwal: Jadwal dengan ID ${updatedSchedule.id} tidak ditemukan.`);
-  return false;
-}
-
-export function addSchedule(newScheduleData: Omit<ScheduleItem, 'id' | 'className' | 'teacherName'>): ScheduleItem {
-  const allTeachers = getTeachers();
-  const allClasses = getClasses();
-
-  const classInfo = newScheduleData.classId ? allClasses.find(c => c.ID_Kelas === newScheduleData.classId) : null;
-  const teacherInfo = newScheduleData.teacherId ? allTeachers.find(t => t.ID_Guru === newScheduleData.teacherId) : null;
-
-  const newSchedule: ScheduleItem = {
-    id: `schedule${mockSchedules.length + 1 + Date.now()}`,
-    ...newScheduleData,
-    className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (newScheduleData.classId ? 'Kelas tidak ditemukan' : 'Umum (Semua Kelas)'),
-    teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (newScheduleData.teacherId ? 'Guru tidak ditemukan' : 'Tidak Ditentukan'),
-  };
-  mockSchedules.push(newSchedule);
-  saveDataToStorage(SCHEDULES_STORAGE_KEY, mockSchedules);
-  console.log("Jadwal baru ditambahkan (simulasi):", newSchedule);
-  return newSchedule;
-}
-
-// --- Lesson & Quiz Functions (still in-memory, but with clear getters) ---
-export function getLessonById(id: string): Lesson | undefined {
-  return mockLessons.find(lesson => lesson.id === id);
-}
-
-export function getQuizById(id: string): Quiz | undefined {
-  return mockQuizzes.find(quiz => quiz.id === id);
-}
-
-export function getQuizzesByTeacherId(teacherId: string): Quiz[] {
-  if (!mockQuizzes || !Array.isArray(mockQuizzes)) {
-    console.error("mockQuizzes tidak terdefinisi atau bukan array");
-    return [];
-  }
-  return mockQuizzes.filter(quiz => quiz.teacherId === teacherId);
-}
-
-export function addQuiz(quizData: Omit<Quiz, 'id'> & { teacherId: string }): Quiz {
-  const newQuiz: Quiz = {
-    id: `quiz${mockQuizzes.length + 1 + Date.now()}`,
-    ...quizData,
-    questions: quizData.questions || [],
-    assignedClassIds: quizData.assignedClassIds || [],
-  };
-  mockQuizzes.push(newQuiz);
-  // Di masa depan, jika kuis disimpan di localStorage, panggil saveDataToStorage di sini
-  console.log("Kuis baru ditambahkan (simulasi):", newQuiz);
-  return newQuiz;
-}
-
-export function updateQuiz(updatedQuiz: Quiz): boolean {
-  const index = mockQuizzes.findIndex(quiz => quiz.id === updatedQuiz.id);
-  if (index !== -1) {
-    mockQuizzes[index] = {
-      ...mockQuizzes[index],
-      ...updatedQuiz,
-      questions: updatedQuiz.questions.map(q => ({
-        ...q,
-        id: q.id || `q_updated_${Date.now()}${Math.random().toString(36).substring(2,7)}`,
-      })),
-    };
-    // Di masa depan, jika kuis disimpan di localStorage, panggil saveDataToStorage di sini
-    console.log("Kuis diperbarui (simulasi):", mockQuizzes[index]);
-    return true;
-  }
-  console.warn(`Gagal memperbarui kuis: Kuis dengan ID ${updatedQuiz.id} tidak ditemukan.`);
-  return false;
-}

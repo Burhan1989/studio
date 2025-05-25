@@ -8,10 +8,11 @@ import { Progress } from '@/components/ui/progress';
 import { BookOpen, BrainCircuit, Target, CheckCircle, ListChecks } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { mockSchoolProfile } from '@/lib/mockData'; 
+import { getSchoolProfile } from '@/lib/mockData'; 
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const schoolProfile = getSchoolProfile(); // Get school profile data
 
   // Mock data
   const currentModule = {
@@ -32,7 +33,7 @@ export default function DashboardPage() {
       <div className="p-6 mb-8 rounded-lg shadow bg-gradient-to-r from-primary to-blue-400 text-primary-foreground">
         <h1 className="text-3xl font-bold">Selamat datang kembali, {user?.name || user?.email}!</h1>
         <p className="mt-1 text-lg opacity-90">
-          Mari lanjutkan perjalanan belajar Anda di {mockSchoolProfile.namaSekolah || 'AdeptLearn'}.
+          Mari lanjutkan perjalanan belajar Anda di {schoolProfile?.namaSekolah || 'AdeptLearn'}.
         </p>
       </div>
 
