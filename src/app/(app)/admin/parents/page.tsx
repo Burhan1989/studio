@@ -49,10 +49,19 @@ export default function AdminParentsPage() {
       });
       return;
     }
-    const header = "ID_OrangTua,Nama_Lengkap,Email,Nomor_Telepon,Status_Aktif\n";
-    const csvRows = dataToExport.map(parent =>
-      `${parent.ID_OrangTua},"${parent.Nama_Lengkap.replace(/"/g, '""')}","${parent.Email}","${parent.Nomor_Telepon || ''}",${parent.Status_Aktif}`
-    ).join("\n");
+    const header = "ID_OrangTua,Nama_Lengkap,Username,Email,Nomor_Telepon,Status_Aktif,Anak_Terkait_ID_Siswa\n";
+    const csvRows = dataToExport.map(parent => {
+      const anakTerkaitCsv = parent.Anak_Terkait ? parent.Anak_Terkait.map(anak => anak.ID_Siswa).join('; ') : '';
+      return [
+        parent.ID_OrangTua,
+        `"${parent.Nama_Lengkap.replace(/"/g, '""')}"`,
+        `"${parent.Username.replace(/"/g, '""')}"`,
+        parent.Email,
+        `"${(parent.Nomor_Telepon || '').replace(/"/g, '""')}"`,
+        parent.Status_Aktif,
+        `"${anakTerkaitCsv.replace(/"/g, '""')}"`
+      ].join(",");
+    }).join("\n");
     const csvString = header + csvRows;
 
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
@@ -81,7 +90,7 @@ export default function AdminParentsPage() {
     if (file) {
       toast({
         title: "File Dipilih",
-        description: `File "${file.name}" dipilih. Memproses impor (simulasi)...`,
+        description: `File "${file.name}" dipilih untuk impor data orang tua. Memproses (simulasi)...`,
       });
       setTimeout(() => {
         toast({
@@ -114,7 +123,7 @@ export default function AdminParentsPage() {
             <Users className="w-8 h-8 text-primary" />
             <CardTitle className="text-xl">Manajemen Data Orang Tua (CSV/Excel)</CardTitle>
           </div>
-          <CardDescription>Import dan export data orang tua menggunakan file CSV atau Excel.</CardDescription>
+          <CardDescription>Impor dan ekspor data orang tua menggunakan file CSV atau Excel.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -150,7 +159,7 @@ export default function AdminParentsPage() {
                 <TableHead>Username</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Nomor Telepon</TableHead>
-                <TableHead>Anak Terkait (Contoh)</TableHead>
+                <TableHead>Anak Terkait (Nama)</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
@@ -203,3 +212,6 @@ export default function AdminParentsPage() {
     </div>
   );
 }
+
+
+    

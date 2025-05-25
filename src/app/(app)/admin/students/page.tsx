@@ -22,7 +22,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
+import { format, parseISO } from 'date-fns'; // Import date-fns
+import { id as LocaleID } from 'date-fns/locale'; // Import locale if needed
 
 export default function AdminStudentsPage() {
   const { toast } = useToast();
@@ -89,9 +90,24 @@ export default function AdminStudentsPage() {
       });
       return;
     }
-    const header = "ID_Siswa,Nama_Lengkap,Email,NISN,Nomor_Induk,Kelas,Jurusan,Status_Aktif\n";
-    const csvRows = dataToExport.map(student =>
-      `${student.ID_Siswa},"${student.Nama_Lengkap.replace(/"/g, '""')}","${student.Email}","${student.NISN}","${student.Nomor_Induk}","${student.Kelas}","${student.Program_Studi}",${student.Status_Aktif}`
+    const header = "ID_Siswa,Nama_Lengkap,Nama_Panggilan,Username,Email,NISN,Nomor_Induk,Jenis_Kelamin,Tanggal_Lahir,Alamat,Nomor_Telepon,Jurusan,Kelas,Tanggal_Daftar,Status_Aktif\n";
+    const csvRows = dataToExport.map(student => [
+        student.ID_Siswa,
+        `"${student.Nama_Lengkap.replace(/"/g, '""')}"`,
+        `"${(student.Nama_Panggilan || '').replace(/"/g, '""')}"`,
+        `"${student.Username.replace(/"/g, '""')}"`,
+        student.Email,
+        student.NISN,
+        student.Nomor_Induk,
+        student.Jenis_Kelamin,
+        student.Tanggal_Lahir ? format(parseISO(student.Tanggal_Lahir), 'yyyy-MM-dd') : '',
+        `"${(student.Alamat || '').replace(/"/g, '""')}"`,
+        `"${(student.Nomor_Telepon || '').replace(/"/g, '""')}"`,
+        `"${student.Program_Studi.replace(/"/g, '""')}"`,
+        `"${student.Kelas.replace(/"/g, '""')}"`,
+        student.Tanggal_Daftar ? format(parseISO(student.Tanggal_Daftar), 'yyyy-MM-dd') : '',
+        student.Status_Aktif
+      ].join(",")
     ).join("\n");
     const csvString = header + csvRows;
 
@@ -121,7 +137,7 @@ export default function AdminStudentsPage() {
     if (file) {
       toast({
         title: "File Dipilih",
-        description: `File "${file.name}" dipilih. Memproses impor (simulasi)...`,
+        description: `File "${file.name}" dipilih untuk impor data siswa. Memproses (simulasi)...`,
       });
       setTimeout(() => {
         toast({
@@ -275,3 +291,6 @@ export default function AdminStudentsPage() {
     </div>
   );
 }
+
+
+    

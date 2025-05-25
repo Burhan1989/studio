@@ -21,9 +21,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger, // Added AlertDialogTrigger
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-
+import { format, parseISO } from 'date-fns'; // Import date-fns
+import { id as LocaleID } from 'date-fns/locale'; // Import locale if needed
 
 export default function AdminTeachersPage() {
   const { toast } = useToast();
@@ -75,7 +76,7 @@ export default function AdminTeachersPage() {
       title: "Memulai Ekspor Data Guru",
       description: "Sedang mempersiapkan file CSV...",
     });
-    // Simulate data fetching and CSV creation
+    
     const dataToExport = getTeachers();
     if (dataToExport.length === 0) {
       toast({
@@ -86,10 +87,26 @@ export default function AdminTeachersPage() {
       return;
     }
     
-    const header = "ID_Guru,Nama_Lengkap,Email,Jabatan,Mata_Pelajaran,Status_Aktif\n";
-    const csvRows = dataToExport.map(teacher => 
-      `${teacher.ID_Guru},"${teacher.Nama_Lengkap.replace(/"/g, '""')}","${teacher.Email}","${teacher.Jabatan || ''}","${teacher.Mata_Pelajaran}",${teacher.Status_Aktif}`
-    ).join("\n");
+    const header = "ID_Guru,Nama_Lengkap,Username,Email,Jenis_Kelamin,Tanggal_Lahir,Alamat,Nomor_Telepon,Mata_Pelajaran,Kelas_Ajar,Jabatan,Status_Aktif,Tanggal_Pendaftaran,isAdmin\n";
+    const csvRows = dataToExport.map(teacher => {
+      const kelasAjarCsv = Array.isArray(teacher.Kelas_Ajar) ? teacher.Kelas_Ajar.join('; ') : teacher.Kelas_Ajar; // Join array with semicolon
+      return [
+        teacher.ID_Guru,
+        `"${teacher.Nama_Lengkap.replace(/"/g, '""')}"`,
+        `"${teacher.Username.replace(/"/g, '""')}"`,
+        teacher.Email,
+        teacher.Jenis_Kelamin,
+        teacher.Tanggal_Lahir ? format(parseISO(teacher.Tanggal_Lahir), 'yyyy-MM-dd') : '',
+        `"${(teacher.Alamat || '').replace(/"/g, '""')}"`,
+        `"${(teacher.Nomor_Telepon || '').replace(/"/g, '""')}"`,
+        `"${teacher.Mata_Pelajaran.replace(/"/g, '""')}"`,
+        `"${kelasAjarCsv.replace(/"/g, '""')}"`,
+        `"${(teacher.Jabatan || '').replace(/"/g, '""')}"`,
+        teacher.Status_Aktif,
+        teacher.Tanggal_Pendaftaran ? format(parseISO(teacher.Tanggal_Pendaftaran), 'yyyy-MM-dd') : '',
+        teacher.isAdmin || false
+      ].join(",");
+    }).join("\n");
     const csvString = header + csvRows;
 
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
@@ -118,17 +135,15 @@ export default function AdminTeachersPage() {
     if (file) {
       toast({
         title: "File Dipilih",
-        description: `File "${file.name}" dipilih. Memproses impor (simulasi)...`,
+        description: `File "${file.name}" dipilih untuk impor data guru. Memproses (simulasi)...`,
       });
-      // Simulate processing
       setTimeout(() => {
         toast({
           title: "Impor Selesai (Simulasi)",
-          description: `Impor data guru dari "${file.name}" telah selesai. Data tidak benar-benar diperbarui dalam simulasi ini.`,
+          description: `Impor data guru dari "${file.name}" telah selesai. Data tidak benar-benar diperbarui.`,
         });
       }, 2000);
     }
-    // Reset file input untuk memungkinkan pemilihan file yang sama lagi
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
     }
@@ -275,3 +290,6 @@ export default function AdminTeachersPage() {
     </div>
   );
 }
+
+
+    

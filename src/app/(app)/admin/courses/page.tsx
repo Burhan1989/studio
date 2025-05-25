@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { BookCopy, PlusCircle, Edit, Trash2, Eye, Upload, Download, Link2, FileUp, Film } from "lucide-react";
+import { BookCopy, PlusCircle, Edit, Trash2, Eye, Upload, Download, Link2, FileUp, Film } from "lucide-react"; // Pastikan UploadCloud diimpor jika digunakan
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRef, type ChangeEvent } from "react";
-import { getSchedules } from "@/lib/mockData"; // For export example
+import { getSchedules } from "@/lib/mockData"; 
 import { format, parseISO } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
 
@@ -46,7 +46,7 @@ export default function AdminCoursesPage() {
       title: "Memulai Ekspor Jadwal Pelajaran",
       description: "Sedang mempersiapkan file CSV...",
     });
-    const dataToExport = getSchedules(); // Assuming getSchedules returns enriched data
+    const dataToExport = getSchedules(); 
     if (dataToExport.length === 0) {
       toast({
         title: "Ekspor Dibatalkan",
@@ -55,9 +55,22 @@ export default function AdminCoursesPage() {
       });
       return;
     }
-    const header = "ID,Judul,Tanggal,Waktu,Kelas,Guru,Kategori,Deskripsi\n";
+    const header = "ID,Judul,Tanggal,Waktu,ID_Kelas,Nama_Kelas,ID_Guru,Nama_Guru,ID_Pelajaran,ID_Kuis,Deskripsi,Kategori\n";
     const csvRows = dataToExport.map(schedule =>
-      `${schedule.id},"${schedule.title.replace(/"/g, '""')}","${format(parseISO(schedule.date), 'dd MMM yyyy', { locale: LocaleID })}","${schedule.time}","${schedule.className || ''}","${schedule.teacherName || ''}","${schedule.category}","${(schedule.description || '').replace(/"/g, '""')}"`
+      [
+        schedule.id,
+        `"${schedule.title.replace(/"/g, '""')}"`,
+        schedule.date ? format(parseISO(schedule.date), 'yyyy-MM-dd') : '',
+        `"${schedule.time.replace(/"/g, '""')}"`,
+        schedule.classId || '',
+        `"${(schedule.className || '').replace(/"/g, '""')}"`,
+        schedule.teacherId || '',
+        `"${(schedule.teacherName || '').replace(/"/g, '""')}"`,
+        schedule.lessonId || '',
+        schedule.quizId || '',
+        `"${(schedule.description || '').replace(/"/g, '""')}"`,
+        schedule.category
+      ].join(",")
     ).join("\n");
     const csvString = header + csvRows;
 
@@ -201,7 +214,8 @@ export default function AdminCoursesPage() {
       <Card className="shadow-lg">
         <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
-                <UploadCloud className="w-6 h-6 text-primary" /> Pengelolaan Materi untuk Pelajaran (Contoh)
+                {/* Ganti UploadCloud dengan FileUp jika itu yang dimaksud */}
+                <FileUp className="w-6 h-6 text-primary" /> Pengelolaan Materi untuk Pelajaran (Contoh)
             </CardTitle>
             <CardDescription>
                 Ini adalah placeholder UI untuk menunjukkan bagaimana materi pelajaran dapat dikelola. 
@@ -238,3 +252,6 @@ export default function AdminCoursesPage() {
     </div>
   );
 }
+
+
+    

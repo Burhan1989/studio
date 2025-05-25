@@ -93,7 +93,12 @@ export default function AdminMajorsPage() {
     }
     const header = "ID_Jurusan,Nama_Jurusan,Deskripsi_Jurusan,Nama_Kepala_Program\n";
     const csvRows = dataToExport.map(major =>
-      `${major.ID_Jurusan},"${major.Nama_Jurusan.replace(/"/g, '""')}","${(major.Deskripsi_Jurusan || '').replace(/"/g, '""')}","${(major.Nama_Kepala_Program || '').replace(/"/g, '""')}"`
+      [
+        major.ID_Jurusan,
+        `"${major.Nama_Jurusan.replace(/"/g, '""')}"`,
+        `"${(major.Deskripsi_Jurusan || '').replace(/"/g, '""')}"`,
+        `"${(major.Nama_Kepala_Program || '').replace(/"/g, '""')}"`
+      ].join(",")
     ).join("\n");
     const csvString = header + csvRows;
 
@@ -123,7 +128,7 @@ export default function AdminMajorsPage() {
     if (file) {
       toast({
         title: "File Dipilih",
-        description: `File "${file.name}" dipilih. Memproses impor (simulasi)...`,
+        description: `File "${file.name}" dipilih untuk impor data jurusan. Memproses (simulasi)...`,
       });
       setTimeout(() => {
         toast({
@@ -276,3 +281,6 @@ export default function AdminMajorsPage() {
     </div>
   );
 }
+
+
+    
