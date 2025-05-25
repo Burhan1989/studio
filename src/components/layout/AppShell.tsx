@@ -95,9 +95,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
       );
       
       items = [
-          ...(commonDashboard ? [commonDashboard] : []), // Dasbor umum dulu
-          ...(adminDashboard ? [adminDashboard] : []), // Lalu Dasbor Admin
-          ...adminSpecificItems.sort((a, b) => a.label.localeCompare(b.label)), // Sisa menu admin
+          ...(commonDashboard ? [commonDashboard] : []), 
+          ...(adminDashboard ? [adminDashboard] : []), 
+          ...adminSpecificItems.sort((a, b) => a.label.localeCompare(b.label)), 
           ...commonItems.sort((a,b) => (a.href === '/profile' || a.href === '/settings') ? 1 : (b.href === '/profile' || b.href === '/settings') ? -1 : a.label.localeCompare(b.label)), 
       ];
     } else if (userRole === 'parent') {
@@ -147,24 +147,24 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider defaultOpen>
       <Sidebar className="bg-card border-r" collapsible="icon">
-        <SidebarHeader className="p-2 border-b flex items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
+        <SidebarHeader className="p-2 border-b flex flex-col items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
           <Link
             href={user?.role === 'parent' ? "/parent/dashboard" : (user?.isAdmin ? "/admin" : "/dashboard")}
-            className="flex flex-row items-center gap-2 group-data-[collapsible=icon]:justify-center"
+            className="flex flex-col items-center gap-1 text-center group-data-[collapsible=icon]:flex-row group-data-[collapsible=icon]:gap-2"
           >
             {schoolLogoUrl ? (
               <Image
                 src={schoolLogoUrl}
                 alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
-                width={120} // Width for aspect ratio calculation
-                height={30} // Height for aspect ratio calculation
-                className="h-8 w-auto object-contain group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:mx-auto" 
+                width={100} // Lebar untuk rasio aspek
+                height={25}  // Tinggi untuk rasio aspek
+                className="h-8 w-auto object-contain mb-1 group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:mb-0" 
                 data-ai-hint="school logo"
               />
             ) : (
-              <GraduationCap className="w-8 h-8 text-primary group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:mx-auto" />
+              <GraduationCap className="w-8 h-8 text-primary mb-1 group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:mb-0" />
             )}
-            <span className="text-sm font-semibold text-foreground group-data-[collapsible=icon]:hidden truncate">
+            <span className="text-xs font-semibold text-foreground group-data-[collapsible=icon]:hidden truncate max-w-[120px]">
               {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
             </span>
           </Link>
