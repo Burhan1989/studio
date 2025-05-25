@@ -21,7 +21,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger, // Added AlertDialogTrigger
+  AlertDialogTrigger, 
 } from "@/components/ui/alert-dialog";
 import { format, parseISO } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
@@ -91,24 +91,25 @@ export default function AdminStudentsPage() {
       });
       return;
     }
-    const header = "ID_Siswa\tNama_Lengkap\tNama_Panggilan\tUsername\tEmail\tNISN\tNomor_Induk\tJenis_Kelamin\tTanggal_Lahir\tAlamat\tNomor_Telepon\tJurusan\tKelas\tTanggal_Daftar\tStatus_Aktif\n";
+    const header = "ID_Siswa\tNISN\tNomor_Induk\tUsername\tNama_Lengkap\tNama_Panggilan\tJenis_Kelamin\tTanggal_Lahir\tAlamat\tEmail\tNomor_Telepon\tProgram_Studi\tKelas\tTanggal_Daftar\tStatus_Aktif\tProfil_Foto_URL\n";
     const tsvRows = dataToExport.map(student => [
         student.ID_Siswa,
-        student.Nama_Lengkap,
-        student.Nama_Panggilan || '',
-        student.Username,
-        student.Email,
         student.NISN,
         student.Nomor_Induk,
+        student.Username,
+        student.Nama_Lengkap,
+        student.Nama_Panggilan || '',
         student.Jenis_Kelamin,
         student.Tanggal_Lahir ? format(parseISO(student.Tanggal_Lahir), 'yyyy-MM-dd') : '',
         student.Alamat || '',
+        student.Email,
         student.Nomor_Telepon || '',
         student.Program_Studi,
         student.Kelas,
         student.Tanggal_Daftar ? format(parseISO(student.Tanggal_Daftar), 'yyyy-MM-dd') : '',
-        student.Status_Aktif
-      ].map(value => `"${String(value || '').replace(/"/g, '""')}"`).join("\t") // Handle quotes and ensure string conversion
+        student.Status_Aktif,
+        student.Profil_Foto || ''
+      ].map(value => `"${String(value || '').replace(/"/g, '""')}"`).join("\t") 
     ).join("\n");
     const tsvString = header + tsvRows;
 
@@ -170,7 +171,7 @@ export default function AdminStudentsPage() {
         ref={fileInputRef} 
         style={{ display: 'none' }} 
         onChange={handleFileSelected}
-        accept=".xlsx,.xls,.tsv,.csv" // Updated to accept more Excel related formats
+        accept=".xlsx,.xls,.tsv,.csv" 
       />
        <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Siswa</h1>
@@ -294,3 +295,4 @@ export default function AdminStudentsPage() {
     </div>
   );
 }
+
