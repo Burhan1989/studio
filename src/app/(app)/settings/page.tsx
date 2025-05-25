@@ -1,8 +1,8 @@
 
-"use client"; // Add use client for state management if needed for interactive settings
+"use client"; // Tambahkan use client untuk manajemen state jika diperlukan untuk pengaturan interaktif
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings as SettingsIcon, Bell, Smartphone } from 'lucide-react'; // Renamed to avoid conflict if Settings component is used
+import { Settings as SettingsIcon, Bell, Smartphone } from 'lucide-react'; // Ganti nama untuk menghindari konflik jika komponen Settings digunakan
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ export default function SettingsPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
 
   const handleSaveNotificationPreferences = () => {
-    // Simulate saving preferences
+    // Mensimulasikan penyimpanan preferensi
     console.log("Preferensi notifikasi disimpan:", { whatsappNotifications, phoneNumber });
     toast({
       title: "Preferensi Disimpan",
@@ -42,7 +42,7 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">Opsi pengaturan umum akan segera hadir...</p>
-          {/* Placeholder for general settings like language, theme, etc. */}
+          {/* Placeholder untuk pengaturan umum seperti bahasa, tema, dll. */}
         </CardContent>
       </Card>
       

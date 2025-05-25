@@ -30,9 +30,9 @@ export default function LessonContentDisplay({ lesson, prevLessonId, nextLessonI
   const [newComment, setNewComment] = useState("");
   const [comments, setComments] = useState<MockComment[]>([]);
 
-  // useEffect to simulate loading comments
+  // useEffect untuk mensimulasikan pemuatan komentar
   useEffect(() => {
-    // Simulate fetching comments
+    // Mensimulasikan pengambilan komentar
     const mockComments: MockComment[] = [
       { id: '1', userName: 'Budi S.', avatarFallback: 'BS', text: 'Materi yang sangat bermanfaat! Apakah ada contoh implementasi lebih lanjut untuk bagian X?', timestamp: '2 jam lalu' },
       { id: '2', userName: 'Citra W.', avatarFallback: 'CW', text: 'Penjelasannya mudah dipahami. Terima kasih!', timestamp: '1 jam lalu' },
@@ -44,14 +44,14 @@ export default function LessonContentDisplay({ lesson, prevLessonId, nextLessonI
     if (newComment.trim()) {
       const commentToAdd: MockComment = {
         id: String(Date.now()),
-        userName: 'Pengguna Saat Ini', // Replace with actual user name
-        avatarFallback: 'PS', // Replace with actual user avatar fallback
+        userName: 'Pengguna Saat Ini', // Ganti dengan nama pengguna aktual
+        avatarFallback: 'PS', // Ganti dengan fallback avatar pengguna aktual
         text: newComment,
         timestamp: 'Baru saja'
       };
       setComments(prevComments => [commentToAdd, ...prevComments]);
       setNewComment("");
-      // In a real app, you would send this to a backend
+      // Di aplikasi nyata, Anda akan mengirim ini ke backend
       console.log("Komentar dikirim:", commentToAdd);
     }
   };
@@ -83,8 +83,8 @@ export default function LessonContentDisplay({ lesson, prevLessonId, nextLessonI
               />
             </div>
           )}
-          {/* Using dangerouslySetInnerHTML for simple HTML content from mock data. 
-              For user-generated content, ensure proper sanitization. */}
+          {/* Menggunakan dangerouslySetInnerHTML untuk konten HTML sederhana dari data mock. 
+              Untuk konten yang dibuat pengguna, pastikan sanitasi yang tepat. */}
           <div dangerouslySetInnerHTML={{ __html: lesson.content.replace(/\n/g, '<br />') }} />
         </CardContent>
         <CardFooter className="flex flex-col items-stretch gap-4 pt-6 border-t md:flex-row md:justify-between">
