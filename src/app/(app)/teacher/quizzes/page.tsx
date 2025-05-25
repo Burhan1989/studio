@@ -29,9 +29,11 @@ export default function TeacherQuizzesPage() {
       const quizzes = getQuizzesByTeacherId(user.id); 
       setTeacherQuizzes(quizzes);
     } else {
+      // Fallback for non-teacher users or when user is not yet loaded (though ideally this page is protected)
+      // Displaying first 2 mock quizzes as a generic placeholder if needed.
       setTeacherQuizzes(mockQuizzes.slice(0,2)); 
     }
-  }, [user]);
+  }, [user]); // Re-run when user object changes
 
   const handleActionPlaceholder = (action: string, itemName: string) => {
     toast({
@@ -42,6 +44,11 @@ export default function TeacherQuizzesPage() {
 
   const getTotalPoints = (questions: Quiz['questions']): number => {
     return questions.reduce((total, q) => total + (q.points || 0), 0);
+  };
+
+  const getAssignedClassesDisplay = (assignedClassIds?: string[]): string => {
+    if (!assignedClassIds || assignedClassIds.length === 0) return '-';
+    return assignedClassIds.map(id => classesMap[id] || id).join(', ');
   };
 
   return (
@@ -84,14 +91,16 @@ export default function TeacherQuizzesPage() {
                   <TableCell>{quiz.description || '-'}</TableCell>
                   <TableCell>{quiz.questions.length}</TableCell>
                   <TableCell>{getTotalPoints(quiz.questions)}</TableCell>
-                  <TableCell>{quiz.assignedClassId ? classesMap[quiz.assignedClassId] || quiz.assignedClassId : '-'}</TableCell>
+                  <TableCell>{getAssignedClassesDisplay(quiz.assignedClassIds)}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleActionPlaceholder("Edit", quiz.title)}
+                      asChild
                     >
-                      <Edit className="w-4 h-4" />
+                      <Link href={`/teacher/quizzes/${quiz.id}/edit`}>
+                        <Edit className="w-4 h-4" />
+                      </Link>
                     </Button>
                     <Button
                       variant="destructive"

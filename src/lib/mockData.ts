@@ -124,7 +124,7 @@ export let mockQuizzes: Quiz[] = [
     teacherId: 'teacher001', 
     questions: mockQuestionsQuiz1,
     description: "Kuis dasar untuk menguji pemahaman JavaScript awal.",
-    assignedClassId: 'kelasA',
+    assignedClassIds: ['kelasA'],
   },
   {
     id: 'quiz2',
@@ -133,7 +133,7 @@ export let mockQuizzes: Quiz[] = [
     teacherId: 'teacher001', 
     questions: mockQuestionsQuiz2,
     description: "Kuis untuk menguji pemahaman tentang React Hooks.",
-    assignedClassId: 'kelasB',
+    assignedClassIds: ['kelasB', 'kelasC'],
   },
 ];
 
@@ -449,11 +449,22 @@ export function addQuiz(quizData: Omit<Quiz, 'id'> & { teacherId: string }): Qui
     id: `quiz${mockQuizzes.length + 1 + Date.now()}`,
     ...quizData,
     questions: quizData.questions || [], 
-    assignedClassId: quizData.assignedClassId || undefined,
+    assignedClassIds: quizData.assignedClassIds || [],
   };
   mockQuizzes.push(newQuiz);
   console.log("Kuis baru ditambahkan (simulasi):", newQuiz);
   return newQuiz;
+}
+
+export function updateQuiz(updatedQuiz: Quiz): boolean {
+  const index = mockQuizzes.findIndex(quiz => quiz.id === updatedQuiz.id);
+  if (index !== -1) {
+    mockQuizzes[index] = updatedQuiz;
+    console.log("Kuis diperbarui (simulasi):", updatedQuiz);
+    return true;
+  }
+  console.warn(`Gagal memperbarui kuis: Kuis dengan ID ${updatedQuiz.id} tidak ditemukan.`);
+  return false;
 }
 
 export function getClassById(id: string): ClassData | undefined {
