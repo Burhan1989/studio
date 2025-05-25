@@ -426,7 +426,7 @@ export let mockMajors: MajorData[] = [
   { ID_Jurusan: "major005", Nama_Jurusan: "Akuntansi dan Keuangan Lembaga (AKL)", Deskripsi_Jurusan: "Untuk SMK, fokus pada akuntansi dan keuangan.", Nama_Kepala_Program: "Sri Mulyani, S.E., Ak." },
 ];
 
-export const mockSchedules: ScheduleItem[] = [
+export let mockSchedules: ScheduleItem[] = [
   {
     id: 'schedule1',
     title: 'Pelajaran Matematika: Aljabar Dasar',
@@ -434,7 +434,7 @@ export const mockSchedules: ScheduleItem[] = [
     time: '08:00 - 09:30',
     classId: 'kelasA',
     className: 'Kelas 10A IPA',
-    lessonId: '1', // Assuming lesson with id '1' is related
+    lessonId: '1', 
     teacherId: 'teacher001',
     teacherName: 'Guru Inovatif, M.Pd.',
     description: 'Pembahasan Bab 1 dan latihan soal.',
@@ -446,8 +446,8 @@ export const mockSchedules: ScheduleItem[] = [
     date: '2024-08-16',
     time: '10:00 - 10:45',
     classId: 'kelasB',
-    className: 'Kelas 11B IPS', // Example, might not be relevant if IPS doesn't have Fisika
-    quizId: 'quiz2', // Assuming quiz with id 'quiz2' is related
+    className: 'Kelas 11B IPS', 
+    quizId: 'quiz2', 
     teacherId: 'guru3',
     teacherName: 'Prof. Dr. Agus Salim, M.Sc.',
     description: 'Kuis mencakup materi mekanika fluida statis dan dinamis.',
@@ -472,7 +472,7 @@ export const mockSchedules: ScheduleItem[] = [
     time: 'Batas Akhir 23:59',
     classId: 'kelasB',
     className: 'Kelas 11B IPS',
-    teacherId: 'guru1', // Assuming teacher teaches multiple subjects/classes
+    teacherId: 'guru1', 
     teacherName: 'Dr. Budi Darmawan, S.Kom., M.Cs.',
     category: 'Tugas',
   },
@@ -500,7 +500,6 @@ export function getQuizById(id: string): Quiz | undefined {
 }
 
 export function getQuizzesByTeacherId(teacherId: string): Quiz[] {
-  // Cek apakah mockQuizzes didefinisikan dan merupakan array
   if (!mockQuizzes || !Array.isArray(mockQuizzes)) {
     console.error("mockQuizzes tidak terdefinisi atau bukan array");
     return [];
@@ -523,8 +522,16 @@ export function addQuiz(quizData: Omit<Quiz, 'id'> & { teacherId: string }): Qui
 export function updateQuiz(updatedQuiz: Quiz): boolean {
   const index = mockQuizzes.findIndex(quiz => quiz.id === updatedQuiz.id);
   if (index !== -1) {
-    mockQuizzes[index] = updatedQuiz;
-    console.log("Kuis diperbarui (simulasi):", updatedQuiz);
+    mockQuizzes[index] = {
+      ...mockQuizzes[index],
+      ...updatedQuiz,
+      questions: updatedQuiz.questions.map(q => ({ // Ensure questions are properly mapped
+        ...q,
+        // If IDs are not present on new questions during edit, assign them
+        id: q.id || `q_updated_${Date.now()}${Math.random().toString(36).substring(2,7)}`,
+      })),
+    };
+    console.log("Kuis diperbarui (simulasi):", mockQuizzes[index]);
     return true;
   }
   console.warn(`Gagal memperbarui kuis: Kuis dengan ID ${updatedQuiz.id} tidak ditemukan.`);
@@ -599,5 +606,28 @@ export function updateStudent(updatedStudent: StudentData): boolean {
     mockStudents[index] = updatedStudent;
     return true;
   }
+  return false;
+}
+
+export function getScheduleById(id: string): ScheduleItem | undefined {
+  return mockSchedules.find(schedule => schedule.id === id);
+}
+
+export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
+  const index = mockSchedules.findIndex(schedule => schedule.id === updatedSchedule.id);
+  if (index !== -1) {
+    // Enrich with names if IDs are present, similar to how it's done in schedule page display
+    const classInfo = updatedSchedule.classId ? mockClasses.find(c => c.ID_Kelas === updatedSchedule.classId) : null;
+    const teacherInfo = updatedSchedule.teacherId ? mockTeachers.find(t => t.ID_Guru === updatedSchedule.teacherId) : null;
+    
+    mockSchedules[index] = {
+      ...updatedSchedule,
+      className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (updatedSchedule.classId ? updatedSchedule.className : 'Umum (Semua Kelas)'),
+      teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (updatedSchedule.teacherId ? updatedSchedule.teacherName : 'Tidak Ditentukan'),
+    };
+    console.log("Jadwal diperbarui (simulasi):", mockSchedules[index]);
+    return true;
+  }
+  console.warn(`Gagal memperbarui jadwal: Jadwal dengan ID ${updatedSchedule.id} tidak ditemukan.`);
   return false;
 }

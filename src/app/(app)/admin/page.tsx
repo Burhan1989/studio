@@ -6,13 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Users, BookCopy, FileQuestion, LineChart, Shield, MessageSquare, School, UserCog, Users2 as ParentIcon, Building, Network, ShieldCheck } from 'lucide-react';
+import { Users, BookCopy, FileQuestion, LineChart, Shield, MessageSquare, School, UserCog, Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, Edit } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { mockSchedules, mockClasses, mockTeachers } from "@/lib/mockData"; // Import mock data
+import type { ScheduleItem } from "@/lib/types";
+import { format, parseISO } from 'date-fns';
+import { id as LocaleID } from 'date-fns/locale';
 
 export default function AdminPage() {
   const { user, isLoading: authIsLoading } = useAuth();
@@ -21,12 +25,29 @@ export default function AdminPage() {
   const [whatsappApiKey, setWhatsappApiKey] = useState('');
   const [teacherPhoneNumber, setTeacherPhoneNumber] = useState('');
   const [notificationMessage, setNotificationMessage] = useState('');
+  const [recentSchedules, setRecentSchedules] = useState<ScheduleItem[]>([]);
 
   useEffect(() => {
     if (!authIsLoading && (!user || !user.isAdmin)) {
       router.replace('/dashboard');
     }
   }, [user, authIsLoading, router]);
+
+  useEffect(() => {
+    // Enrich schedules with class names and teacher names for display
+    const enrichedSchedules = mockSchedules.map(schedule => {
+      const classInfo = schedule.classId ? mockClasses.find(c => c.ID_Kelas === schedule.classId) : null;
+      const teacherInfo = schedule.teacherId ? mockTeachers.find(t => t.ID_Guru === schedule.teacherId) : null;
+      return {
+        ...schedule,
+        className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (schedule.classId ? schedule.className : 'Umum (Semua Kelas)'),
+        teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (schedule.teacherId ? schedule.teacherName : 'Tidak Ditentukan'),
+      };
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Sort by most recent
+      .slice(0, 5); // Display latest 5 schedules
+    setRecentSchedules(enrichedSchedules);
+  }, []);
+
 
   const handleSendNotification = () => {
     if (!whatsappApiKey || !teacherPhoneNumber || !notificationMessage) {
@@ -116,6 +137,61 @@ export default function AdminPage() {
             Kirim Notifikasi
           </Button>
         </CardFooter>
+      </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CalendarDays className="w-6 h-6 text-primary" />
+            Jadwal Pembelajaran Terbaru
+          </CardTitle>
+          <CardDescription>Lihat dan kelola jadwal pembelajaran. Klik "Edit" untuk mengubah detail.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {recentSchedules.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Judul</TableHead>
+                  <TableHead>Tanggal</TableHead>
+                  <TableHead>Waktu</TableHead>
+                  <TableHead>Kelas</TableHead>
+                  <TableHead>Guru</TableHead>
+                  <TableHead>Kategori</TableHead>
+                  <TableHead className="text-right">Aksi</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentSchedules.map((schedule) => (
+                  <TableRow key={schedule.id}>
+                    <TableCell className="font-medium">{schedule.title}</TableCell>
+                    <TableCell>{format(parseISO(schedule.date), 'dd MMM yyyy', { locale: LocaleID })}</TableCell>
+                    <TableCell>{schedule.time}</TableCell>
+                    <TableCell>{schedule.className || '-'}</TableCell>
+                    <TableCell>{schedule.teacherName || '-'}</TableCell>
+                    <TableCell>{schedule.category}</TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/admin/schedules/${schedule.id}/edit`}>
+                          <Edit className="w-4 h-4 mr-1" /> Edit
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <p className="text-muted-foreground">Tidak ada jadwal untuk ditampilkan.</p>
+          )}
+           <div className="mt-4 text-right">
+             <Button variant="outline" asChild>
+                <Link href="/schedule"> {/* Assuming /schedule shows all schedules */}
+                    Lihat Semua Jadwal
+                </Link>
+            </Button>
+           </div>
+        </CardContent>
       </Card>
 
       <Card className="shadow-lg">
