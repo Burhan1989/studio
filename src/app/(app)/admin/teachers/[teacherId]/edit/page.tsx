@@ -37,7 +37,7 @@ const editTeacherSchema = z.object({
   Nomor_Telepon: z.string().regex(/^[0-9\\-\\+\\(\\)\\s]+$/, "Format nomor telepon tidak valid.").optional().or(z.literal("")),
   Mata_Pelajaran: z.string().min(3, "Mata pelajaran minimal 3 karakter."),
   Kelas_Ajar: z.string().min(1, "Kelas ajar harus diisi.").transform(val => val.split(',').map(s => s.trim())),
-  Jabatan: z.string().optional().or(z.literal("")), // Admin can edit this
+  Jabatan: z.string().optional().or(z.literal("")), 
   Status_Aktif: z.boolean().default(true),
   newPassword: z.string().min(6, "Password baru minimal 6 karakter.").optional().or(z.literal("")),
   confirmNewPassword: z.string().optional().or(z.literal("")),
@@ -104,7 +104,7 @@ export default function AdminEditTeacherPage() {
       } else {
         toast({
           title: "Guru Tidak Ditemukan",
-          description: \`Guru dengan ID \${teacherId} tidak ditemukan.\`,
+          description: "Guru dengan ID " + teacherId + " tidak ditemukan.",
           variant: "destructive",
         });
         router.push("/admin/teachers");
@@ -126,7 +126,7 @@ export default function AdminEditTeacherPage() {
       Nomor_Telepon: values.Nomor_Telepon,
       Mata_Pelajaran: values.Mata_Pelajaran,
       Kelas_Ajar: values.Kelas_Ajar, 
-      Jabatan: values.Jabatan, // Jabatan can be updated by admin from form values
+      Jabatan: values.Jabatan, 
       Status_Aktif: values.Status_Aktif,
       Password_Hash: values.newPassword ? values.newPassword : initialData.Password_Hash, 
     };
@@ -140,7 +140,7 @@ export default function AdminEditTeacherPage() {
     if (success) {
       toast({
         title: "Data Guru Diperbarui",
-        description: \`Informasi guru "\${values.Nama_Lengkap}" telah berhasil diperbarui.\`,
+        description: "Informasi guru \"" + values.Nama_Lengkap + "\" telah berhasil diperbarui.",
       });
       router.push("/admin/teachers");
       router.refresh(); 
@@ -283,8 +283,7 @@ export default function AdminEditTeacherPage() {
                     <FormControl>
                       <Input 
                         placeholder="cth. Guru Senior Matematika" 
-                        {...field} 
-                        // Jabatan can be edited by admin, so no readOnly here
+                        {...field}
                       />
                     </FormControl>
                     <FormDescription>Admin dapat mengubah jabatan guru.</FormDescription>
