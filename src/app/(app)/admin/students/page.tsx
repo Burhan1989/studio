@@ -6,69 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Edit, Trash2, Users, KeyRound, Upload, Download } from "lucide-react";
+import { UserPlus, Edit, Trash2, Users, KeyRound, Upload, Download, RefreshCw } from "lucide-react";
 import type { StudentData } from "@/lib/types"; 
+import { mockStudents } from "@/lib/mockData"; // Import mockStudents
 
-// Mock Data Siswa (Sementara) - Lebih Detail
-const mockStudents: StudentData[] = [
-  { 
-    ID_Siswa: "siswa1", 
-    Nama_Lengkap: "Ahmad Zulkifli Zaini", 
-    Nama_Panggilan: "Zaini",
-    Username: "ahmad.zaini",
-    Email: "ahmad.z@example.com", 
-    NISN: "0012345678",
-    Nomor_Induk: "S1001", 
-    Kelas: "Kelas 10A",
-    Jenis_Kelamin: "Laki-laki",
-    Tanggal_Lahir: "2007-08-17",
-    Alamat: "Jl. Pelajar No. 10, Jakarta",
-    Nomor_Telepon: "085678901234",
-    Program_Studi: "IPA", 
-    Tanggal_Daftar: "2023-07-01",
-    Status_Aktif: true,
-    Password_Hash: "hashed_password_siswa1", 
-    Profil_Foto: "https://placehold.co/100x100.png"
-  },
-  { 
-    ID_Siswa: "siswa2", 
-    Nama_Lengkap: "Rina Amelia Putri", 
-    Nama_Panggilan: "Rina",
-    Username: "rina.amelia",
-    Email: "rina.a@example.com", 
-    NISN: "0023456789",
-    Nomor_Induk: "S1002", 
-    Kelas: "Kelas 11B",
-    Jenis_Kelamin: "Perempuan",
-    Tanggal_Lahir: "2006-05-22",
-    Alamat: "Jl. Siswa No. 20, Bandung",
-    Nomor_Telepon: "085678901235",
-    Program_Studi: "IPS", 
-    Tanggal_Daftar: "2022-07-01",
-    Status_Aktif: true,
-    Password_Hash: "hashed_password_siswa2", 
-    Profil_Foto: "https://placehold.co/100x100.png"
-  },
-  { 
-    ID_Siswa: "siswa3", 
-    Nama_Lengkap: "Kevin Sanjaya", 
-    Nama_Panggilan: "Kevin",
-    Username: "kevin.sanjaya",
-    Email: "kevin.s@example.com", 
-    NISN: "0034567890",
-    Nomor_Induk: "S1003", 
-    Kelas: "Kelas 12C",
-    Jenis_Kelamin: "Laki-laki",
-    Tanggal_Lahir: "2005-02-10",
-    Alamat: "Jl. Prestasi No. 30, Surabaya",
-    Nomor_Telepon: "085678901236",
-    Program_Studi: "Bahasa", 
-    Tanggal_Daftar: "2021-07-01",
-    Status_Aktif: false, 
-    Password_Hash: "hashed_password_siswa3", 
-    Profil_Foto: "https://placehold.co/100x100.png"
-  },
-];
 
 export default function AdminStudentsPage() {
   const { toast } = useToast();
@@ -93,6 +34,15 @@ export default function AdminStudentsPage() {
       title: "Fitur Dalam Pengembangan",
       description: `Fungsionalitas "${actionDescription} ${dataType} dari file Excel" akan segera hadir. Ini adalah placeholder dan memerlukan implementasi backend.`,
       variant: "default",
+    });
+  };
+
+  const handleMassPasswordGenerate = () => {
+    toast({
+      title: "Simulasi Generate Password Massal",
+      description: "Password massal untuk siswa akan digenerate dari tanggal lahir mereka (simulasi). Implementasi backend diperlukan.",
+      variant: "default",
+      duration: 5000,
     });
   };
 
@@ -125,13 +75,18 @@ export default function AdminStudentsPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-3">
               <CardTitle className="text-xl">Daftar Siswa</CardTitle>
             </div>
-            <Button onClick={() => handleActionPlaceholder("Tambah", "Siswa Baru")}>
-              <UserPlus className="w-4 h-4 mr-2" /> Tambah Siswa Baru
-            </Button>
+             <div className="flex flex-wrap gap-2">
+              <Button onClick={handleMassPasswordGenerate} variant="outline">
+                <RefreshCw className="w-4 h-4 mr-2" /> Generate Password Massal (Tgl. Lahir)
+              </Button>
+              <Button onClick={() => handleActionPlaceholder("Tambah", "Siswa Baru")}>
+                <UserPlus className="w-4 h-4 mr-2" /> Tambah Siswa Baru
+              </Button>
+            </div>
           </div>
           <CardDescription>Lihat, tambah, edit, atau hapus data siswa dalam sistem.</CardDescription>
         </CardHeader>

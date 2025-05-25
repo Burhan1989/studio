@@ -6,64 +6,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Edit, Trash2, UserCog, KeyRound, Upload, Download } from "lucide-react"; 
+import { UserPlus, Edit, Trash2, UserCog, KeyRound, Upload, Download, RefreshCw } from "lucide-react"; 
 import type { TeacherData } from "@/lib/types"; 
 import Link from "next/link"; // Import Link
+import { mockTeachers } from "@/lib/mockData"; // Import mockTeachers
 
-// Mock Data Guru (Sementara) - Lebih Detail
-const mockTeachers: TeacherData[] = [
-  { 
-    ID_Guru: "guru1", 
-    Nama_Lengkap: "Dr. Budi Darmawan, S.Kom., M.Cs.", 
-    Username: "budi.darmawan",
-    Email: "budi.d@example.com", 
-    Mata_Pelajaran: "Matematika Lanjut", 
-    Kelas_Ajar: ["Kelas 11A", "Kelas 12B"],
-    Jenis_Kelamin: "Laki-laki",
-    Tanggal_Lahir: "1980-05-15",
-    Alamat: "Jl. Pendidikan No. 1, Jakarta",
-    Nomor_Telepon: "081234567890",
-    Status_Aktif: true,
-    Password_Hash: "hashed_password_guru1", 
-    Tanggal_Pendaftaran: "2010-08-01",
-    Jabatan: "Guru Senior Matematika",
-    Profil_Foto: "https://placehold.co/100x100.png"
-  },
-  { 
-    ID_Guru: "guru2", 
-    Nama_Lengkap: "Siti Nurhaliza, M.Pd.", 
-    Username: "siti.nurhaliza",
-    Email: "siti.n@example.com", 
-    Mata_Pelajaran: "Bahasa Indonesia", 
-    Kelas_Ajar: ["Kelas 10A", "Kelas 10C"],
-    Jenis_Kelamin: "Perempuan",
-    Tanggal_Lahir: "1985-11-20",
-    Alamat: "Jl. Cendekia No. 5, Bandung",
-    Nomor_Telepon: "081234567891",
-    Status_Aktif: true,
-    Password_Hash: "hashed_password_guru2", 
-    Tanggal_Pendaftaran: "2012-07-15",
-    Jabatan: "Guru Bahasa Indonesia",
-    Profil_Foto: "https://placehold.co/100x100.png"
-  },
-  { 
-    ID_Guru: "guru3", 
-    Nama_Lengkap: "Prof. Dr. Agus Salim, M.Sc.", 
-    Username: "agus.salim",
-    Email: "agus.s@example.com", 
-    Mata_Pelajaran: "Fisika Dasar", 
-    Kelas_Ajar: ["Kelas 11B"],
-    Jenis_Kelamin: "Laki-laki",
-    Tanggal_Lahir: "1975-03-10",
-    Alamat: "Jl. Ilmuwan No. 12, Surabaya",
-    Nomor_Telepon: "081234567892",
-    Status_Aktif: false, 
-    Password_Hash: "hashed_password_guru3", 
-    Tanggal_Pendaftaran: "2005-01-20",
-    Jabatan: "Kepala Jurusan IPA",
-    Profil_Foto: "https://placehold.co/100x100.png"
-  },
-];
 
 export default function AdminTeachersPage() {
   const { toast } = useToast();
@@ -88,6 +35,15 @@ export default function AdminTeachersPage() {
       title: "Fitur Dalam Pengembangan",
       description: `Fungsionalitas "${actionDescription} ${dataType} dari file Excel" akan segera hadir. Ini adalah placeholder dan memerlukan implementasi backend.`,
       variant: "default",
+    });
+  };
+
+  const handleMassPasswordGenerate = () => {
+    toast({
+      title: "Simulasi Generate Password Massal",
+      description: "Password massal untuk guru akan digenerate dari tanggal lahir mereka (simulasi). Implementasi backend diperlukan.",
+      variant: "default",
+      duration: 5000,
     });
   };
 
@@ -120,15 +76,20 @@ export default function AdminTeachersPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-3">
               <CardTitle className="text-xl">Daftar Guru</CardTitle>
             </div>
-            <Button asChild>
-              <Link href="/admin/teachers/new">
-                <UserPlus className="w-4 h-4 mr-2" /> Tambah Guru Baru
-              </Link>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button onClick={handleMassPasswordGenerate} variant="outline">
+                <RefreshCw className="w-4 h-4 mr-2" /> Generate Password Massal (Tgl. Lahir)
+              </Button>
+              <Button asChild>
+                <Link href="/admin/teachers/new">
+                  <UserPlus className="w-4 h-4 mr-2" /> Tambah Guru Baru
+                </Link>
+              </Button>
+            </div>
           </div>
           <CardDescription>Lihat, tambah, edit, atau hapus data guru dalam sistem.</CardDescription>
         </CardHeader>
