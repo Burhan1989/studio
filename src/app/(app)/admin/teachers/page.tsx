@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Edit, Trash2, UserCog, KeyRound } from "lucide-react"; 
+import { UserPlus, Edit, Trash2, UserCog, KeyRound, Upload, Download } from "lucide-react"; 
 import type { TeacherData } from "@/lib/types"; 
 
 // Mock Data Guru (Sementara) - Lebih Detail
@@ -74,6 +74,15 @@ export default function AdminTeachersPage() {
     });
   };
 
+  const handleExcelAction = (actionType: string) => {
+    console.log(`Aksi Excel: ${actionType}`);
+    toast({
+      title: "Fitur Dalam Pengembangan",
+      description: `Fungsionalitas ${actionType} menggunakan file Excel akan segera hadir. Ini adalah placeholder.`,
+      variant: "default",
+    });
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -82,9 +91,30 @@ export default function AdminTeachersPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
+          <div className="flex items-center gap-3 mb-2">
+            <UserCog className="w-8 h-8 text-primary" />
+            <CardTitle className="text-xl">Manajemen Data Guru (Excel)</CardTitle>
+          </div>
+          <CardDescription>Import dan export data guru menggunakan file Excel.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button onClick={() => handleExcelAction("Import Guru")} variant="outline" className="flex-1">
+              <Upload className="w-4 h-4 mr-2" /> Import Guru
+            </Button>
+            <Button onClick={() => handleExcelAction("Export Guru")} variant="outline" className="flex-1">
+              <Download className="w-4 h-4 mr-2" /> Export Guru
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur import/export Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <UserCog className="w-8 h-8 text-primary" />
+              {/* Icon can be UserCog or similar, already used above, maybe no icon here or a different one like List */}
               <CardTitle className="text-xl">Daftar Guru</CardTitle>
             </div>
             <Button onClick={() => handleActionPlaceholder("Tambah", "Guru Baru")}>

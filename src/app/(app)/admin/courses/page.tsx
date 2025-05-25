@@ -1,10 +1,11 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { BookCopy, PlusCircle, Edit, Trash2, Eye } from "lucide-react";
+import { BookCopy, PlusCircle, Edit, Trash2, Eye, Upload, Download } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 // Mock Data (Sementara)
@@ -25,28 +26,58 @@ export default function AdminCoursesPage() {
     });
   };
 
+  const handleExcelAction = (actionType: string) => {
+    console.log(`Aksi Excel: ${actionType}`);
+    toast({
+      title: "Fitur Dalam Pengembangan",
+      description: `Fungsionalitas ${actionType} menggunakan file Excel akan segera hadir. Ini adalah placeholder.`,
+      variant: "default",
+    });
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
             <BookCopy className="w-10 h-10 text-primary" />
-            <h1 className="text-3xl font-bold">Kelola Kursus & Pelajaran</h1>
+            <h1 className="text-3xl font-bold">Kelola Pelajaran</h1>
         </div>
-        <Button onClick={() => handleActionPlaceholder("Tambah", "Kursus Baru")}>
-          <PlusCircle className="w-4 h-4 mr-2" /> Tambah Kursus Baru
+        <Button onClick={() => handleActionPlaceholder("Tambah", "Pelajaran Baru")}>
+          <PlusCircle className="w-4 h-4 mr-2" /> Tambah Pelajaran Baru
         </Button>
       </div>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <div className="flex items-center gap-3 mb-2">
+            <BookCopy className="w-8 h-8 text-primary" />
+            <CardTitle className="text-xl">Manajemen Jadwal Pelajaran (Excel)</CardTitle>
+          </div>
+          <CardDescription>Import dan export jadwal pelajaran menggunakan file Excel.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button onClick={() => handleExcelAction("Import Jadwal")} variant="outline" className="flex-1">
+              <Upload className="w-4 h-4 mr-2" /> Import Jadwal
+            </Button>
+            <Button onClick={() => handleExcelAction("Export Jadwal")} variant="outline" className="flex-1">
+              <Download className="w-4 h-4 mr-2" /> Export Jadwal
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur import/export Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
+        </CardContent>
+      </Card>
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Daftar Kursus Tersedia</CardTitle>
-          <CardDescription>Kelola semua kursus dan pelajaran yang ada di platform AdeptLearn.</CardDescription>
+          <CardTitle>Daftar Pelajaran Tersedia</CardTitle>
+          <CardDescription>Kelola semua pelajaran yang ada di platform AdeptLearn.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Judul Kursus</TableHead>
+                <TableHead>Judul Pelajaran</TableHead>
                 <TableHead>Kategori</TableHead>
                 <TableHead>Jumlah Modul</TableHead>
                 <TableHead>Status</TableHead>
@@ -79,7 +110,7 @@ export default function AdminCoursesPage() {
               ))}
               {mockCourses.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">Belum ada data kursus.</TableCell>
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">Belum ada data pelajaran.</TableCell>
                 </TableRow>
               )}
             </TableBody>

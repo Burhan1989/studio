@@ -32,18 +32,25 @@ export default function AdminPage() {
 
   const adminSections = [
     {
-      title: "Kelola Pengguna",
-      description: "Lihat, edit, atau hapus data pengguna (guru & siswa).",
+      title: "Kelola Guru",
+      description: "Lihat, edit, atau hapus data guru.",
       icon: <Users className="w-8 h-8 text-primary" />,
-      href: "/admin/users",
-      cta: "Buka Manajemen Pengguna"
+      href: "/admin/teachers",
+      cta: "Buka Manajemen Guru"
     },
     {
-      title: "Kelola Kursus & Pelajaran",
-      description: "Tambah, edit, atau hapus kursus dan pelajaran.",
+      title: "Kelola Siswa",
+      description: "Lihat, edit, atau hapus data siswa.",
+      icon: <UsersRound className="w-8 h-8 text-primary" />,
+      href: "/admin/students",
+      cta: "Buka Manajemen Siswa"
+    },
+    {
+      title: "Kelola Pelajaran",
+      description: "Tambah, edit, atau hapus pelajaran.",
       icon: <BookCopy className="w-8 h-8 text-primary" />,
       href: "/admin/courses",
-      cta: "Buka Manajemen Kursus"
+      cta: "Buka Manajemen Pelajaran"
     },
     {
       title: "Kelola Kuis",
@@ -85,16 +92,6 @@ export default function AdminPage() {
     // Kosongkan field setelah "terkirim"
     // setTeacherPhoneNumber('');
     // setNotificationMessage('');
-  };
-
-  const handleExcelAction = (actionType: string) => {
-    // Placeholder: Logika untuk import/export Excel akan ada di sini
-    console.log(`Aksi Excel: ${actionType}`);
-    toast({
-      title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas ${actionType} menggunakan file Excel akan segera hadir. Ini adalah placeholder.`,
-      variant: "default",
-    });
   };
 
   if (authIsLoading || !user || !user.isAdmin) {
@@ -141,66 +138,6 @@ export default function AdminPage() {
             </CardFooter>
           </Card>
         ))}
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
-        {/* Manajemen Data Guru & Siswa */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <UsersRound className="w-8 h-8 text-primary" />
-              <CardTitle className="text-xl">Manajemen Data Guru & Siswa (Excel)</CardTitle>
-            </div>
-            <CardDescription>Import dan export data guru serta siswa menggunakan file Excel.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <h4 className="font-medium">Data Guru</h4>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Button onClick={() => handleExcelAction("Import Guru")} variant="outline" className="flex-1">
-                  <Upload className="w-4 h-4 mr-2" /> Import Guru
-                </Button>
-                <Button onClick={() => handleExcelAction("Export Guru")} variant="outline" className="flex-1">
-                  <Download className="w-4 h-4 mr-2" /> Export Guru
-                </Button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <h4 className="font-medium">Data Siswa</h4>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Button onClick={() => handleExcelAction("Import Siswa")} variant="outline" className="flex-1">
-                  <Upload className="w-4 h-4 mr-2" /> Import Siswa
-                </Button>
-                <Button onClick={() => handleExcelAction("Export Siswa")} variant="outline" className="flex-1">
-                  <Download className="w-4 h-4 mr-2" /> Export Siswa
-                </Button>
-              </div>
-            </div>
-             <p className="text-xs text-muted-foreground">Catatan: Fitur import/export Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
-          </CardContent>
-        </Card>
-
-        {/* Manajemen Jadwal Pelajaran */}
-        <Card className="shadow-lg">
-          <CardHeader>
-            <div className="flex items-center gap-3 mb-2">
-              <BookCopy className="w-8 h-8 text-primary" />
-              <CardTitle className="text-xl">Manajemen Jadwal Pelajaran (Excel)</CardTitle>
-            </div>
-            <CardDescription>Import dan export jadwal pelajaran menggunakan file Excel.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button onClick={() => handleExcelAction("Import Jadwal")} variant="outline" className="flex-1">
-                <Upload className="w-4 h-4 mr-2" /> Import Jadwal
-              </Button>
-              <Button onClick={() => handleExcelAction("Export Jadwal")} variant="outline" className="flex-1">
-                <Download className="w-4 h-4 mr-2" /> Export Jadwal
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">Catatan: Fitur import/export Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Notifikasi Guru via WhatsApp */}
