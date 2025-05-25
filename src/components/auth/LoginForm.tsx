@@ -1,6 +1,7 @@
 
 "use client";
 
+import * as React from 'react'; // Added this line
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -37,18 +38,6 @@ const formSchema = z.object({
   password: z.string().min(6, { message: "Kata sandi minimal harus 6 karakter." }),
 });
 
-// Kredensial contoh dari mockData
-// Kredensial admin utama
-const ADMIN_EMAIL_LEGACY = "admin@example.com"; // Akan dicocokkan dengan isAdmin flag
-const ADMIN_PASSWORD_LEGACY = "adminpassword";
-const STUDENT_EMAIL = "student@example.com";
-const STUDENT_PASSWORD = "password";
-const TEACHER_EMAIL = "teacher@example.com";
-const TEACHER_PASSWORD = "password";
-const PARENT_EMAIL = "parent@example.com";
-const PARENT_PASSWORD = "password";
-
-
 export default function LoginForm() {
   const { login } = useAuth();
   const { toast } = useToast();
@@ -71,7 +60,6 @@ export default function LoginForm() {
     const selectedRole = values.role as UserRole;
     let loginSuccess = false;
     let loggedInUser: import('@/lib/types').User | null = null;
-
 
     if (selectedRole === "admin") {
       const adminUser = mockTeachers.find(
