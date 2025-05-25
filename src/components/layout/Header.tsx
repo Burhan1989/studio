@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { mockSchoolProfile } from '@/lib/mockData'; // Import data sekolah
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -23,7 +24,9 @@ export default function Header() {
       <div className="container flex items-center h-16 max-w-screen-2xl">
         <Link href="/" className="flex items-center gap-2 mr-6">
           <GraduationCap className="w-8 h-8 text-primary" />
-          <span className="text-xl font-bold text-foreground">AdeptLearn</span>
+          <span className="text-xl font-bold text-foreground">
+            {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
+          </span>
         </Link>
         
         <nav className="flex items-center flex-1 gap-6 text-sm">
@@ -32,9 +35,11 @@ export default function Header() {
               <Link href="/dashboard" className="transition-colors text-foreground/60 hover:text-foreground/80">
                 Dasbor
               </Link>
-              <Link href="/learning-path" className="transition-colors text-foreground/60 hover:text-foreground/80">
-                Sesuaikan Jalur
-              </Link>
+              {user.role === 'student' && (
+                 <Link href="/learning-path" className="transition-colors text-foreground/60 hover:text-foreground/80">
+                    Sesuaikan Jalur
+                  </Link>
+              )}
               <Link href="/lessons" className="transition-colors text-foreground/60 hover:text-foreground/80">
                 Pelajaran
               </Link>
@@ -51,7 +56,7 @@ export default function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative w-8 h-8 rounded-full">
                   <Avatar className="w-8 h-8">
-                    <AvatarImage src={user.name ? `https://avatar.vercel.sh/${user.name}.png` : undefined} alt={user.name || user.email} />
+                    <AvatarImage src={user.name ? `https://avatar.vercel.sh/${user.name}.png` : undefined} alt={user.name || user.email || "User"} />
                     <AvatarFallback>{user.email?.[0]?.toUpperCase()}</AvatarFallback>
                   </Avatar>
                 </Button>

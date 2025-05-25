@@ -8,15 +8,16 @@ import { Progress } from '@/components/ui/progress';
 import { BookOpen, BrainCircuit, Target, CheckCircle, ListChecks } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { mockSchoolProfile } from '@/lib/mockData'; // Import data sekolah
 
 export default function DashboardPage() {
   const { user } = useAuth();
 
   // Mock data
   const currentModule = {
-    title: "Pengenalan JavaScript", // Example, real data from mockData
+    title: "Pengenalan JavaScript", 
     progress: 65,
-    nextLesson: "Variabel dan Tipe Data", // Example, real data from mockData
+    nextLesson: "Variabel dan Tipe Data", 
   };
 
   const upcomingActivities = [
@@ -24,13 +25,15 @@ export default function DashboardPage() {
     { type: "Pelajaran", title: "Fungsi dalam JavaScript", due: "Minggu Depan" },
   ];
 
-  const overallProgress = 42; // Percentage
+  const overallProgress = 42; 
 
   return (
     <div className="space-y-8">
       <div className="p-6 mb-8 rounded-lg shadow bg-gradient-to-r from-primary to-blue-400 text-primary-foreground">
         <h1 className="text-3xl font-bold">Selamat datang kembali, {user?.name || user?.email}!</h1>
-        <p className="mt-1 text-lg opacity-90">Mari lanjutkan perjalanan belajar Anda.</p>
+        <p className="mt-1 text-lg opacity-90">
+          Mari lanjutkan perjalanan belajar Anda di {mockSchoolProfile.namaSekolah || 'AdeptLearn'}.
+        </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -57,7 +60,7 @@ export default function DashboardPage() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Target className="w-6 h-6 text-accent-foreground" /> {/* Using accent color */}
+              <Target className="w-6 h-6 text-accent-foreground" /> 
               Kemajuan Keseluruhan
             </CardTitle>
             <CardDescription>Penyelesaian jalur belajar Anda.</CardDescription>

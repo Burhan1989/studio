@@ -19,9 +19,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { UserRole } from '@/lib/types';
+import { mockSchoolProfile } from '@/lib/mockData'; // Import data sekolah
 
 interface NavItem {
   href: string;
@@ -29,31 +30,20 @@ interface NavItem {
   icon: React.ElementType;
   adminOnly?: boolean;
   parentOnly?: boolean;
-  teacherOnly?: boolean; // Item ini hanya untuk guru
-  studentOnly?: boolean; // Item ini hanya untuk siswa
+  teacherOnly?: boolean; 
+  studentOnly?: boolean; 
 }
 
 const baseNavItems: NavItem[] = [
-  // Item Umum untuk Siswa, Guru, Admin (kecuali ditandai khusus)
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard },
   { href: '/lessons', label: 'Pelajaran', icon: BookOpen },
   { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck },
   { href: '/reports', label: 'Laporan', icon: BarChart3 },
-
-  // Item Khusus Siswa
   { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit, studentOnly: true },
-
-  // Item Khusus Guru (Placeholder)
-  { href: '/teacher/materials', label: 'Materi Saya', icon: BookCopy, teacherOnly: true },
-
-  // Item Umum untuk Semua Peran Terautentikasi
+  { href: '/teacher/materials', label: 'Materi Saya', icon: UploadCloud, teacherOnly: true }, // Icon diperbarui
   { href: '/profile', label: 'Profil', icon: UserCircle },
   { href: '/settings', label: 'Pengaturan', icon: Settings },
-
-  // Item Khusus Orang Tua
   { href: '/parent/dashboard', label: 'Dasbor Anak', icon: Users, parentOnly: true },
-
-  // Item Khusus Admin
   { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
   { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building, adminOnly: true },
   { href: '/admin/teachers', label: 'Kelola Guru', icon: UserCog, adminOnly: true },
@@ -79,31 +69,28 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
   if (user?.isAdmin) {
     filteredNavItems = baseNavItems.filter(item =>
-      item.adminOnly || // Tampilkan semua item admin
-      (!item.parentOnly && !item.teacherOnly && !item.studentOnly) // Tampilkan item umum (bukan khusus peran lain)
+      item.adminOnly || 
+      (!item.parentOnly && !item.teacherOnly && !item.studentOnly && 
+        (item.href === '/dashboard' || item.href === '/profile' || item.href === '/settings' || item.href === '/lessons' || item.href === '/quizzes' || item.href === '/reports'))
     );
   } else if (userRole === 'parent') {
     filteredNavItems = baseNavItems.filter(item =>
-      item.parentOnly || // Tampilkan dasbor khusus orang tua
-      item.href === '/profile' || // Tampilkan profil
-      item.href === '/settings'    // Tampilkan pengaturan
+      item.parentOnly || 
+      item.href === '/profile' || 
+      item.href === '/settings'    
     );
   } else if (userRole === 'teacher') {
     filteredNavItems = baseNavItems.filter(item => {
-      if (item.adminOnly || item.parentOnly || item.studentOnly) return false; // Sembunyikan item khusus admin, orang tua, siswa
-      if (item.teacherOnly) return true; // Tampilkan item khusus guru
-      if (item.href === '/learning-path') return false; // Guru tidak melihat "Sesuaikan Jalur"
-      // Tampilkan item umum lainnya (Dasbor, Pelajaran, Kuis, Laporan, Profil, Pengaturan)
+      if (item.adminOnly || item.parentOnly || item.studentOnly) return false; 
+      if (item.teacherOnly) return true; 
       return !item.adminOnly && !item.parentOnly && !item.studentOnly && !item.teacherOnly;
     });
   } else if (userRole === 'student') {
     filteredNavItems = baseNavItems.filter(item => {
-      if (item.adminOnly || item.parentOnly || item.teacherOnly) return false; // Sembunyikan item khusus admin, orang tua, guru
-      // Tampilkan item khusus siswa ATAU item umum
+      if (item.adminOnly || item.parentOnly || item.teacherOnly) return false; 
       return item.studentOnly || (!item.adminOnly && !item.parentOnly && !item.teacherOnly);
     });
   } else {
-    // Fallback untuk peran tidak dikenal: hanya tampilkan profil & pengaturan
     filteredNavItems = baseNavItems.filter(item => item.href === '/profile' || item.href === '/settings');
   }
 
@@ -114,7 +101,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
         <SidebarHeader className="p-4 border-b">
           <Link href={user?.role === 'parent' ? "/parent/dashboard" : "/dashboard"} className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
             <GraduationCap className="w-8 h-8 text-primary" />
-            <span className="text-xl font-bold text-foreground group-data-[collapsible=icon]:hidden">AdeptLearn</span>
+            <span className="text-xl font-bold text-foreground group-data-[collapsible=icon]:hidden">
+              {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
+            </span>
           </Link>
         </SidebarHeader>
         <SidebarContent className="p-2">
@@ -126,9 +115,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
                     isActive={pathname === item.href ||
                                 (item.href !== '/dashboard' &&
                                  item.href !== '/parent/dashboard' &&
-                                 !item.href.startsWith('/admin/') && // Generic admin/* should not make admin/dashboard active unless exact match
-                                 pathname.startsWith(item.href)) ||
-                                 (item.href === '/admin' && pathname.startsWith('/admin/')) // Special case for Admin Dashboard
+                                 item.href !== '/admin' && // Ensure admin dashboard is exact match
+                                 pathname.startsWith(item.href) && item.href.length > 1 && !item.href.startsWith('/admin/')) || // for nested general pages
+                                 (item.href.startsWith('/admin/') && pathname.startsWith(item.href)) || // for nested admin pages
+                                 (item.href === '/admin' && pathname === '/admin') // for admin dashboard
                               }
                     tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
                     className="justify-start"
@@ -207,3 +197,4 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+

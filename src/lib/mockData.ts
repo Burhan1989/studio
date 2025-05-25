@@ -1,5 +1,5 @@
 
-import type { Lesson, Quiz, Question, StudentData, TeacherData, ParentData, UserProgress, LessonStatusCounts } from './types';
+import type { Lesson, Quiz, Question, StudentData, TeacherData, ParentData, UserProgress, LessonStatusCounts, SchoolProfileData } from './types';
 import type { ChartConfig } from "@/components/ui/chart";
 
 export const mockLessons: Lesson[] = [
@@ -351,11 +351,30 @@ export const lessonStatusData: LessonStatusCounts[] = [
   { name: 'Belum Dimulai', value: notStartedCount, fill: 'hsl(var(--chart-3))' },
 ];
 
-export const lessonStatusChartConfig = {
+export const lessonStatusChartConfig: ChartConfig = {
   Selesai: { label: 'Selesai', color: 'hsl(var(--chart-1))' },
   Dikerjakan: { label: 'Dikerjakan', color: 'hsl(var(--chart-2))' },
   'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
-} satisfies ChartConfig;
+};
+
+export const mockSchoolProfile: SchoolProfileData = {
+  namaSekolah: "SMA Negeri 1 Teladan Bangsa",
+  npsn: "12345678",
+  jenjang: "SMA",
+  statusSekolah: "Negeri",
+  akreditasi: "A (Unggul)",
+  namaKepalaSekolah: "Dr. H. Budi Santoso, M.Pd.",
+  alamatJalan: "Jl. Pendidikan No. 1",
+  kota: "Jakarta Selatan",
+  provinsi: "DKI Jakarta",
+  kodePos: "12345",
+  nomorTelepon: "021-1234567",
+  emailSekolah: "info@sman1teladan.sch.id",
+  websiteSekolah: "https://sman1teladan.sch.id",
+  visi: "Menjadi sekolah unggul yang berkarakter, berprestasi, dan berwawasan global.",
+  misi: "1. Melaksanakan pembelajaran yang inovatif dan kreatif.\n2. Mengembangkan potensi siswa secara optimal.\n3. Membangun karakter siswa yang berakhlak mulia."
+  // logo tidak disertakan di sini karena merupakan File atau string, lebih cocok di state komponen
+};
 
 
 export function getLessonById(id: string): Lesson | undefined {
