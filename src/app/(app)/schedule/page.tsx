@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { mockSchedules, mockClasses, mockTeachers } from '@/lib/mockData';
-import type { ScheduleItem, ClassData } from '@/lib/types';
+import { mockSchedules, mockClasses, mockTeachers, mockStudents, mockLessons, mockQuizzes } from '@/lib/mockData'; // Added mockLessons and mockQuizzes
+import type { ScheduleItem, ClassData, StudentData } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, Clock, Tag, Info, User, Link as LinkIcon, AlertTriangle } from 'lucide-react';
@@ -28,6 +28,7 @@ export default function SchedulePage() {
   const [allSchedules, setAllSchedules] = useState<ScheduleItem[]>([]);
   const [filteredSchedules, setFilteredSchedules] = useState<ScheduleItem[]>([]);
   const [selectedClassFilter, setSelectedClassFilter] = useState<string>(""); // Untuk filter kelas
+  const [studentClassInfo, setStudentClassInfo] = useState<ClassData | null>(null);
 
   useEffect(() => {
     // Simulating fetching schedules and enriching them with class names and teacher names
@@ -36,7 +37,7 @@ export default function SchedulePage() {
       const teacherInfo = mockTeachers.find(t => t.ID_Guru === schedule.teacherId);
       return {
         ...schedule,
-        className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : 'Semua Kelas',
+        className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : 'Umum (Semua Kelas)',
         teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : 'Tidak Ditentukan',
       };
     });
@@ -44,25 +45,38 @@ export default function SchedulePage() {
   }, []);
 
   useEffect(() => {
+    if (user?.role === 'student' && user.email) {
+        const studentData = mockStudents.find(s => s.Email === user.email);
+        if (studentData) {
+            const classData = mockClasses.find(c => c.Nama_Kelas === studentData.Kelas && c.jurusan === studentData.Program_Studi);
+            setStudentClassInfo(classData || null);
+        } else {
+            setStudentClassInfo(null);
+        }
+    } else {
+        setStudentClassInfo(null);
+    }
+  }, [user]);
+
+
+  useEffect(() => {
     let schedulesToDisplay = [...allSchedules];
 
     // Filter berdasarkan peran dan kelas yang dipilih
     if (user?.role === 'student') {
-      const studentClass = mockStudents.find(s => s.Email === user.email)?.Kelas;
-      const studentClassData = mockClasses.find(c => c.Nama_Kelas === studentClass); // Asumsi Nama_Kelas unik untuk mencocokkan
-      if (studentClassData) {
-        schedulesToDisplay = schedulesToDisplay.filter(s => s.classId === studentClassData.ID_Kelas || !s.classId); // Tampilkan jadwal kelas siswa atau jadwal umum
+      if (studentClassInfo) {
+        schedulesToDisplay = schedulesToDisplay.filter(s => s.classId === studentClassInfo.ID_Kelas || !s.classId); // Tampilkan jadwal kelas siswa atau jadwal umum
       } else {
         schedulesToDisplay = schedulesToDisplay.filter(s => !s.classId); // Jika siswa tidak punya kelas, hanya tampilkan jadwal umum
       }
-    } else if (user?.role === 'teacher') {
-        // Filter by selected class if a class is chosen by the teacher
+    } else if (user?.role === 'teacher' || user?.isAdmin) {
+        // Filter by selected class if a class is chosen by the teacher or admin
         if (selectedClassFilter && selectedClassFilter !== "all") {
             schedulesToDisplay = schedulesToDisplay.filter(s => s.classId === selectedClassFilter);
         }
-        // Teachers can see all schedules by default or filter by class
+        // Teachers and Admins can see all schedules by default or filter by class
     }
-    // Admin sees all schedules by default, can also use the filter
+
 
     // Urutkan berdasarkan tanggal dan waktu
     schedulesToDisplay.sort((a, b) => {
@@ -75,7 +89,7 @@ export default function SchedulePage() {
     });
 
     setFilteredSchedules(schedulesToDisplay);
-  }, [allSchedules, user, selectedClassFilter]);
+  }, [allSchedules, user, selectedClassFilter, studentClassInfo]);
 
   const getCategoryBadgeColor = (category: ScheduleItem['category']) => {
     switch (category) {
@@ -119,7 +133,8 @@ export default function SchedulePage() {
       <CardDescription>
         Lihat jadwal pelajaran, kuis, tugas, dan kegiatan lainnya.
         {user?.role === 'teacher' && " Anda dapat mengelola jadwal ini (fitur akan datang)."}
-        {user?.role === 'student' && " Ini adalah jadwal untuk kelas Anda dan kegiatan umum."}
+        {user?.role === 'student' && studentClassInfo && ` Ini adalah jadwal untuk kelas Anda (${studentClassInfo.Nama_Kelas} - ${studentClassInfo.jurusan}) dan kegiatan umum.`}
+        {user?.role === 'student' && !studentClassInfo && " Ini adalah jadwal kegiatan umum. Data kelas Anda tidak ditemukan."}
       </CardDescription>
 
       {filteredSchedules.length > 0 ? (
@@ -151,7 +166,7 @@ export default function SchedulePage() {
                       <Tag className="w-4 h-4 mr-2" /> Kelas: {item.className}
                     </div>
                   )}
-                  {item.teacherName && (user?.role === 'student' || user?.isAdmin) && (
+                  {item.teacherName && (user?.role === 'student' || user?.isAdmin || (user?.role === 'teacher' && user.id !== item.teacherId)) && (
                      <div className="flex items-center text-muted-foreground">
                       <User className="w-4 h-4 mr-2" /> Guru: {item.teacherName}
                     </div>
@@ -196,7 +211,7 @@ export default function SchedulePage() {
           </CardContent>
         </Card>
       )}
-       {user?.role === 'teacher' && (
+       {(user?.role === 'teacher' || user?.isAdmin) && (
         <p className="mt-6 text-sm text-center text-muted-foreground">
           Fitur untuk menambah, mengedit, dan menghapus jadwal akan ditambahkan pada iterasi berikutnya.
         </p>
