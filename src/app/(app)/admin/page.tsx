@@ -278,19 +278,20 @@ export default function AdminPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockClasses.map((kelas) => (
-                <TableRow key={kelas.ID_Kelas}>
-                  <TableCell>{kelas.Nama_Kelas}</TableCell>
-                  <TableCell>{kelas.jurusan || '-'}</TableCell>
-                  <TableCell>{kelas.ID_Guru}</TableCell> {/* Displaying ID_Guru as Wali Kelas for now */}
-                  <TableCell>{(kelas as any).jumlahSiswa || 0}</TableCell> {/* Accessing mock-specific prop */}
-                  <TableCell>
+              {mockClasses.map((kelas) => {
+                const tableCells = [
+                  <TableCell key={`nama-${kelas.ID_Kelas}`}>{kelas.Nama_Kelas}</TableCell>,
+                  <TableCell key={`jurusan-${kelas.ID_Kelas}`}>{kelas.jurusan || '-'}</TableCell>,
+                  <TableCell key={`guru-${kelas.ID_Kelas}`}>{kelas.ID_Guru}</TableCell>,
+                  <TableCell key={`jumlah-${kelas.ID_Kelas}`}>{(kelas as any).jumlahSiswa || 0}</TableCell>,
+                  <TableCell key={`aksi-${kelas.ID_Kelas}`}>
                     <Button variant="outline" size="sm" onClick={() => toast({ title: "Fitur Dalam Pengembangan", description: `Opsi edit/hapus untuk ${kelas.Nama_Kelas} akan segera hadir.`})}>
                       Edit
                     </Button>
                   </TableCell>
-                </TableRow>
-              ))}
+                ];
+                return <TableRow key={kelas.ID_Kelas}>{tableCells}</TableRow>;
+              })}
               {mockClasses.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">
