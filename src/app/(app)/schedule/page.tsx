@@ -2,21 +2,22 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { mockSchedules, mockClasses, mockTeachers, mockStudents, getLessonById, getQuizById } from '@/lib/mockData';
+import { mockSchedules, mockClasses, mockTeachers, mockStudents } from '@/lib/mockData';
 import type { ScheduleItem, ClassData, StudentData } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, Clock, Tag, Info, User, Link as LinkIcon, ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
-import { 
-  format, 
-  parseISO, 
-  isSameDay, 
-  startOfWeek, 
-  addDays, 
-  subDays, 
-  addWeeks, 
+import {
+  format,
+  parseISO,
+  isSameDay,
+  startOfWeek,
+  addDays,
+  subDays,
+  addWeeks,
   subWeeks,
-  getDay 
+  getDay,
+  eachDayOfInterval // Added import
 } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
 import Link from 'next/link';
@@ -39,16 +40,28 @@ interface DayWithSchedules {
   schedules: ScheduleItem[];
 }
 
+// Helper function to get lesson (already in mockData.ts)
+function getLessonById(id: string) {
+  return mockLessons.find(lesson => lesson.id === id);
+}
+// Helper function to get quiz (already in mockData.ts)
+function getQuizById(id: string) {
+  return mockQuizzes.find(quiz => quiz.id === id);
+}
+// Import mockLessons and mockQuizzes for helper functions
+import { mockLessons, mockQuizzes } from '@/lib/mockData';
+
+
 export default function SchedulePage() {
   const { user } = useAuth();
   const [allSchedules, setAllSchedules] = useState<ScheduleItem[]>([]);
   const [studentClassInfo, setStudentClassInfo] = useState<ClassData | null>(null);
-  
-  const [viewMode, setViewMode] = useState<ViewMode>('daily');
-  const [currentDate, setCurrentDate] = useState(new Date()); 
-  const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 })); 
 
-  const [selectedClassFilter, setSelectedClassFilter] = useState<string>(""); 
+  const [viewMode, setViewMode] = useState<ViewMode>('daily');
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+
+  const [selectedClassFilter, setSelectedClassFilter] = useState<string>("");
 
   const [displayableSchedules, setDisplayableSchedules] = useState<ScheduleItem[]>([]);
   const [weeklyViewData, setWeeklyViewData] = useState<DayWithSchedules[]>([]);
@@ -94,16 +107,15 @@ export default function SchedulePage() {
             schedulesToFilter = schedulesToFilter.filter(s => s.classId === selectedClassFilter);
         }
     }
-    
+
     if (viewMode === 'daily') {
         const dailyFiltered = schedulesToFilter.filter(s => isSameDay(parseISO(s.date), currentDate));
         setDisplayableSchedules(dailyFiltered.sort((a, b) => a.time.localeCompare(b.time)));
     } else if (viewMode === 'weekly') {
-        const weekEnd = addDays(currentWeekStart, 5); // Monday (0) + 5 days = Saturday (5)
+        const weekEnd = addDays(currentWeekStart, 5); // Monday to Saturday
         const weeklyFiltered = schedulesToFilter.filter(s => {
             const scheduleDate = parseISO(s.date);
-            // Display Monday (1) to Saturday (6)
-            return scheduleDate >= currentWeekStart && scheduleDate <= weekEnd && getDay(scheduleDate) >= 1 && getDay(scheduleDate) <= 6; 
+            return scheduleDate >= currentWeekStart && scheduleDate <= weekEnd && getDay(scheduleDate) >= 1 && getDay(scheduleDate) <= 6;
         });
         setDisplayableSchedules(weeklyFiltered);
 
@@ -223,7 +235,7 @@ export default function SchedulePage() {
           )}
         </div>
       </div>
-      
+
       <CardDescription>
         Lihat jadwal pelajaran, kuis, tugas, dan kegiatan lainnya.
         {user?.role === 'teacher' && " Anda dapat mengelola jadwal ini."}
@@ -291,10 +303,9 @@ export default function SchedulePage() {
           {viewMode === 'weekly' && (
              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3">
               {weeklyViewData.map(dayData => (
-                <div key={dayData.date.toISOString()} className={`p-3 border rounded-lg ${dayColors[getDay(dayData.date)] || 'bg-background/50'}`}>
+                <div key={dayData.date.toISOString()} className={`p-3 border rounded-lg ${dayColors[getDay(dayData.date) as keyof typeof dayColors] || 'bg-background/50'}`}>
                   <h3 className="mb-3 font-semibold text-center text-md">
                     {format(dayData.date, 'EEEE', { locale: LocaleID })}
-                    {/* Tanggal numerik dihilangkan dari sini */}
                   </h3>
                   {dayData.schedules.length > 0 ? (
                     <div className="space-y-3">
@@ -315,3 +326,4 @@ export default function SchedulePage() {
     </div>
   );
 }
+
