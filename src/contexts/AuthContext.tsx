@@ -39,48 +39,49 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log("AuthContext: Initial loading finished. isLoading set to false.");
   }, []);
 
-  // Temporarily comment out redirection logic to diagnose freeze
-  useEffect(() => {
-    console.log(`AuthContext: Redirection effect check. isLoading: ${isLoading}, user: ${!!user}, pathname: ${pathname}`);
-    // if (isLoading) {
-    //   console.log("AuthContext: Still loading, redirection logic skipped.");
-    //   return; 
-    // }
+  // useEffect(() => {
+  //   console.log(`AuthContext: Redirection effect check. isLoading: ${isLoading}, user: ${!!user}, pathname: ${pathname}`);
+  //   if (isLoading) {
+  //     console.log("AuthContext: Still loading, redirection logic skipped.");
+  //     return; 
+  //   }
 
-    // const publicPaths = ['/login', '/register', '/'];
-    // const isPublicPath = publicPaths.includes(pathname);
+  //   const publicPaths = ['/login', '/register', '/'];
+  //   const isPublicPath = publicPaths.includes(pathname);
 
-    // if (!user && !isPublicPath) {
-    //   if (pathname !== '/login') {
-    //     console.log(`AuthContext: No user, not public. Attempting redirect from ${pathname} to /login.`);
-    //     // router.replace('/login');
-    //   } else {
-    //      console.log("AuthContext: No user, already on /login.");
-    //   }
-    // } else if (user && isPublicPath) {
-    //   let targetDashboard = '/dashboard';
-    //   if (user.isAdmin) {
-    //     targetDashboard = '/admin';
-    //   } else if (user.role === 'parent') {
-    //     targetDashboard = '/parent/dashboard';
-    //   }
+  //   if (!user && !isPublicPath) {
+  //     if (pathname !== '/login') {
+  //       console.log(`AuthContext: No user, not public. Attempting redirect from ${pathname} to /login.`);
+  //       router.replace('/login');
+  //     } else {
+  //        console.log("AuthContext: No user, already on /login.");
+  //     }
+  //   } else if (user && isPublicPath) {
+  //     let targetDashboard = '/dashboard';
+  //     if (user.isAdmin) {
+  //       targetDashboard = '/admin';
+  //     } else if (user.role === 'parent') {
+  //       targetDashboard = '/parent/dashboard';
+  //     }
       
-    //   if (pathname !== targetDashboard) {
-    //     console.log(`AuthContext: User exists, on public path ${pathname}. Attempting redirect to ${targetDashboard}.`);
-    //     // router.replace(targetDashboard);
-    //   } else {
-    //     console.log(`AuthContext: User exists, already on target dashboard ${targetDashboard}.`);
-    //   }
-    // } else {
-    //   console.log("AuthContext: Redirection conditions not met or already on correct page.");
-    // }
-  }, [user, isLoading, router, pathname]);
+  //     if (pathname !== targetDashboard) {
+  //       console.log(`AuthContext: User exists, on public path ${pathname}. Attempting redirect to ${targetDashboard}.`);
+  //       router.replace(targetDashboard);
+  //     } else {
+  //       console.log(`AuthContext: User exists, already on target dashboard ${targetDashboard}.`);
+  //     }
+  //   } else {
+  //     console.log("AuthContext: Redirection conditions not met or already on correct page.");
+  //   }
+  // }, [user, isLoading, router, pathname]);
 
   const login = (userData: User) => {
     console.log("AuthContext: login function called with:", userData);
     localStorage.setItem('adeptlearn-user', JSON.stringify(userData));
     setUser(userData);
-    // Pengalihan setelah login akan ditangani oleh useEffect di atas (jika tidak dikomentari)
+    // Forcing redirect to dashboard for testing
+    console.log("AuthContext: Forcing redirect to /dashboard after login.");
+    router.push('/dashboard');
   };
 
   const logout = () => {
@@ -90,18 +91,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     router.push('/login'); 
   };
   
-  // Simplified global loader, only active if isLoading is true AND path is not public
-  // If we are on a public path, we don't want to show a global loader even if AuthContext is loading in background
-  const publicPathsForLoading = ['/login', '/register', '/'];
-  if (isLoading && !publicPathsForLoading.includes(pathname)) {
-     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-          <div className="p-4 m-4 text-lg font-semibold rounded-md shadow-lg bg-card text-primary">
-            Memuat AdeptLearn...
-          </div>
-        </div>
-      );
-  }
+  // Temporarily remove the global loader to see any underlying errors
+  // const publicPathsForLoading = ['/login', '/register', '/'];
+  // if (isLoading && !publicPathsForLoading.includes(pathname)) {
+  //    return (
+  //       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+  //         <div className="p-4 m-4 text-lg font-semibold rounded-md shadow-lg bg-card text-primary">
+  //           Memuat AdeptLearn...
+  //         </div>
+  //       </div>
+  //     );
+  // }
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading }}>

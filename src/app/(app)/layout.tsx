@@ -1,7 +1,7 @@
 
-"use client"; // Keep this for AuthContext checks if needed, or AppShell can be client
+"use client"; 
 import AppShell from '@/components/layout/AppShell';
-import { useAuth } from '@/contexts/AuthContext'; // Ensure AuthContext handles redirects
+import { useAuth } from '@/contexts/AuthContext'; 
 
 export default function AuthenticatedAppLayout({
   children,
@@ -10,23 +10,18 @@ export default function AuthenticatedAppLayout({
 }) {
   const { isLoading, user } = useAuth();
 
-  // AuthProvider already handles redirection logic based on isLoading and user state
-  // So, we just need to ensure children are rendered within AppShell when user is authenticated.
-  // The loading state and redirection are handled by AuthProvider's useEffect.
-  // If isLoading, AuthProvider shows a loading indicator.
-  // If !isLoading and !user, AuthProvider redirects.
-  // If !isLoading and user, this layout is rendered.
+  console.log("AuthenticatedAppLayout: Rendering. isLoading:", isLoading, "User exists:", !!user);
 
   if (isLoading) { 
-    // AuthProvider will show a global loader if this page is accessed during loading
-    // and it's not a public page. So we can return null or a minimal loader here too if needed.
+    console.log("AuthenticatedAppLayout: isLoading is true, returning null (AuthProvider should show global loader or nothing if on public path).");
     return null; 
   }
 
   if (!user) {
-    // Should be redirected by AuthProvider, but as a safeguard.
+    console.log("AuthenticatedAppLayout: isLoading is false and no user, returning null (AuthProvider should redirect).");
     return null; 
   }
 
+  console.log("AuthenticatedAppLayout: isLoading is false and user exists. Rendering AppShell for user:", user.email);
   return <AppShell>{children}</AppShell>;
 }
