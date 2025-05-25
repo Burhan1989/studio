@@ -87,11 +87,11 @@ export default function AdminStudentsPage() {
     });
   };
 
-  const handleExcelAction = (actionType: string) => {
-    console.log(`Aksi Excel: ${actionType}`);
+  const handleExcelAction = (actionType: "Import" | "Export", dataType: string) => {
+    let actionDescription = actionType === "Import" ? "Impor" : "Ekspor";
     toast({
       title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas ${actionType} menggunakan file Excel akan segera hadir. Ini adalah placeholder.`,
+      description: `Fungsionalitas "${actionDescription} ${dataType} dari file Excel" akan segera hadir. Ini adalah placeholder dan memerlukan implementasi backend.`,
       variant: "default",
     });
   };
@@ -112,10 +112,10 @@ export default function AdminStudentsPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button onClick={() => handleExcelAction("Import Siswa")} variant="outline" className="flex-1">
+            <Button onClick={() => handleExcelAction("Import", "Data Siswa")} variant="outline" className="flex-1">
               <Upload className="w-4 h-4 mr-2" /> Import Siswa
             </Button>
-            <Button onClick={() => handleExcelAction("Export Siswa")} variant="outline" className="flex-1">
+            <Button onClick={() => handleExcelAction("Export", "Data Siswa")} variant="outline" className="flex-1">
               <Download className="w-4 h-4 mr-2" /> Export Siswa
             </Button>
           </div>

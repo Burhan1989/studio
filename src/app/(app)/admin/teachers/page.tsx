@@ -82,11 +82,11 @@ export default function AdminTeachersPage() {
     });
   };
 
-  const handleExcelAction = (actionType: string) => {
-    console.log(`Aksi Excel: ${actionType}`);
+  const handleExcelAction = (actionType: "Import" | "Export", dataType: string) => {
+    let actionDescription = actionType === "Import" ? "Impor" : "Ekspor";
     toast({
       title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas ${actionType} menggunakan file Excel akan segera hadir. Ini adalah placeholder.`,
+      description: `Fungsionalitas "${actionDescription} ${dataType} dari file Excel" akan segera hadir. Ini adalah placeholder dan memerlukan implementasi backend.`,
       variant: "default",
     });
   };
@@ -107,10 +107,10 @@ export default function AdminTeachersPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button onClick={() => handleExcelAction("Import Guru")} variant="outline" className="flex-1">
+            <Button onClick={() => handleExcelAction("Import", "Data Guru")} variant="outline" className="flex-1">
               <Upload className="w-4 h-4 mr-2" /> Import Guru
             </Button>
-            <Button onClick={() => handleExcelAction("Export Guru")} variant="outline" className="flex-1">
+            <Button onClick={() => handleExcelAction("Export", "Data Guru")} variant="outline" className="flex-1">
               <Download className="w-4 h-4 mr-2" /> Export Guru
             </Button>
           </div>
@@ -185,5 +185,3 @@ export default function AdminTeachersPage() {
     </div>
   );
 }
-
-    
