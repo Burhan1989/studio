@@ -24,7 +24,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ScheduleItem } from "@/lib/types";
-import { addSchedule, getClasses, getTeachers, mockLessons, mockQuizzes } from "@/lib/mockData";
+import { addSchedule, getClasses, getTeachers, mockLessons, getQuizzes } from "@/lib/mockData";
 import { format, getDay, addDays, startOfWeek, nextMonday, nextTuesday, nextWednesday, nextThursday, nextFriday, nextSaturday, isPast, setDay } from "date-fns";
 import { id as LocaleID } from 'date-fns/locale';
 
@@ -42,7 +42,7 @@ const daysOfWeek = [
 const newScheduleSchema = z.object({
   title: z.string().min(3, "Judul jadwal minimal 3 karakter."),
   dayOfWeek: z.string().min(1, "Hari harus dipilih."),
-  time: z.string().min(5, "Waktu harus diisi, cth. 08:00 - 09:30."),
+  time: z.string().min(5, "Waktu harus diisi, cth. 08:00 - 09:30.").regex(/^\d{2}:\d{2}\s*-\s*\d{2}:\d{2}$/, "Format waktu tidak valid, cth. 08:00 - 09:30"),
   classId: z.string().optional(),
   teacherId: z.string().optional(),
   lessonId: z.string().optional(),
@@ -74,29 +74,21 @@ export default function AdminNewSchedulePage() {
   });
 
   function calculateDateForSelectedDay(dayValue: string): string {
-    const selectedDayNumber = parseInt(dayValue, 10); // 1 for Mon, ..., 6 for Sat
+    const selectedDayNumber = parseInt(dayValue, 10); 
     let targetDate = new Date();
-    const currentDayNumber = getDay(targetDate) === 0 ? 7 : getDay(targetDate); 
-
+    
     // Determine the current week's Monday
-    const currentWeekMonday = startOfWeek(targetDate, { weekStartsOn: 1 });
+    const currentWeekMonday = startOfWeek(targetDate, { weekStartsOn: 1 }); 
     
     // Target day in the current week
     let potentialTargetDate = setDay(currentWeekMonday, selectedDayNumber, { weekStartsOn: 1 });
 
-    // If the potential target date is in the past (relative to today, not just the start of the week),
-    // then move to the next week's occurrence of that day.
     const today = new Date();
-    today.setHours(0,0,0,0); // Normalize today to the start of the day
+    today.setHours(0,0,0,0); 
 
-    if (potentialTargetDate < today && selectedDayNumber < currentDayNumber) {
-        // If the day in current week has passed and the selected day is earlier than current day of week
+    if (potentialTargetDate < today) {
         targetDate = setDay(addDays(currentWeekMonday, 7), selectedDayNumber, { weekStartsOn: 1 });
-    } else if (potentialTargetDate < today && selectedDayNumber >= currentDayNumber) {
-        // If the day in current week has passed but it's today or later in the week (e.g. it's Wed, selected Mon - use next Mon)
-         targetDate = setDay(addDays(currentWeekMonday, 7), selectedDayNumber, { weekStartsOn: 1 });
-    }
-    else {
+    } else {
         targetDate = potentialTargetDate;
     }
     return format(targetDate, "yyyy-MM-dd");
@@ -121,7 +113,6 @@ export default function AdminNewSchedulePage() {
     };
     
     console.log("Data jadwal baru yang akan ditambahkan (simulasi):", newScheduleData);
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
     
     const addedSchedule = addSchedule(newScheduleData); 
 
@@ -324,7 +315,7 @@ export default function AdminNewSchedulePage() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="_NO_QUIZ_">Tidak Terkait Kuis</SelectItem>
-                        {mockQuizzes.map((quiz) => (
+                        {getQuizzes().map((quiz) => (
                           <SelectItem key={quiz.id} value={quiz.id}>
                             {quiz.title}
                           </SelectItem>

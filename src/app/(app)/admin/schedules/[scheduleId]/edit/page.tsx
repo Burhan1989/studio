@@ -24,7 +24,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import type { ScheduleItem, ClassData, TeacherData, Lesson, Quiz } from "@/lib/types";
-import { getScheduleById, updateSchedule, getClasses, getTeachers, mockLessons, mockQuizzes } from "@/lib/mockData";
+import { getScheduleById, updateSchedule, getClasses, getTeachers, mockLessons, getQuizzes } from "@/lib/mockData";
 import { format, getDay, addDays, startOfWeek, setDay, parseISO } from "date-fns";
 import { id as LocaleID } from 'date-fns/locale';
 
@@ -41,7 +41,7 @@ const daysOfWeek = [
 const editScheduleSchema = z.object({
   title: z.string().min(3, "Judul jadwal minimal 3 karakter."),
   dayOfWeek: z.string().min(1, "Hari harus dipilih."),
-  time: z.string().min(5, "Waktu harus diisi, cth. 08:00 - 09:30."),
+  time: z.string().min(5, "Waktu harus diisi, cth. 08:00 - 09:30.").regex(/^\d{2}:\d{2}\s*-\s*\d{2}:\d{2}$/, "Format waktu tidak valid, cth. 08:00 - 09:30"),
   classId: z.string().optional(),
   teacherId: z.string().optional(),
   lessonId: z.string().optional(),
@@ -84,7 +84,9 @@ export default function AdminEditSchedulePage() {
         const scheduleDateObj = parseISO(scheduleData.date);
         
         const dayVal = getDay(scheduleDateObj); 
-        const dayString = dayVal === 0 ? "7" : String(dayVal); // Convert Sunday (0) to "7" or align with your 1-6 system
+        const dayString = dayVal === 0 ? "6" : String(dayVal -1); // Convert Sunday (0) to Saturday (6) for our 0-5 index (Mon-Sat for select)
+                                                            // Or if your select uses 1-6, this needs adjustment.
+                                                            // Assuming daysOfWeek value is 1-6 (Mon-Sat)
 
         form.reset({
           title: scheduleData.title,
@@ -109,10 +111,10 @@ export default function AdminEditSchedulePage() {
   }, [scheduleId, form, router, toast]);
 
   function calculateDateForSelectedDayEdit(dayValue: string, originalDateStr: string): string {
-    const selectedDayNumber = parseInt(dayValue, 10); // 1 for Mon, ..., 6 for Sat
+    const selectedDayNumber = parseInt(dayValue, 10); 
     const originalDate = parseISO(originalDateStr);
     
-    const targetDate = setDay(originalDate, selectedDayNumber, { weekStartsOn: 1 }); // weekStartsOn: 1 for Monday
+    const targetDate = setDay(originalDate, selectedDayNumber, { weekStartsOn: 1 }); 
     
     return format(targetDate, "yyyy-MM-dd");
   }
@@ -137,7 +139,6 @@ export default function AdminEditSchedulePage() {
     };
     
     console.log("Data jadwal yang akan diperbarui (simulasi):", updatedScheduleData);
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
     
     const success = updateSchedule(updatedScheduleData); 
 
@@ -349,7 +350,7 @@ export default function AdminEditSchedulePage() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="_NO_QUIZ_">Tidak Terkait Kuis</SelectItem>
-                        {mockQuizzes.map((quiz) => (
+                        {getQuizzes().map((quiz) => (
                           <SelectItem key={quiz.id} value={quiz.id}>
                             {quiz.title}
                           </SelectItem>

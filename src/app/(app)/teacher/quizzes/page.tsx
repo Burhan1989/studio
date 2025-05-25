@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FileQuestion, PlusCircle, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getQuizzesByTeacherId, mockQuizzes, getClasses } from "@/lib/mockData"; 
+import { getQuizzesByTeacherId, getQuizzes, getClasses } from "@/lib/mockData"; 
 import type { Quiz, ClassData } from "@/lib/types";
 
 export default function TeacherQuizzesPage() {
@@ -32,7 +32,7 @@ export default function TeacherQuizzesPage() {
     } else {
       // Fallback for non-teacher users or when user is not yet loaded (though ideally this page is protected)
       // Displaying first 2 mock quizzes as a generic placeholder if needed.
-      setTeacherQuizzes(mockQuizzes.slice(0,2)); 
+      setTeacherQuizzes(getQuizzes().slice(0,2)); 
     }
   }, [user]); // Re-run when user object changes
 

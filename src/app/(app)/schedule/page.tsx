@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { getSchedules, getClasses, getTeachers, getStudents, mockLessons, mockQuizzes } from '@/lib/mockData';
+import { getSchedules, getClasses, getTeachers, getStudents, mockLessons, getQuizzes } from '@/lib/mockData';
 import type { ScheduleItem, ClassData, StudentData } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,7 +46,7 @@ function getLessonById(id: string) {
 }
 // Helper function to get quiz (already in mockData.ts)
 function getQuizById(id: string) {
-  return mockQuizzes.find(quiz => quiz.id === id);
+  return getQuizzes().find(quiz => quiz.id === id);
 }
 
 
@@ -119,7 +119,7 @@ export default function SchedulePage() {
         const weekEnd = addDays(currentWeekStart, 5); // Monday to Saturday
         const weeklyFiltered = schedulesToFilter.filter(s => {
             const scheduleDate = parseISO(s.date);
-            return scheduleDate >= currentWeekStart && scheduleDate <= weekEnd && getDay(scheduleDate) >= 1 && getDay(scheduleDate) <= 6;
+            return scheduleDate >= currentWeekStart && scheduleDate <= weekEnd && getDay(scheduleDate) >= 1 && getDay(scheduleDate) <= 6; // Mon-Sat
         });
         setDisplayableSchedules(weeklyFiltered);
 
