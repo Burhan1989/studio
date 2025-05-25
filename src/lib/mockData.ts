@@ -71,12 +71,14 @@ export const mockQuestionsQuiz1: Question[] = [
     type: 'multiple-choice',
     options: ['var', 'let', 'const', 'static'],
     correctAnswer: 'let',
+    points: 10,
   },
   {
     id: 'q1_2',
     text: 'JavaScript utamanya adalah bahasa skrip sisi klien.',
     type: 'true-false',
     correctAnswer: true,
+    points: 5,
   },
   {
     id: 'q1_3',
@@ -84,6 +86,7 @@ export const mockQuestionsQuiz1: Question[] = [
     type: 'multiple-choice',
     options: ['Number', 'String', 'Boolean', 'Object'],
     correctAnswer: 'String',
+    points: 10,
   },
 ];
 
@@ -94,18 +97,21 @@ export const mockQuestionsQuiz2: Question[] = [
     type: 'multiple-choice',
     options: ['useEffect', 'useContext', 'useState', 'useReducer'],
     correctAnswer: 'useState',
+    points: 10,
   },
   {
     id: 'q2_2',
     text: '`useEffect` digunakan untuk mengelola kejadian siklus hidup komponen dan efek samping.',
     type: 'true-false',
     correctAnswer: true,
+    points: 5,
   },
    {
     id: 'q2_3',
     text: 'Dapatkah Hook digunakan di dalam komponen kelas?',
     type: 'true-false',
     correctAnswer: false,
+    points: 5,
   },
 ];
 
@@ -115,17 +121,19 @@ export let mockQuizzes: Quiz[] = [
     id: 'quiz1',
     title: 'Kuis Dasar JavaScript',
     lessonId: '1',
-    teacherId: 'teacher001', // Contoh ID guru
+    teacherId: 'teacher001', 
     questions: mockQuestionsQuiz1,
     description: "Kuis dasar untuk menguji pemahaman JavaScript awal.",
+    assignedClassId: 'kelasA',
   },
   {
     id: 'quiz2',
     title: 'Dasar-Dasar React Hooks',
     lessonId: '3',
-    teacherId: 'teacher001', // Contoh ID guru
+    teacherId: 'teacher001', 
     questions: mockQuestionsQuiz2,
     description: "Kuis untuk menguji pemahaman tentang React Hooks.",
+    assignedClassId: 'kelasB',
   },
 ];
 
@@ -210,7 +218,7 @@ export let mockStudents: StudentData[] = [
 
 export let mockTeachers: TeacherData[] = [
   {
-    ID_Guru: "admin001", // ID unik untuk admin
+    ID_Guru: "admin001", 
     Nama_Lengkap: "Admin AdeptLearn",
     Username: "adminutama",
     Email: "admin@example.com",
@@ -428,6 +436,11 @@ export function getQuizById(id: string): Quiz | undefined {
 }
 
 export function getQuizzesByTeacherId(teacherId: string): Quiz[] {
+  // Cek apakah mockQuizzes didefinisikan dan merupakan array
+  if (!mockQuizzes || !Array.isArray(mockQuizzes)) {
+    console.error("mockQuizzes tidak terdefinisi atau bukan array");
+    return [];
+  }
   return mockQuizzes.filter(quiz => quiz.teacherId === teacherId);
 }
 
@@ -435,7 +448,8 @@ export function addQuiz(quizData: Omit<Quiz, 'id'> & { teacherId: string }): Qui
   const newQuiz: Quiz = {
     id: `quiz${mockQuizzes.length + 1 + Date.now()}`,
     ...quizData,
-    questions: quizData.questions || [], // Ensure questions is an array
+    questions: quizData.questions || [], 
+    assignedClassId: quizData.assignedClassId || undefined,
   };
   mockQuizzes.push(newQuiz);
   console.log("Kuis baru ditambahkan (simulasi):", newQuiz);

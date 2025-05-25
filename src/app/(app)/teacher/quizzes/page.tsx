@@ -9,22 +9,26 @@ import { useToast } from "@/hooks/use-toast";
 import { FileQuestion, PlusCircle, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getQuizzesByTeacherId, mockQuizzes } from "@/lib/mockData"; // Menggunakan mockQuizzes untuk fallback
-import type { Quiz } from "@/lib/types";
+import { getQuizzesByTeacherId, mockQuizzes, mockClasses } from "@/lib/mockData"; 
+import type { Quiz, ClassData } from "@/lib/types";
 
 export default function TeacherQuizzesPage() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [teacherQuizzes, setTeacherQuizzes] = useState<Quiz[]>([]);
+  const [classesMap, setClassesMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    const classIdToNameMap: Record<string, string> = {};
+    mockClasses.forEach(cls => {
+      classIdToNameMap[cls.ID_Kelas] = `${cls.Nama_Kelas} (${cls.jurusan})`;
+    });
+    setClassesMap(classIdToNameMap);
+
     if (user && user.role === 'teacher') {
-      // Di aplikasi nyata, Anda akan mengambil ini dari backend
-      // Untuk sekarang, kita filter dari mockQuizzes
-      const quizzes = getQuizzesByTeacherId(user.id); // Asumsikan user.id adalah teacherId
+      const quizzes = getQuizzesByTeacherId(user.id); 
       setTeacherQuizzes(quizzes);
     } else {
-      // Jika tidak ada user guru (misalnya, untuk demo), tampilkan beberapa kuis sebagai contoh
       setTeacherQuizzes(mockQuizzes.slice(0,2)); 
     }
   }, [user]);
@@ -34,6 +38,10 @@ export default function TeacherQuizzesPage() {
       title: "Fitur Dalam Pengembangan",
       description: `Fungsionalitas "${action} untuk ${itemName}" akan segera hadir.`,
     });
+  };
+
+  const getTotalPoints = (questions: Quiz['questions']): number => {
+    return questions.reduce((total, q) => total + (q.points || 0), 0);
   };
 
   return (
@@ -64,6 +72,8 @@ export default function TeacherQuizzesPage() {
                 <TableHead>Judul Kuis</TableHead>
                 <TableHead>Deskripsi</TableHead>
                 <TableHead>Jumlah Pertanyaan</TableHead>
+                <TableHead>Total Poin</TableHead>
+                <TableHead>Kelas Ditugaskan</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
@@ -73,6 +83,8 @@ export default function TeacherQuizzesPage() {
                   <TableCell className="font-medium">{quiz.title}</TableCell>
                   <TableCell>{quiz.description || '-'}</TableCell>
                   <TableCell>{quiz.questions.length}</TableCell>
+                  <TableCell>{getTotalPoints(quiz.questions)}</TableCell>
+                  <TableCell>{quiz.assignedClassId ? classesMap[quiz.assignedClassId] || quiz.assignedClassId : '-'}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button
                       variant="outline"
@@ -93,7 +105,7 @@ export default function TeacherQuizzesPage() {
               ))}
               {teacherQuizzes.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
                     Anda belum membuat kuis.
                   </TableCell>
                 </TableRow>

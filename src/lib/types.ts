@@ -36,18 +36,20 @@ export interface Lesson {
 export interface Question {
   id:string;
   text: string;
-  type: 'multiple-choice' | 'true-false' | 'essay'; // Ditambahkan 'essay'
-  options?: string[]; // Opsional, karena esai tidak punya opsi
-  correctAnswer?: string | boolean; // Opsional, esai mungkin tidak punya jawaban benar tunggal
+  type: 'multiple-choice' | 'true-false' | 'essay';
+  options?: string[]; 
+  correctAnswer?: string | boolean; 
+  points: number; // Skor/poin untuk pertanyaan ini
 }
 
 export interface Quiz {
   id: string;
   title: string;
   lessonId?: string;
-  teacherId?: string; // Ditambahkan untuk melacak pembuat kuis
+  teacherId?: string; 
   questions: Question[];
-  description?: string; // Deskripsi kuis (opsional)
+  description?: string; 
+  assignedClassId?: string; // ID kelas yang ditugaskan kuis ini
 }
 
 export interface UserProgress {
@@ -73,7 +75,7 @@ export interface StudentData {
   Alamat: string;
   Email: string;
   Nomor_Telepon: string;
-  Program_Studi: string; // Ini akan menjadi Jurusan
+  Program_Studi: string; 
   Kelas: string;
   Tanggal_Daftar: string;
   Status_Aktif: boolean;
@@ -100,7 +102,7 @@ export interface TeacherData {
   Password_Hash: string;
   Tanggal_Pendaftaran: string;
   Jabatan?: string;
-  isAdmin?: boolean; // Flag untuk menandakan apakah guru ini juga admin
+  isAdmin?: boolean; 
 }
 
 export interface ParentData {

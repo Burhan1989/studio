@@ -23,8 +23,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { addQuiz } from "@/lib/mockData"; // Simulasi addQuiz
-import type { Question, Quiz } from "@/lib/types";
+import { addQuiz, mockClasses } from "@/lib/mockData"; // Simulasi addQuiz & import mockClasses
+import type { Question, Quiz, ClassData } from "@/lib/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const questionSchema = z.object({
@@ -34,12 +34,14 @@ const questionSchema = z.object({
   }),
   options: z.array(z.string().min(1, "Opsi tidak boleh kosong.")).optional(),
   correctAnswer: z.union([z.string(), z.boolean()]).optional(),
+  points: z.coerce.number().int().min(1, "Poin minimal 1 untuk setiap pertanyaan.").default(1),
 });
 
 const newQuizSchema = z.object({
   title: z.string().min(3, "Judul kuis minimal 3 karakter."),
   description: z.string().optional(),
   questions: z.array(questionSchema).min(1, "Kuis harus memiliki setidaknya satu pertanyaan."),
+  assignedClassId: z.string().optional(),
 });
 
 type NewQuizFormData = z.infer<typeof newQuizSchema>;
@@ -49,17 +51,19 @@ export default function TeacherNewQuizPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const availableClasses: ClassData[] = mockClasses; // Ambil data kelas
 
   const form = useForm<NewQuizFormData>({
     resolver: zodResolver(newQuizSchema),
     defaultValues: {
       title: "",
       description: "",
-      questions: [{ text: "", type: "multiple-choice", options: ["", "", "", ""], correctAnswer: "" }],
+      questions: [{ text: "", type: "multiple-choice", options: ["", "", "", ""], correctAnswer: "", points: 1 }],
+      assignedClassId: "",
     },
   });
 
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "questions",
   });
@@ -72,20 +76,22 @@ export default function TeacherNewQuizPage() {
     setIsLoading(true);
     
     const quizDataForMock: Omit<Quiz, 'id'> & { teacherId: string } = {
-        ...values,
-        teacherId: user.id, // Asumsikan user.id adalah teacherId
+        title: values.title,
+        description: values.description,
+        teacherId: user.id, 
+        assignedClassId: values.assignedClassId || undefined,
         questions: values.questions.map(q => ({
             ...q,
-            id: `q${Date.now()}${Math.random().toString(36).substring(2,7)}`, // ID unik sementara
-            // Pastikan correctAnswer diformat dengan benar
+            id: `q${Date.now()}${Math.random().toString(36).substring(2,7)}`,
             correctAnswer: q.type === 'true-false' ? (q.correctAnswer === 'true' || q.correctAnswer === true) : q.correctAnswer,
+            points: q.points || 1, // Pastikan poin memiliki nilai default jika tidak diisi
         }))
     };
 
     console.log("Data kuis baru (simulasi):", quizDataForMock);
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1000)); 
     
-    addQuiz(quizDataForMock); // Menggunakan fungsi simulasi
+    addQuiz(quizDataForMock); 
 
     toast({
       title: "Kuis Baru Ditambahkan (Simulasi)",
@@ -96,12 +102,12 @@ export default function TeacherNewQuizPage() {
   }
 
   const addQuestion = () => {
-    append({ text: "", type: "multiple-choice", options: ["", "", "", ""], correctAnswer: "" });
+    append({ text: "", type: "multiple-choice", options: ["", "", "", ""], correctAnswer: "", points: 1 });
   };
   
   const addOption = (questionIndex: number) => {
     const currentOptions = form.getValues(`questions.${questionIndex}.options`) || [];
-    if (currentOptions.length < 6) { // Batasi hingga 6 opsi misalnya
+    if (currentOptions.length < 6) { 
         form.setValue(`questions.${questionIndex}.options`, [...currentOptions, ""]);
     } else {
         toast({ title: "Batas Opsi", description: "Maksimal 6 opsi per pertanyaan.", variant: "default" });
@@ -110,7 +116,7 @@ export default function TeacherNewQuizPage() {
 
   const removeOption = (questionIndex: number, optionIndex: number) => {
       const currentOptions = form.getValues(`questions.${questionIndex}.options`);
-      if (currentOptions && currentOptions.length > 2) { // Minimal 2 opsi
+      if (currentOptions && currentOptions.length > 2) { 
         const newOptions = currentOptions.filter((_, idx) => idx !== optionIndex);
         form.setValue(`questions.${questionIndex}.options`, newOptions);
       } else {
@@ -167,17 +173,43 @@ export default function TeacherNewQuizPage() {
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control}
+                name="assignedClassId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tugaskan ke Kelas (Opsional)</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih kelas untuk kuis ini" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="">Tidak Ditugaskan</SelectItem>
+                        {availableClasses.map((cls) => (
+                          <SelectItem key={cls.ID_Kelas} value={cls.ID_Kelas}>
+                            {cls.Nama_Kelas} - {cls.jurusan}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Pilih kelas yang akan mengerjakan kuis ini. Bisa dikosongkan.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </CardContent>
           </Card>
 
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-xl">Daftar Pertanyaan</CardTitle>
-              <CardDescription>Tambahkan dan kelola pertanyaan untuk kuis ini.</CardDescription>
+              <CardDescription>Tambahkan dan kelola pertanyaan untuk kuis ini. Setiap pertanyaan wajib memiliki poin.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {fields.map((field, index) => (
-                <Card key={field.id} className="p-4 border-2 border-dashed">
+              {fields.map((fieldItem, index) => (
+                <Card key={fieldItem.id} className="p-4 border-2 border-dashed">
                   <CardHeader className="flex flex-row items-center justify-between p-0 pb-4">
                     <CardTitle className="text-lg">Pertanyaan {index + 1}</CardTitle>
                     <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)} disabled={fields.length <= 1}>
@@ -198,6 +230,19 @@ export default function TeacherNewQuizPage() {
                         </FormItem>
                       )}
                     />
+                     <FormField
+                      control={form.control}
+                      name={`questions.${index}.points`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Poin untuk Pertanyaan Ini</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="cth. 10" {...field} onChange={e => field.onChange(parseInt(e.target.value, 10) || 0)} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <FormField
                       control={form.control}
                       name={`questions.${index}.type`}
@@ -206,7 +251,6 @@ export default function TeacherNewQuizPage() {
                           <FormLabel>Tipe Pertanyaan</FormLabel>
                           <Select onValueChange={(value) => {
                               field.onChange(value);
-                              // Reset opsi dan jawaban benar saat tipe berubah
                               form.setValue(`questions.${index}.options`, value === 'multiple-choice' ? ["", "", "", ""] : undefined);
                               form.setValue(`questions.${index}.correctAnswer`, value === 'true-false' ? 'true' : (value === 'multiple-choice' ? '' : undefined));
                           }} defaultValue={field.value}>
@@ -231,7 +275,7 @@ export default function TeacherNewQuizPage() {
                             <FormLabel>Opsi Jawaban</FormLabel>
                             {form.watch(`questions.${index}.options`)?.map((_, optionIndex) => (
                                 <FormField
-                                    key={`${field.id}-option-${optionIndex}`}
+                                    key={`${fieldItem.id}-option-${optionIndex}`}
                                     control={form.control}
                                     name={`questions.${index}.options.${optionIndex}`}
                                     render={({ field: optionField }) => (
@@ -300,20 +344,19 @@ export default function TeacherNewQuizPage() {
                      {form.watch(`questions.${index}.type`) === 'essay' && (
                         <FormField
                             control={form.control}
-                            name={`questions.${index}.correctAnswer`} // Bisa digunakan untuk model answer/rubrik
+                            name={`questions.${index}.correctAnswer`} 
                             render={({ field: essayField }) => (
                             <FormItem>
-                                <FormLabel>Model Jawaban/Rubrik Penilaian (Opsional)</FormLabel>
+                                <FormLabel>Model Jawaban/Rubrik Penilaian (Opsional untuk Esai)</FormLabel>
                                 <FormControl>
                                 <Textarea placeholder="Masukkan model jawaban atau kriteria penilaian untuk esai..." {...essayField} value={essayField.value as string | undefined} />
                                 </FormControl>
+                                <FormDescription>Untuk esai, ini bisa berupa poin-poin kunci jawaban atau rubrik penilaian.</FormDescription>
                                 <FormMessage />
                             </FormItem>
                             )}
                         />
                     )}
-
-
                   </CardContent>
                 </Card>
               ))}
