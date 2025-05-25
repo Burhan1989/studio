@@ -342,7 +342,7 @@ export const mockSchoolProfile: SchoolProfileData = {
   websiteSekolah: "https://sman1teladan.sch.id",
   visi: "Menjadi sekolah unggul yang berkarakter, berprestasi, dan berwawasan global.",
   misi: "1. Melaksanakan pembelajaran yang inovatif dan kreatif.\n2. Mengembangkan potensi siswa secara optimal.\n3. Membangun karakter siswa yang berakhlak mulia.",
-  logo: "https://placehold.co/160x40.png?text=Logo+Sekolah" // Placeholder URL for the logo
+  logo: "https://placehold.co/160x40.png?text=Logo+Sekolah"
 };
 
 
@@ -380,13 +380,14 @@ export const lessonStatusData: LessonStatusCounts[] = [
   { name: 'Belum Dimulai', value: notStartedCount, fill: 'hsl(var(--chart-3))' },
 ];
 
-export const lessonStatusChartConfig: ChartConfig = {
+export const lessonStatusChartConfig = {
   Selesai: { label: 'Selesai', color: 'hsl(var(--chart-1))' },
   Dikerjakan: { label: 'Dikerjakan', color: 'hsl(var(--chart-2))' },
   'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
-};
+} satisfies ChartConfig;
 
-export const mockMajors: MajorData[] = [
+
+export let mockMajors: MajorData[] = [
   { ID_Jurusan: "major001", Nama_Jurusan: "Ilmu Pengetahuan Alam (IPA)", Deskripsi_Jurusan: "Fokus pada studi sains seperti Fisika, Kimia, Biologi." },
   { ID_Jurusan: "major002", Nama_Jurusan: "Ilmu Pengetahuan Sosial (IPS)", Deskripsi_Jurusan: "Fokus pada studi sosial seperti Sejarah, Ekonomi, Geografi." },
   { ID_Jurusan: "major003", Nama_Jurusan: "Bahasa dan Budaya", Deskripsi_Jurusan: "Fokus pada studi bahasa, sastra, dan budaya." },
@@ -407,14 +408,24 @@ export function getClassById(id: string): ClassData | undefined {
   return mockClasses.find(kelas => kelas.ID_Kelas === id);
 }
 
-// Function to update a class in the mockClasses array
-// This directly mutates the mockClasses array.
-// In a real app, this would involve an API call and state update.
 export function updateClass(updatedClass: ClassData): boolean {
   const index = mockClasses.findIndex(kelas => kelas.ID_Kelas === updatedClass.ID_Kelas);
   if (index !== -1) {
     mockClasses[index] = updatedClass;
-    return true; // Indicate success
+    return true; 
   }
-  return false; // Indicate class not found
+  return false; 
+}
+
+export function getMajorById(id: string): MajorData | undefined {
+  return mockMajors.find(major => major.ID_Jurusan === id);
+}
+
+export function updateMajor(updatedMajor: MajorData): boolean {
+  const index = mockMajors.findIndex(major => major.ID_Jurusan === updatedMajor.ID_Jurusan);
+  if (index !== -1) {
+    mockMajors[index] = updatedMajor;
+    return true;
+  }
+  return false;
 }

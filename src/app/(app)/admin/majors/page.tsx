@@ -7,22 +7,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Edit, Trash2, Network, Upload, Download } from "lucide-react";
 import type { MajorData } from "@/lib/types";
-import { mockMajors } from "@/lib/mockData"; // Import mockMajors
+import { mockMajors } from "@/lib/mockData"; 
+import Link from "next/link";
+import { useState, useEffect } from "react";
 
 export default function AdminMajorsPage() {
   const { toast } = useToast();
+  const [majors, setMajors] = useState<MajorData[]>([]);
+
+  useEffect(() => {
+    setMajors([...mockMajors]);
+  }, []);
 
   const handleActionPlaceholder = (action: string, item: string) => {
     toast({
       title: "Fitur Dalam Pengembangan",
       description: `Fungsionalitas "${action} ${item}" akan segera hadir.`,
-    });
-  };
-
-  const handleEditAction = (itemName: string) => {
-    toast({
-      title: `Edit ${itemName}`,
-      description: `Membuka form edit untuk ${itemName}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
     });
   };
 
@@ -86,14 +86,16 @@ export default function AdminMajorsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockMajors.map((major) => (
+              {majors.map((major) => (
                 <TableRow key={major.ID_Jurusan}>
                   <TableCell>{major.ID_Jurusan}</TableCell>
                   <TableCell className="font-medium">{major.Nama_Jurusan}</TableCell>
                   <TableCell>{major.Deskripsi_Jurusan || '-'}</TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => handleEditAction(`Jurusan ${major.Nama_Jurusan}`)}>
-                      <Edit className="w-4 h-4" />
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/admin/majors/${major.ID_Jurusan}/edit`}>
+                        <Edit className="w-4 h-4" /> Edit
+                      </Link>
                     </Button>
                     <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", `Jurusan ${major.Nama_Jurusan}`)}>
                       <Trash2 className="w-4 h-4" />
@@ -101,7 +103,7 @@ export default function AdminMajorsPage() {
                   </TableCell>
                 </TableRow>
               ))}
-              {mockMajors.length === 0 && (
+              {majors.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={4} className="text-center text-muted-foreground">
                     Belum ada data jurusan.
