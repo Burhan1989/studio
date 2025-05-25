@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { mockSchedules, mockClasses, mockTeachers, mockStudents, mockLessons, mockQuizzes, getLessonById, getQuizById } from '@/lib/mockData';
+import { mockSchedules, mockClasses, mockTeachers, mockStudents, getLessonById, getQuizById } from '@/lib/mockData';
 import type { ScheduleItem, ClassData, StudentData } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,7 @@ import {
   subDays, 
   addWeeks, 
   subWeeks,
-  getDay // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  getDay 
 } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
 import Link from 'next/link';
@@ -47,15 +47,13 @@ export default function SchedulePage() {
   const [studentClassInfo, setStudentClassInfo] = useState<ClassData | null>(null);
   
   const [viewMode, setViewMode] = useState<ViewMode>('daily');
-  const [currentDate, setCurrentDate] = useState(new Date()); // For daily view
-  const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 })); // Monday
+  const [currentDate, setCurrentDate] = useState(new Date()); 
+  const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 })); 
 
-  const [selectedClassFilter, setSelectedClassFilter] = useState<string>(""); // For teacher/admin class filter
+  const [selectedClassFilter, setSelectedClassFilter] = useState<string>(""); 
 
-  // This state will hold the schedules filtered by role/class AND by the selected date/week range.
   const [displayableSchedules, setDisplayableSchedules] = useState<ScheduleItem[]>([]);
   
-  // This state will hold schedules structured for the weekly view
   const [weeklyViewData, setWeeklyViewData] = useState<DayWithSchedules[]>([]);
 
 
@@ -89,7 +87,6 @@ export default function SchedulePage() {
   useEffect(() => {
     let schedulesToFilter = [...allSchedules];
 
-    // Filter by role and class selection
     if (user?.role === 'student') {
       if (studentClassInfo) {
         schedulesToFilter = schedulesToFilter.filter(s => s.classId === studentClassInfo.ID_Kelas || !s.classId);
@@ -102,21 +99,20 @@ export default function SchedulePage() {
         }
     }
     
-    // Filter by date/week view
     if (viewMode === 'daily') {
         const dailyFiltered = schedulesToFilter.filter(s => isSameDay(parseISO(s.date), currentDate));
         setDisplayableSchedules(dailyFiltered.sort((a, b) => a.time.localeCompare(b.time)));
     } else if (viewMode === 'weekly') {
-        const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+        const weekEnd = addDays(currentWeekStart, 5); // Monday (0) + 5 days = Saturday (5)
         const weeklyFiltered = schedulesToFilter.filter(s => {
             const scheduleDate = parseISO(s.date);
-            return scheduleDate >= currentWeekStart && scheduleDate <= weekEnd && getDay(scheduleDate) >= 1 && getDay(scheduleDate) <= 5; // Mon-Fri
+            // Display Monday (1) to Saturday (6)
+            return scheduleDate >= currentWeekStart && scheduleDate <= weekEnd && getDay(scheduleDate) >= 1 && getDay(scheduleDate) <= 6; 
         });
         setDisplayableSchedules(weeklyFiltered);
 
-        // Structure data for weekly view
         const daysInDisplayWeek = eachDayOfInterval({ start: currentWeekStart, end: weekEnd })
-                                    .filter(day => getDay(day) >= 1 && getDay(day) <= 5); // Mon-Fri
+                                    .filter(day => getDay(day) >= 1 && getDay(day) <= 6); // Mon-Sat
 
         const newWeeklyViewData = daysInDisplayWeek.map(day => ({
             date: day,
@@ -145,7 +141,7 @@ export default function SchedulePage() {
 
   const ScheduleCard = ({ item }: { item: ScheduleItem }) => {
     const scheduleDate = parseISO(item.date);
-    const isPast = scheduleDate < today;
+    const isPast = scheduleDate < today && !isSameDay(scheduleDate, today); // Mark as past if before today
     return (
         <Card className={`shadow-md overflow-hidden transition-all hover:shadow-lg ${isPast ? 'opacity-70 bg-muted/30' : 'bg-card'}`}>
         <CardHeader className="pb-3">
@@ -266,7 +262,7 @@ export default function SchedulePage() {
             <div className="flex items-center justify-between">
               <Button variant="outline" size="icon" onClick={() => setCurrentWeekStart(subWeeks(currentWeekStart, 1))}><ChevronLeft /></Button>
               <CardTitle className="text-xl text-center">
-                Minggu: {format(currentWeekStart, 'dd MMM', { locale: LocaleID })} - {format(addDays(currentWeekStart,4), 'dd MMM yyyy', { locale: LocaleID })}
+                Minggu: {format(currentWeekStart, 'dd MMM', { locale: LocaleID })} - {format(addDays(currentWeekStart,5), 'dd MMM yyyy', { locale: LocaleID })}
               </CardTitle>
               <Button variant="outline" size="icon" onClick={() => setCurrentWeekStart(addWeeks(currentWeekStart, 1))}><ChevronRight /></Button>
             </div>
@@ -288,7 +284,7 @@ export default function SchedulePage() {
           )}
 
           {viewMode === 'weekly' && (
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3"> {/* Adjusted to 3 cols for wider day cards */}
               {weeklyViewData.map(dayData => (
                 <div key={dayData.date.toISOString()} className="p-3 border rounded-lg bg-background/50">
                   <h3 className="mb-3 font-semibold text-center text-md">
@@ -315,3 +311,4 @@ export default function SchedulePage() {
     </div>
   );
 }
+
