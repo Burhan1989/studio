@@ -4,7 +4,6 @@
 import type { User } from '@/lib/types';
 import { useRouter, usePathname } from 'next/navigation';
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import { Progress } from '@/components/ui/progress'; // For loading state
 
 interface AuthContextType {
   user: User | null;
@@ -22,20 +21,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const pathname = usePathname();
 
   useEffect(() => {
+    // console.log("AuthContext: Initial effect running to load user from localStorage");
     const storedUser = localStorage.getItem('adeptlearn-user');
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
       } catch (error) {
-        console.error("Failed to parse stored user:", error);
-        localStorage.removeItem('adeptlearn-user'); // Clear invalid data
+        console.error("Gagal mem-parsing pengguna yang tersimpan:", error);
+        localStorage.removeItem('adeptlearn-user'); // Hapus data yang tidak valid
       }
     }
     setIsLoading(false);
   }, []); // Hanya dijalankan sekali saat mount
 
   useEffect(() => {
+    // console.log(`AuthContext: Redirection effect running. isLoading: ${isLoading}, user: ${!!user}, pathname: ${pathname}`);
     if (isLoading) {
       return; // Jangan lakukan apa-apa jika masih loading data awal
     }
@@ -45,15 +46,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (!user && !isPublicPath) {
       // Jika tidak ada user dan bukan di halaman publik, redirect ke login
-      router.replace('/login');
+      if (pathname !== '/login') {
+        // console.log(`AuthContext: No user, not public. Redirecting from ${pathname} to /login.`);
+        router.replace('/login');
+      }
     } else if (user && isPublicPath) {
       // Jika ada user dan berada di halaman publik, redirect ke dasbor yang sesuai
+      let targetDashboard = '/dashboard';
       if (user.isAdmin) {
-        router.replace('/admin');
+        targetDashboard = '/admin';
       } else if (user.role === 'parent') {
-        router.replace('/parent/dashboard');
-      } else {
-        router.replace('/dashboard');
+        targetDashboard = '/parent/dashboard';
+      }
+      
+      if (pathname !== targetDashboard) {
+        // Hanya redirect jika belum berada di halaman target (misalnya jika dari / atau /login atau /register)
+        // console.log(`AuthContext: User exists, on public path ${pathname}. Redirecting to ${targetDashboard}.`);
+        router.replace(targetDashboard);
       }
     }
     // Tidak ada else di sini, karena jika user ada dan bukan di public path, atau jika user tidak ada dan di public path, biarkan saja.
@@ -64,27 +73,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(userData);
     // Pengalihan setelah login sudah ditangani oleh useEffect di atas,
     // namun kita bisa juga melakukannya secara eksplisit di sini untuk respons yang lebih cepat.
-    if (userData.isAdmin) {
-      router.push('/admin');
-    } else if (userData.role === 'parent') {
-      router.push('/parent/dashboard');
-    } else {
-      router.push('/dashboard');
-    }
+    // Ini akan ditangani oleh useEffect di atas setelah `user` state diperbarui.
+    // if (userData.isAdmin) {
+    //   router.push('/admin');
+    // } else if (userData.role === 'parent') {
+    //   router.push('/parent/dashboard');
+    // } else {
+    //   router.push('/dashboard');
+    // }
   };
 
   const logout = () => {
     localStorage.removeItem('adeptlearn-user');
     setUser(null);
+    // console.log("AuthContext: Logging out. Redirecting to /login.");
     router.push('/login'); // Selalu redirect ke login setelah logout
   };
   
-  // Tampilkan loading indicator hanya jika belum selesai loading awal DAN bukan di halaman publik
   if (isLoading && !['/login', '/register', '/'].includes(pathname)) {
      return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background">
           <div className="w-1/3">
-            {/* Indikator loading yang lebih sederhana untuk menghindari masalah Progress */}
             <p className="text-center text-lg font-semibold text-primary animate-pulse">Memuat AdeptLearn...</p>
           </div>
         </div>
