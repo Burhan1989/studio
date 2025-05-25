@@ -142,7 +142,7 @@ export const mockStudents: StudentData[] = [
     Program_Studi: "IPA",
     Tanggal_Daftar: "2023-08-01",
     Status_Aktif: true,
-    Password_Hash: "hashed_password_siswa_rajin",
+    Password_Hash: "password", // Keep as plain text for mock
     Profil_Foto: "https://placehold.co/100x100.png"
   },
   {
@@ -204,7 +204,7 @@ export const mockStudents: StudentData[] = [
   },
 ];
 
-export const mockTeachers: TeacherData[] = [
+export let mockTeachers: TeacherData[] = [
   {
     ID_Guru: "teacher001",
     Nama_Lengkap: "Guru Inovatif, M.Pd.",
@@ -217,7 +217,7 @@ export const mockTeachers: TeacherData[] = [
     Alamat: "Jl. Mengajar No. 10, Kota Edukasi",
     Nomor_Telepon: "089876543210",
     Status_Aktif: true,
-    Password_Hash: "hashed_password_guru_inovatif",
+    Password_Hash: "password", // Keep as plain text for mock
     Tanggal_Pendaftaran: "2015-06-01",
     Jabatan: "Guru Senior Kimia",
     Profil_Foto: "https://placehold.co/100x100.png"
@@ -283,7 +283,7 @@ export const mockParents: ParentData[] = [
         Email: "parent@example.com",
         Nomor_Telepon: "081122334455",
         Status_Aktif: true,
-        Password_Hash: "hashed_password_parent",
+        Password_Hash: "password", // Keep as plain text for mock
         Profil_Foto: "https://placehold.co/100x100.png",
         Anak_Terkait: [
             { ID_Siswa: "student001", Nama_Siswa: "Siswa Rajin" },
@@ -412,9 +412,9 @@ export function updateClass(updatedClass: ClassData): boolean {
   const index = mockClasses.findIndex(kelas => kelas.ID_Kelas === updatedClass.ID_Kelas);
   if (index !== -1) {
     mockClasses[index] = updatedClass;
-    return true; 
+    return true;
   }
-  return false; 
+  return false;
 }
 
 export function getMajorById(id: string): MajorData | undefined {
@@ -425,6 +425,19 @@ export function updateMajor(updatedMajor: MajorData): boolean {
   const index = mockMajors.findIndex(major => major.ID_Jurusan === updatedMajor.ID_Jurusan);
   if (index !== -1) {
     mockMajors[index] = updatedMajor;
+    return true;
+  }
+  return false;
+}
+
+export function getTeacherById(id: string): TeacherData | undefined {
+  return mockTeachers.find(teacher => teacher.ID_Guru === id);
+}
+
+export function updateTeacher(updatedTeacher: TeacherData): boolean {
+  const index = mockTeachers.findIndex(teacher => teacher.ID_Guru === updatedTeacher.ID_Guru);
+  if (index !== -1) {
+    mockTeachers[index] = updatedTeacher;
     return true;
   }
   return false;

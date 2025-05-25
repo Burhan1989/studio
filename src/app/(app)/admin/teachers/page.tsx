@@ -8,12 +8,20 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, UserCog, KeyRound, Upload, Download, RefreshCw } from "lucide-react"; 
 import type { TeacherData } from "@/lib/types"; 
-import Link from "next/link"; // Import Link
-import { mockTeachers } from "@/lib/mockData"; // Import mockTeachers
+import Link from "next/link";
+import { mockTeachers } from "@/lib/mockData";
+import { useState, useEffect } from "react";
 
 
 export default function AdminTeachersPage() {
   const { toast } = useToast();
+  const [teachers, setTeachers] = useState<TeacherData[]>([]);
+
+  useEffect(() => {
+    // Simulate fetching or initializing teachers.
+    setTeachers([...mockTeachers]); 
+  }, []);
+
 
   const handleActionPlaceholder = (action: string, item: string) => {
     toast({
@@ -22,12 +30,27 @@ export default function AdminTeachersPage() {
     });
   };
 
-  const handleEditAction = (itemName: string) => {
+  const handleResetPassword = (teacher: TeacherData) => {
+    // In a real app, you'd call an API to reset the password.
+    // Here, we just show a toast.
+    console.log(`Simulasi reset password untuk ${teacher.Nama_Lengkap} menjadi tanggal lahir: ${teacher.Tanggal_Lahir}`);
     toast({
-      title: `Edit ${itemName}`,
-      description: `Membuka form edit untuk ${itemName}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
+      title: "Password Direset (Simulasi)",
+      description: `Password untuk guru "${teacher.Nama_Lengkap}" telah direset menjadi tanggal lahirnya (simulasi). Pastikan guru diberitahu.`,
+      variant: "default",
+      duration: 5000,
     });
+    // Optionally, you could update the mockTeachers array here if Password_Hash was being used for login simulation
+    // For example:
+    // const updatedTeachers = teachers.map(t => 
+    //   t.ID_Guru === teacher.ID_Guru ? { ...t, Password_Hash: teacher.Tanggal_Lahir } : t
+    // );
+    // setTeachers(updatedTeachers); // This would update the local state
+    // // And if mockTeachers is a let variable in mockData.ts:
+    // const index = mockTeachers.findIndex(t => t.ID_Guru === teacher.ID_Guru);
+    // if (index !== -1) mockTeachers[index].Password_Hash = teacher.Tanggal_Lahir;
   };
+
 
   const handleExcelAction = (actionType: "Import" | "Export", dataType: string) => {
     let actionDescription = actionType === "Import" ? "Impor" : "Ekspor";
@@ -108,7 +131,7 @@ export default function AdminTeachersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockTeachers.map((teacher) => (
+              {teachers.map((teacher) => (
                 <TableRow key={teacher.ID_Guru}>
                   <TableCell className="font-medium">{teacher.Nama_Lengkap}</TableCell>
                   <TableCell>{teacher.Username}</TableCell>
@@ -122,19 +145,21 @@ export default function AdminTeachersPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => handleEditAction(`Guru ${teacher.Nama_Lengkap}`)}>
-                      <Edit className="w-4 h-4" />
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/admin/teachers/${teacher.ID_Guru}/edit`}>
+                        <Edit className="w-4 h-4" /> Edit
+                      </Link>
                     </Button>
                     <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", `Guru ${teacher.Nama_Lengkap}`)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleActionPlaceholder("Reset Akun", `Guru ${teacher.Nama_Lengkap}`)}>
+                    <Button variant="outline" size="sm" onClick={() => handleResetPassword(teacher)}>
                       <KeyRound className="w-4 h-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
               ))}
-              {mockTeachers.length === 0 && (
+              {teachers.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={8} className="text-center text-muted-foreground">Belum ada data guru.</TableCell>
                 </TableRow>
