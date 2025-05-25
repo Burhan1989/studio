@@ -22,8 +22,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { UserRole } from '@/lib/types';
-import { mockSchoolProfile } from '@/lib/mockData'; // Import data sekolah
-import Image from 'next/image'; // Import Image
+import { mockSchoolProfile } from '@/lib/mockData';
+import Image from 'next/image';
 
 interface NavItem {
   href: string;
@@ -83,20 +83,17 @@ export default function AppShell({ children }: { children: ReactNode }) {
       item.href === '/settings'    
     );
   } else if (userRole === 'teacher') {
-    filteredNavItems = baseNavItems.filter(item => {
+     filteredNavItems = baseNavItems.filter(item => {
       if (item.adminOnly || item.parentOnly || item.studentOnly) return false; 
       if (item.teacherOnly) return true; 
-      // Include general items not specific to any role
       return !item.adminOnly && !item.parentOnly && !item.studentOnly && !item.teacherOnly;
     });
   } else if (userRole === 'student') {
      filteredNavItems = baseNavItems.filter(item => {
       if (item.adminOnly || item.parentOnly || item.teacherOnly) return false; 
-      // Include general items OR items specific to students
       return item.studentOnly || (!item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly);
     });
   } else {
-    // Fallback for users with no specific role or general users (if any)
     filteredNavItems = baseNavItems.filter(item => 
         !item.adminOnly && 
         !item.parentOnly && 
@@ -108,14 +105,24 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider defaultOpen>
       <Sidebar className="bg-card border-r" collapsible="icon">
-        <SidebarHeader className="p-4 border-b">
-          <Link href={user?.role === 'parent' ? "/parent/dashboard" : "/dashboard"} className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
+        <SidebarHeader className="p-2 border-b min-h-[6rem] flex items-center justify-center group-data-[collapsible=icon]:min-h-0">
+          <Link
+            href={user?.role === 'parent' ? "/parent/dashboard" : (user?.isAdmin ? "/admin" : "/dashboard")}
+            className="flex flex-col items-center w-full gap-1 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0"
+          >
             {schoolLogoUrl ? (
-              <Image src={schoolLogoUrl} alt={`${mockSchoolProfile.namaSekolah} Logo`} width={120} height={30} className="h-8 w-auto object-contain group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8" data-ai-hint="school logo"/>
+              <Image
+                src={schoolLogoUrl}
+                alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
+                width={120} // Aspect ratio base
+                height={30}  // Aspect ratio base
+                className="h-8 w-auto object-contain group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:w-7"
+                data-ai-hint="school logo"
+              />
             ) : (
-              <GraduationCap className="w-8 h-8 text-primary" />
+              <GraduationCap className="w-8 h-8 text-primary group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7" />
             )}
-            <span className="text-xl font-bold text-foreground group-data-[collapsible=icon]:hidden">
+            <span className="text-xs font-medium text-center text-foreground px-1 group-data-[collapsible=icon]:hidden w-full truncate">
               {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
             </span>
           </Link>

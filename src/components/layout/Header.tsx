@@ -14,8 +14,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { mockSchoolProfile } from '@/lib/mockData'; // Import data sekolah
-import Image from 'next/image'; // Import Image
+import { mockSchoolProfile } from '@/lib/mockData';
+import Image from 'next/image';
 
 export default function Header() {
   const { user, logout } = useAuth();
@@ -23,14 +23,21 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex items-center h-16 max-w-screen-2xl">
-        <Link href="/" className="flex items-center gap-2 mr-6">
+      <div className="container flex items-center h-20 max-w-screen-2xl"> {/* Adjusted height for vertical logo */}
+        <Link href="/" className="flex flex-col items-center gap-1 mr-4 text-center sm:mr-6">
           {schoolLogoUrl ? (
-            <Image src={schoolLogoUrl} alt={`${mockSchoolProfile.namaSekolah} Logo`} width={120} height={30} className="h-8 w-auto object-contain" data-ai-hint="school logo" />
+            <Image
+              src={schoolLogoUrl}
+              alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
+              width={160} // Aspect ratio base
+              height={40}  // Aspect ratio base
+              className="h-10 w-auto object-contain" // Tailwind for actual size
+              data-ai-hint="school logo"
+            />
           ) : (
             <GraduationCap className="w-8 h-8 text-primary" />
           )}
-          <span className="text-xl font-bold text-foreground hidden sm:inline-block">
+          <span className="text-sm font-semibold text-foreground mt-1">
             {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
           </span>
         </Link>
