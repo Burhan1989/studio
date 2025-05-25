@@ -19,14 +19,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart } from 'lucide-react';
 import { useRouter } from 'next/navigation'; 
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ElementType;
-  adminOnly?: boolean; // Tambahkan properti adminOnly
+  adminOnly?: boolean;
 }
 
 const baseNavItems: NavItem[] = [
@@ -37,7 +37,11 @@ const baseNavItems: NavItem[] = [
   { href: '/reports', label: 'Laporan', icon: BarChart3 },
   { href: '/profile', label: 'Profil', icon: UserCircle },
   { href: '/settings', label: 'Pengaturan', icon: Settings },
-  { href: '/admin', label: 'Admin', icon: Shield, adminOnly: true }, // Tandai sebagai adminOnly
+  { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
+  { href: '/admin/users', label: 'Kelola Pengguna', icon: Users, adminOnly: true },
+  { href: '/admin/courses', label: 'Kelola Kursus', icon: BookCopy, adminOnly: true },
+  { href: '/admin/quizzes', label: 'Kelola Kuis', icon: FileQuestion, adminOnly: true },
+  { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart, adminOnly: true },
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {
@@ -49,7 +53,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
     return <div className="flex items-center justify-center h-screen">Mengarahkan ke halaman masuk...</div>;
   }
 
-  // Saring item navigasi berdasarkan status admin pengguna
   const navItems = baseNavItems.filter(item => !item.adminOnly || (item.adminOnly && user?.isAdmin));
 
   return (
@@ -67,7 +70,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} legacyBehavior passHref>
                   <SidebarMenuButton
-                    isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
+                    isActive={pathname === item.href || (item.href !== '/dashboard' && item.href !== '/admin' && pathname.startsWith(item.href)) || (item.href === '/admin' && (pathname === '/admin' || pathname.startsWith('/admin/')) && !navItems.some(nav => nav.href !== '/admin' && pathname.startsWith(nav.href)) )}
                     tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
                     className="justify-start"
                   >
