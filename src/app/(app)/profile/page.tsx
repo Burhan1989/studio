@@ -66,6 +66,7 @@ export default function ProfilePage() {
       const studentMatch = mockStudents.find(s => s.Email === user.email);
       if (studentMatch) {
         setIsStudent(true);
+        setIsTeacher(false); // Ensure only one role is active
         baseProfileData = {
           ...baseProfileData,
           Nama_Lengkap: studentMatch.Nama_Lengkap,
@@ -83,6 +84,7 @@ export default function ProfilePage() {
         const teacherMatch = mockTeachers.find(t => t.Email === user.email);
         if (teacherMatch) {
           setIsTeacher(true);
+          setIsStudent(false); // Ensure only one role is active
           baseProfileData = {
             ...baseProfileData,
             Nama_Lengkap: teacherMatch.Nama_Lengkap,
@@ -94,6 +96,9 @@ export default function ProfilePage() {
             Kelas_Ajar: teacherMatch.Kelas_Ajar as any, // Will be transformed to string for form
             Jabatan: teacherMatch.Jabatan,
           };
+        } else {
+            setIsStudent(false);
+            setIsTeacher(false);
         }
       }
       setInitialData(baseProfileData);
@@ -195,7 +200,7 @@ export default function ProfilePage() {
                   <FormItem>
                     <FormLabel>Nomor Telepon</FormLabel>
                     <FormControl>
-                      <Input type="tel" placeholder="Nomor telepon Anda" {...field} />
+                      <Input type="tel" placeholder="Nomor telepon Anda" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -208,7 +213,7 @@ export default function ProfilePage() {
                   <FormItem>
                     <FormLabel>Alamat</FormLabel>
                     <FormControl>
-                      <Input placeholder="Alamat Anda" {...field} />
+                      <Input placeholder="Alamat Anda" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -223,7 +228,7 @@ export default function ProfilePage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Jenis Kelamin</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value || ""} value={field.value || ""}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Pilih Jenis Kelamin" />
@@ -245,7 +250,7 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Tanggal Lahir</FormLabel>
                         <FormControl>
-                          <Input type="date" {...field} />
+                          <Input type="date" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -266,7 +271,7 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Nama Panggilan</FormLabel>
                         <FormControl>
-                          <Input placeholder="Nama panggilan" {...field} />
+                          <Input placeholder="Nama panggilan" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -279,9 +284,9 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>NISN</FormLabel>
                         <FormControl>
-                          <Input placeholder="NISN Anda" {...field} readOnly={isStudent} className={isStudent ? "bg-muted/50 cursor-not-allowed" : ""} />
+                          <Input placeholder="NISN Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""} />
                         </FormControl>
-                        {isStudent && <FormDescription>NISN diatur oleh admin.</FormDescription>}
+                        <FormDescription>NISN diatur oleh admin.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -293,9 +298,9 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Nomor Induk Siswa</FormLabel>
                         <FormControl>
-                          <Input placeholder="Nomor induk Anda" {...field} readOnly={isStudent} className={isStudent ? "bg-muted/50 cursor-not-allowed" : ""} />
+                          <Input placeholder="Nomor induk Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""} />
                         </FormControl>
-                        {isStudent && <FormDescription>Nomor Induk diatur oleh admin.</FormDescription>}
+                        <FormDescription>Nomor Induk diatur oleh admin.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -307,9 +312,9 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Kelas</FormLabel>
                         <FormControl>
-                          <Input placeholder="Kelas Anda" {...field} readOnly={isStudent} className={isStudent ? "bg-muted/50 cursor-not-allowed" : ""} />
+                          <Input placeholder="Kelas Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""} />
                         </FormControl>
-                        {isStudent && <FormDescription>Kelas diatur oleh admin.</FormDescription>}
+                        <FormDescription>Kelas diatur oleh admin.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -321,9 +326,9 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Jurusan (Program Studi)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Jurusan Anda" {...field} readOnly={isStudent} className={isStudent ? "bg-muted/50 cursor-not-allowed" : ""} />
+                          <Input placeholder="Jurusan Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""} />
                         </FormControl>
-                        {isStudent && <FormDescription>Jurusan diatur oleh admin.</FormDescription>}
+                        <FormDescription>Jurusan diatur oleh admin.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -342,7 +347,7 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Mata Pelajaran</FormLabel>
                         <FormControl>
-                          <Input placeholder="Mata pelajaran yang diajar" {...field} />
+                          <Input placeholder="Mata pelajaran yang diajar" {...field} value={field.value || ""} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -351,16 +356,24 @@ export default function ProfilePage() {
                    <FormField
                     control={form.control}
                     name="Kelas_Ajar"
-                    render={({ field }) => ( // field.value here would be the string from form.reset
-                      <FormItem>
-                        <FormLabel>Kelas yang Diajar</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Pisahkan dengan koma, cth: Kelas 10A, Kelas 11B" {...field} />
-                        </FormControl>
-                         <p className="text-xs text-muted-foreground">Pisahkan beberapa kelas dengan koma.</p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                    render={({ field }) => {
+                      // Ensure field.value is a string for the input
+                      const displayValue = Array.isArray(field.value) ? field.value.join(', ') : (field.value || "");
+                      return (
+                        <FormItem>
+                          <FormLabel>Kelas yang Diajar</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Pisahkan dengan koma, cth: Kelas 10A, Kelas 11B" 
+                              {...field} 
+                              value={displayValue} 
+                            />
+                          </FormControl>
+                          <p className="text-xs text-muted-foreground">Pisahkan beberapa kelas dengan koma.</p>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
                   />
                   <FormField
                     control={form.control}
@@ -372,11 +385,12 @@ export default function ProfilePage() {
                           <Input 
                             placeholder="Jabatan Anda" 
                             {...field} 
-                            readOnly={isTeacher} 
-                            className={isTeacher ? "bg-muted/50 cursor-not-allowed" : ""} 
+                            readOnly // Always readOnly for teachers editing their own profile
+                            className="bg-muted/50 cursor-not-allowed"
+                            value={field.value || ""}
                           />
                         </FormControl>
-                        {isTeacher && <FormDescription>Jabatan diatur oleh admin.</FormDescription>}
+                        <FormDescription>Jabatan diatur oleh admin.</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -396,4 +410,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
