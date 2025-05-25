@@ -98,8 +98,8 @@ export default function AdminEditTeacherPage() {
           Kelas_Ajar: teacherData.Kelas_Ajar.join(", ") as any,
           Jabatan: teacherData.Jabatan || "",
           Status_Aktif: teacherData.Status_Aktif,
-          newPassword: "", // Password tidak di-prefill
-          confirmNewPassword: "", // Password tidak di-prefill
+          newPassword: "", 
+          confirmNewPassword: "", 
         });
       } else {
         toast({
@@ -119,17 +119,17 @@ export default function AdminEditTeacherPage() {
     const updatedTeacherData: TeacherData = {
       ...initialData, 
       Nama_Lengkap: values.Nama_Lengkap,
-      // Username dan Email tidak diubah di sini
+      // Username, Email, dan Jabatan tidak diubah di sini
       Jenis_Kelamin: values.Jenis_Kelamin,
       Tanggal_Lahir: values.Tanggal_Lahir,
       Alamat: values.Alamat,
       Nomor_Telepon: values.Nomor_Telepon,
       Mata_Pelajaran: values.Mata_Pelajaran,
       Kelas_Ajar: values.Kelas_Ajar, 
-      Jabatan: values.Jabatan,
+      // Jabatan diambil dari initialData karena read-only
+      Jabatan: initialData.Jabatan, 
       Status_Aktif: values.Status_Aktif,
-      // Update password jika ada input baru
-      Password_Hash: values.newPassword ? values.newPassword : initialData.Password_Hash, // Di aplikasi nyata, ini akan di-hash
+      Password_Hash: values.newPassword ? values.newPassword : initialData.Password_Hash, 
     };
 
     console.log("Data guru yang akan diperbarui (simulasi):", updatedTeacherData);
@@ -184,7 +184,7 @@ export default function AdminEditTeacherPage() {
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-xl">Informasi Data Guru</CardTitle>
-              <CardDescription>Perbarui detail guru di bawah ini. Username dan Email tidak dapat diubah di sini.</CardDescription>
+              <CardDescription>Perbarui detail guru di bawah ini. Username, Email, dan Jabatan tidak dapat diubah di sini.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6 md:grid-cols-2">
               <FormField
@@ -280,10 +280,11 @@ export default function AdminEditTeacherPage() {
                 name="Jabatan"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Jabatan (Opsional)</FormLabel>
+                    <FormLabel>Jabatan</FormLabel>
                     <FormControl>
-                      <Input placeholder="cth. Guru Senior Matematika" {...field} />
+                      <Input placeholder="cth. Guru Senior Matematika" {...field} readOnly className="bg-muted/50 cursor-not-allowed" />
                     </FormControl>
+                    <FormDescription>Jabatan tidak dapat diubah melalui formulir ini.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
