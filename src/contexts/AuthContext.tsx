@@ -24,17 +24,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const storedUser = localStorage.getItem('adeptlearn-user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error("Failed to parse stored user:", error);
+        localStorage.removeItem('adeptlearn-user'); // Clear invalid data
+      }
     }
     setIsLoading(false);
-  }, []);
+  }, []); // Hanya dijalankan sekali saat mount
 
   useEffect(() => {
-    if (!isLoading && !user && !['/login', '/register', '/'].includes(pathname)) {
-      router.replace('/login');
+    if (isLoading) {
+      return; // Jangan lakukan apa-apa jika masih loading data awal
     }
-    if (!isLoading && user && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
-      if (user.isAdmin) { // Prioritize isAdmin check
+
+    const publicPaths = ['/login', '/register', '/'];
+    const isPublicPath = publicPaths.includes(pathname);
+
+    if (!user && !isPublicPath) {
+      // Jika tidak ada user dan bukan di halaman publik, redirect ke login
+      router.replace('/login');
+    } else if (user && isPublicPath) {
+      // Jika ada user dan berada di halaman publik, redirect ke dasbor yang sesuai
+      if (user.isAdmin) {
         router.replace('/admin');
       } else if (user.role === 'parent') {
         router.replace('/parent/dashboard');
@@ -42,12 +56,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.replace('/dashboard');
       }
     }
+    // Tidak ada else di sini, karena jika user ada dan bukan di public path, atau jika user tidak ada dan di public path, biarkan saja.
   }, [user, isLoading, router, pathname]);
 
   const login = (userData: User) => {
     localStorage.setItem('adeptlearn-user', JSON.stringify(userData));
     setUser(userData);
-    if (userData.isAdmin) { // Prioritize isAdmin check
+    // Pengalihan setelah login sudah ditangani oleh useEffect di atas,
+    // namun kita bisa juga melakukannya secara eksplisit di sini untuk respons yang lebih cepat.
+    if (userData.isAdmin) {
       router.push('/admin');
     } else if (userData.role === 'parent') {
       router.push('/parent/dashboard');
@@ -59,20 +76,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = () => {
     localStorage.removeItem('adeptlearn-user');
     setUser(null);
-    router.push('/login');
+    router.push('/login'); // Selalu redirect ke login setelah logout
   };
   
+  // Tampilkan loading indicator hanya jika belum selesai loading awal DAN bukan di halaman publik
   if (isLoading && !['/login', '/register', '/'].includes(pathname)) {
      return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-background">
           <div className="w-1/3">
-            <Progress value={50} className="w-full h-2 mb-4" />
-            <p className="text-center text-foreground">Memuat AdeptLearn...</p>
+            {/* Indikator loading yang lebih sederhana untuk menghindari masalah Progress */}
+            <p className="text-center text-lg font-semibold text-primary animate-pulse">Memuat AdeptLearn...</p>
           </div>
         </div>
       );
   }
-
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading }}>
@@ -88,3 +105,4 @@ export const useAuth = () => {
   }
   return context;
 };
+
