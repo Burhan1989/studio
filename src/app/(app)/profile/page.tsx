@@ -369,8 +369,14 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Jabatan</FormLabel>
                         <FormControl>
-                          <Input placeholder="Jabatan Anda" {...field} />
+                          <Input 
+                            placeholder="Jabatan Anda" 
+                            {...field} 
+                            readOnly={isTeacher} 
+                            className={isTeacher ? "bg-muted/50 cursor-not-allowed" : ""} 
+                          />
                         </FormControl>
+                        {isTeacher && <FormDescription>Jabatan diatur oleh admin.</FormDescription>}
                         <FormMessage />
                       </FormItem>
                     )}
