@@ -34,14 +34,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       router.replace('/login');
     }
     if (!isLoading && user && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
-      router.replace('/dashboard');
+      if (user.role === 'admin') {
+        router.replace('/admin');
+      } else if (user.role === 'parent') {
+        router.replace('/parent/dashboard');
+      } else {
+        router.replace('/dashboard');
+      }
     }
   }, [user, isLoading, router, pathname]);
 
   const login = (userData: User) => {
     localStorage.setItem('adeptlearn-user', JSON.stringify(userData));
     setUser(userData);
-    router.push('/dashboard');
+    if (userData.role === 'admin') {
+      router.push('/admin');
+    } else if (userData.role === 'parent') {
+      router.push('/parent/dashboard');
+    } else {
+      router.push('/dashboard');
+    }
   };
 
   const logout = () => {
@@ -76,3 +88,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

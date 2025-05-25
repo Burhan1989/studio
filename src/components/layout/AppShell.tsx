@@ -27,14 +27,17 @@ interface NavItem {
   label: string;
   icon: React.ElementType;
   adminOnly?: boolean;
+  parentOnly?: boolean; // For items ONLY parents see
+  hideForParent?: boolean; // For general items that parents should NOT see
 }
 
 const baseNavItems: NavItem[] = [
-  { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard },
-  { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit },
-  { href: '/lessons', label: 'Pelajaran', icon: BookOpen },
-  { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck },
-  { href: '/reports', label: 'Laporan', icon: BarChart3 },
+  { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard, hideForParent: true },
+  { href: '/parent/dashboard', label: 'Dasbor Anak', icon: Users, parentOnly: true },
+  { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit, hideForParent: true },
+  { href: '/lessons', label: 'Pelajaran', icon: BookOpen, hideForParent: true },
+  { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck, hideForParent: true },
+  { href: '/reports', label: 'Laporan', icon: BarChart3, hideForParent: true },
   { href: '/profile', label: 'Profil', icon: UserCircle },
   { href: '/settings', label: 'Pengaturan', icon: Settings },
   { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
@@ -52,27 +55,41 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter(); 
 
   if (!user) {
+    // This should ideally be handled by AuthContext redirecting, but as a fallback.
+    // router.replace('/login'); // This can cause infinite loops if AuthContext is also redirecting
     return <div className="flex items-center justify-center h-screen">Mengarahkan ke halaman masuk...</div>;
   }
+  
+  let filteredNavItems: NavItem[];
 
-  const navItems = baseNavItems.filter(item => !item.adminOnly || (item.adminOnly && user?.isAdmin));
+  if (user?.isAdmin) {
+    // Admins see their admin links and general links, but not parent-specific ones
+    filteredNavItems = baseNavItems.filter(item => !item.parentOnly);
+  } else if (user?.role === 'parent') {
+    // Parents see only parent-specific links + profile/settings
+    filteredNavItems = baseNavItems.filter(item => item.parentOnly || item.href === '/profile' || item.href === '/settings');
+  } else {
+    // Students/Teachers see general links (not admin, not parent-specific, not hidden for them)
+    filteredNavItems = baseNavItems.filter(item => !item.adminOnly && !item.parentOnly && !item.hideForParent);
+  }
+
 
   return (
     <SidebarProvider defaultOpen>
       <Sidebar className="bg-card border-r" collapsible="icon">
         <SidebarHeader className="p-4 border-b">
-          <Link href="/dashboard" className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
+          <Link href={user?.role === 'parent' ? "/parent/dashboard" : "/dashboard"} className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
             <GraduationCap className="w-8 h-8 text-primary" />
             <span className="text-xl font-bold text-foreground group-data-[collapsible=icon]:hidden">AdeptLearn</span>
           </Link>
         </SidebarHeader>
         <SidebarContent className="p-2">
           <SidebarMenu>
-            {navItems.map((item) => (
+            {filteredNavItems.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} legacyBehavior passHref>
                   <SidebarMenuButton
-                    isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
+                    isActive={pathname === item.href || (item.href !== '/dashboard' && item.href !== '/parent/dashboard' && pathname.startsWith(item.href))}
                     tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
                     className="justify-start"
                   >
@@ -151,3 +168,4 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
