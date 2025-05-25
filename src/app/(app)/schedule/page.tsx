@@ -2,13 +2,25 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { mockSchedules, mockClasses, mockTeachers, mockStudents, mockLessons, mockQuizzes } from '@/lib/mockData'; // Added mockLessons and mockQuizzes
+import { mockSchedules, mockClasses, mockTeachers, mockStudents, mockLessons, mockQuizzes } from '@/lib/mockData';
 import type { ScheduleItem, ClassData, StudentData } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Clock, Tag, Info, User, Link as LinkIcon, AlertTriangle } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
-import { id as LocaleID } from 'date-fns/locale'; // Impor lokal Bahasa Indonesia
+import { CalendarDays, Clock, Tag, Info, User, Link as LinkIcon, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { 
+  format, 
+  parseISO, 
+  isSameDay, 
+  startOfWeek, 
+  endOfWeek, 
+  eachDayOfInterval, 
+  addDays, 
+  subDays, 
+  addWeeks, 
+  subWeeks,
+  getDay // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+} from 'date-fns';
+import { id as LocaleID } from 'date-fns/locale';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -20,18 +32,34 @@ import {
 } from "@/components/ui/select";
 import { Label } from '@/components/ui/label';
 
-
 export const dynamic = 'force-dynamic';
+
+type ViewMode = 'daily' | 'weekly';
+
+interface DayWithSchedules {
+  date: Date;
+  schedules: ScheduleItem[];
+}
 
 export default function SchedulePage() {
   const { user } = useAuth();
   const [allSchedules, setAllSchedules] = useState<ScheduleItem[]>([]);
-  const [filteredSchedules, setFilteredSchedules] = useState<ScheduleItem[]>([]);
-  const [selectedClassFilter, setSelectedClassFilter] = useState<string>(""); // Untuk filter kelas
   const [studentClassInfo, setStudentClassInfo] = useState<ClassData | null>(null);
+  
+  const [viewMode, setViewMode] = useState<ViewMode>('daily');
+  const [currentDate, setCurrentDate] = useState(new Date()); // For daily view
+  const [currentWeekStart, setCurrentWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 })); // Monday
+
+  const [selectedClassFilter, setSelectedClassFilter] = useState<string>(""); // For teacher/admin class filter
+
+  // This state will hold the schedules filtered by role/class AND by the selected date/week range.
+  const [displayableSchedules, setDisplayableSchedules] = useState<ScheduleItem[]>([]);
+  
+  // This state will hold schedules structured for the weekly view
+  const [weeklyViewData, setWeeklyViewData] = useState<DayWithSchedules[]>([]);
+
 
   useEffect(() => {
-    // Simulating fetching schedules and enriching them with class names and teacher names
     const enrichedSchedules = mockSchedules.map(schedule => {
       const classInfo = mockClasses.find(c => c.ID_Kelas === schedule.classId);
       const teacherInfo = mockTeachers.find(t => t.ID_Guru === schedule.teacherId);
@@ -58,38 +86,49 @@ export default function SchedulePage() {
     }
   }, [user]);
 
-
   useEffect(() => {
-    let schedulesToDisplay = [...allSchedules];
+    let schedulesToFilter = [...allSchedules];
 
-    // Filter berdasarkan peran dan kelas yang dipilih
+    // Filter by role and class selection
     if (user?.role === 'student') {
       if (studentClassInfo) {
-        schedulesToDisplay = schedulesToDisplay.filter(s => s.classId === studentClassInfo.ID_Kelas || !s.classId); // Tampilkan jadwal kelas siswa atau jadwal umum
+        schedulesToFilter = schedulesToFilter.filter(s => s.classId === studentClassInfo.ID_Kelas || !s.classId);
       } else {
-        schedulesToDisplay = schedulesToDisplay.filter(s => !s.classId); // Jika siswa tidak punya kelas, hanya tampilkan jadwal umum
+        schedulesToFilter = schedulesToFilter.filter(s => !s.classId);
       }
     } else if (user?.role === 'teacher' || user?.isAdmin) {
-        // Filter by selected class if a class is chosen by the teacher or admin
         if (selectedClassFilter && selectedClassFilter !== "all") {
-            schedulesToDisplay = schedulesToDisplay.filter(s => s.classId === selectedClassFilter);
+            schedulesToFilter = schedulesToFilter.filter(s => s.classId === selectedClassFilter);
         }
-        // Teachers and Admins can see all schedules by default or filter by class
+    }
+    
+    // Filter by date/week view
+    if (viewMode === 'daily') {
+        const dailyFiltered = schedulesToFilter.filter(s => isSameDay(parseISO(s.date), currentDate));
+        setDisplayableSchedules(dailyFiltered.sort((a, b) => a.time.localeCompare(b.time)));
+    } else if (viewMode === 'weekly') {
+        const weekEnd = endOfWeek(currentWeekStart, { weekStartsOn: 1 });
+        const weeklyFiltered = schedulesToFilter.filter(s => {
+            const scheduleDate = parseISO(s.date);
+            return scheduleDate >= currentWeekStart && scheduleDate <= weekEnd && getDay(scheduleDate) >= 1 && getDay(scheduleDate) <= 5; // Mon-Fri
+        });
+        setDisplayableSchedules(weeklyFiltered);
+
+        // Structure data for weekly view
+        const daysInDisplayWeek = eachDayOfInterval({ start: currentWeekStart, end: weekEnd })
+                                    .filter(day => getDay(day) >= 1 && getDay(day) <= 5); // Mon-Fri
+
+        const newWeeklyViewData = daysInDisplayWeek.map(day => ({
+            date: day,
+            schedules: weeklyFiltered
+                .filter(s => isSameDay(parseISO(s.date), day))
+                .sort((a, b) => a.time.localeCompare(b.time))
+        }));
+        setWeeklyViewData(newWeeklyViewData);
     }
 
+  }, [allSchedules, user, studentClassInfo, selectedClassFilter, viewMode, currentDate, currentWeekStart]);
 
-    // Urutkan berdasarkan tanggal dan waktu
-    schedulesToDisplay.sort((a, b) => {
-      const dateComparison = new Date(a.date).getTime() - new Date(b.date).getTime();
-      if (dateComparison !== 0) return dateComparison;
-      // Jika tanggal sama, coba urutkan berdasarkan waktu mulai (asumsi format HH:MM)
-      const timeA = a.time.split(' - ')[0];
-      const timeB = b.time.split(' - ')[0];
-      return timeA.localeCompare(timeB);
-    });
-
-    setFilteredSchedules(schedulesToDisplay);
-  }, [allSchedules, user, selectedClassFilter, studentClassInfo]);
 
   const getCategoryBadgeColor = (category: ScheduleItem['category']) => {
     switch (category) {
@@ -102,34 +141,80 @@ export default function SchedulePage() {
   };
 
   const today = new Date();
-  today.setHours(0, 0, 0, 0); // Set to start of today for comparison
+  today.setHours(0, 0, 0, 0);
+
+  const ScheduleCard = ({ item }: { item: ScheduleItem }) => {
+    const scheduleDate = parseISO(item.date);
+    const isPast = scheduleDate < today;
+    return (
+        <Card className={`shadow-md overflow-hidden transition-all hover:shadow-lg ${isPast ? 'opacity-70 bg-muted/30' : 'bg-card'}`}>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between mb-2">
+            <CardTitle className="text-lg">{item.title}</CardTitle>
+            <span className={`px-2 py-1 text-xs font-semibold rounded-full border ${getCategoryBadgeColor(item.category)}`}>
+              {item.category}
+            </span>
+          </div>
+          <div className="flex items-center text-sm text-muted-foreground">
+            <CalendarDays className="w-4 h-4 mr-2" />
+            {format(scheduleDate, 'EEEE, dd MMMM yyyy', { locale: LocaleID })}
+          </div>
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Clock className="w-4 h-4 mr-2" />
+            {item.time}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm">
+          {item.className && item.classId && (
+            <div className="flex items-center text-muted-foreground">
+              <Tag className="w-4 h-4 mr-2" /> Kelas: {item.className}
+            </div>
+          )}
+          {item.teacherName && (user?.role === 'student' || user?.isAdmin || (user?.role === 'teacher' && user.id !== item.teacherId)) && (
+              <div className="flex items-center text-muted-foreground">
+              <User className="w-4 h-4 mr-2" /> Guru: {item.teacherName}
+            </div>
+          )}
+          {item.description && (
+            <div className="flex items-start text-muted-foreground">
+              <Info className="w-4 h-4 mr-2 mt-0.5 shrink-0" />
+              <p>{item.description}</p>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2 pt-2">
+            {item.lessonId && getLessonById(item.lessonId) && (
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/lessons/${item.lessonId}`}>
+                  <LinkIcon className="w-3 h-3 mr-1.5" /> Lihat Pelajaran
+                </Link>
+              </Button>
+            )}
+            {item.quizId && getQuizById(item.quizId) &&(
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/quizzes/${item.quizId}`}>
+                    <LinkIcon className="w-3 h-3 mr-1.5" /> Kerjakan Kuis
+                </Link>
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center gap-3">
           <CalendarDays className="w-10 h-10 text-primary" />
           <h1 className="text-3xl font-bold">Jadwal Pembelajaran</h1>
         </div>
-        {(user?.role === 'teacher' || user?.isAdmin) && (
-          <div className="w-full sm:w-auto">
-            <Label htmlFor="class-filter" className="sr-only">Filter per Kelas</Label>
-            <Select value={selectedClassFilter} onValueChange={setSelectedClassFilter}>
-              <SelectTrigger id="class-filter" className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Filter per Kelas" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Kelas</SelectItem>
-                {mockClasses.map(cls => (
-                  <SelectItem key={cls.ID_Kelas} value={cls.ID_Kelas}>
-                    {cls.Nama_Kelas} - {cls.jurusan}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button variant={viewMode === 'daily' ? 'default' : 'outline'} onClick={() => setViewMode('daily')}>Tampilan Harian</Button>
+          <Button variant={viewMode === 'weekly' ? 'default' : 'outline'} onClick={() => setViewMode('weekly')}>Tampilan Mingguan</Button>
+        </div>
       </div>
+      
       <CardDescription>
         Lihat jadwal pelajaran, kuis, tugas, dan kegiatan lainnya.
         {user?.role === 'teacher' && " Anda dapat mengelola jadwal ini (fitur akan datang)."}
@@ -137,81 +222,89 @@ export default function SchedulePage() {
         {user?.role === 'student' && !studentClassInfo && " Ini adalah jadwal kegiatan umum. Data kelas Anda tidak ditemukan."}
       </CardDescription>
 
-      {filteredSchedules.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredSchedules.map((item) => {
-            const scheduleDate = parseISO(item.date);
-            const isPast = scheduleDate < today;
-            return (
-              <Card key={item.id} className={`shadow-lg overflow-hidden transition-all hover:shadow-xl ${isPast ? 'opacity-60 bg-muted/50' : 'bg-card'}`}>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <CardTitle className="text-xl">{item.title}</CardTitle>
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full border ${getCategoryBadgeColor(item.category)}`}>
-                      {item.category}
-                    </span>
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <CalendarDays className="w-4 h-4 mr-2" />
-                    {format(scheduleDate, 'EEEE, dd MMMM yyyy', { locale: LocaleID })}
-                  </div>
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Clock className="w-4 h-4 mr-2" />
-                    {item.time}
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2 text-sm">
-                  {item.className && item.classId && (
-                    <div className="flex items-center text-muted-foreground">
-                      <Tag className="w-4 h-4 mr-2" /> Kelas: {item.className}
+      {(user?.role === 'teacher' || user?.isAdmin) && (
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            <div className="w-full sm:w-auto sm:max-w-xs">
+              <Label htmlFor="class-filter">Filter per Kelas</Label>
+              <Select value={selectedClassFilter} onValueChange={setSelectedClassFilter}>
+                <SelectTrigger id="class-filter" className="w-full">
+                  <SelectValue placeholder="Semua Kelas" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Semua Kelas</SelectItem>
+                  {mockClasses.map(cls => (
+                    <SelectItem key={cls.ID_Kelas} value={cls.ID_Kelas}>
+                      {cls.Nama_Kelas} - {cls.jurusan}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
+
+      <Card className="shadow-md">
+        <CardHeader>
+          {viewMode === 'daily' && (
+            <div className="flex items-center justify-between">
+              <Button variant="outline" size="icon" onClick={() => setCurrentDate(subDays(currentDate, 1))}><ChevronLeft /></Button>
+              <CardTitle className="text-xl text-center">
+                {format(currentDate, 'EEEE, dd MMMM yyyy', { locale: LocaleID })}
+              </CardTitle>
+              <Button variant="outline" size="icon" onClick={() => setCurrentDate(addDays(currentDate, 1))}><ChevronRight /></Button>
+            </div>
+          )}
+          {viewMode === 'weekly' && (
+            <div className="flex items-center justify-between">
+              <Button variant="outline" size="icon" onClick={() => setCurrentWeekStart(subWeeks(currentWeekStart, 1))}><ChevronLeft /></Button>
+              <CardTitle className="text-xl text-center">
+                Minggu: {format(currentWeekStart, 'dd MMM', { locale: LocaleID })} - {format(addDays(currentWeekStart,4), 'dd MMM yyyy', { locale: LocaleID })}
+              </CardTitle>
+              <Button variant="outline" size="icon" onClick={() => setCurrentWeekStart(addWeeks(currentWeekStart, 1))}><ChevronRight /></Button>
+            </div>
+          )}
+          <div className="flex justify-center mt-2">
+            {viewMode === 'daily' && <Button variant="ghost" onClick={() => setCurrentDate(new Date())}>Ke Hari Ini</Button>}
+            {viewMode === 'weekly' && <Button variant="ghost" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}>Ke Minggu Ini</Button>}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {viewMode === 'daily' && (
+            displayableSchedules.length > 0 ? (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {displayableSchedules.map(item => <ScheduleCard key={item.id} item={item} />)}
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground">Tidak ada jadwal untuk hari ini.</p>
+            )
+          )}
+
+          {viewMode === 'weekly' && (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {weeklyViewData.map(dayData => (
+                <div key={dayData.date.toISOString()} className="p-3 border rounded-lg bg-background/50">
+                  <h3 className="mb-3 font-semibold text-center text-md">
+                    {format(dayData.date, 'EEEE', { locale: LocaleID })}
+                    <span className="block text-xs text-muted-foreground">{format(dayData.date, 'dd MMM', { locale: LocaleID })}</span>
+                  </h3>
+                  {dayData.schedules.length > 0 ? (
+                    <div className="space-y-3">
+                      {dayData.schedules.map(item => <ScheduleCard key={item.id} item={item} />)}
                     </div>
+                  ) : (
+                    <p className="text-sm text-center text-muted-foreground">Tidak ada jadwal.</p>
                   )}
-                  {item.teacherName && (user?.role === 'student' || user?.isAdmin || (user?.role === 'teacher' && user.id !== item.teacherId)) && (
-                     <div className="flex items-center text-muted-foreground">
-                      <User className="w-4 h-4 mr-2" /> Guru: {item.teacherName}
-                    </div>
-                  )}
-                  {item.description && (
-                    <div className="flex items-start text-muted-foreground">
-                      <Info className="w-4 h-4 mr-2 mt-0.5 shrink-0" />
-                      <p>{item.description}</p>
-                    </div>
-                  )}
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    {item.lessonId && getLessonById(item.lessonId) && (
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/lessons/${item.lessonId}`}>
-                          <LinkIcon className="w-3 h-3 mr-1.5" /> Lihat Pelajaran
-                        </Link>
-                      </Button>
-                    )}
-                    {item.quizId && getQuizById(item.quizId) &&(
-                      <Button variant="outline" size="sm" asChild>
-                        <Link href={`/quizzes/${item.quizId}`}>
-                           <LinkIcon className="w-3 h-3 mr-1.5" /> Kerjakan Kuis
-                        </Link>
-                      </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      ) : (
-        <Card className="shadow-md">
-          <CardContent className="flex flex-col items-center justify-center p-10 text-center">
-            <AlertTriangle className="w-12 h-12 mb-4 text-muted-foreground" />
-            <p className="text-lg font-medium text-muted-foreground">
-              Tidak ada jadwal pembelajaran yang tersedia.
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {selectedClassFilter && selectedClassFilter !== "all" ? "Tidak ada jadwal untuk kelas yang dipilih." : "Silakan periksa kembali nanti atau hubungi administrator."}
-            </p>
-          </CardContent>
-        </Card>
-      )}
-       {(user?.role === 'teacher' || user?.isAdmin) && (
+                </div>
+              ))}
+            </div>
+          )}
+          {(viewMode === 'weekly' && weeklyViewData.every(d => d.schedules.length === 0)) && (
+             <p className="mt-4 text-center text-muted-foreground">Tidak ada jadwal untuk minggu ini.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {(user?.role === 'teacher' || user?.isAdmin) && (
         <p className="mt-6 text-sm text-center text-muted-foreground">
           Fitur untuk menambah, mengedit, dan menghapus jadwal akan ditambahkan pada iterasi berikutnya.
         </p>
@@ -220,11 +313,10 @@ export default function SchedulePage() {
   );
 }
 
-// Helper function to get lesson (already in mockData.ts)
+// Helper functions (assuming they are correctly defined elsewhere or here)
 function getLessonById(id: string) {
   return mockLessons.find(lesson => lesson.id === id);
 }
-// Helper function to get quiz (already in mockData.ts)
 function getQuizById(id: string) {
   return mockQuizzes.find(quiz => quiz.id === id);
 }
