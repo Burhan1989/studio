@@ -61,7 +61,7 @@ export interface StudentData {
   Alamat: string; // Varchar(200)
   Email: string; // Varchar(100)
   Nomor_Telepon: string; // Varchar(20)
-  Program_Studi?: string; // Varchar(50)
+  Program_Studi: string; // Varchar(50) - This will be displayed as "Jurusan"
   Kelas: string; // Varchar(50)
   Tanggal_Daftar: string; // Date
   Status_Aktif: boolean; // Boolean
@@ -98,6 +98,7 @@ export interface ClassData {
   ID_Guru: string; // Foreign Key to TeacherData
   Deskripsi_Kelas?: string;
   Waktu_Kelas?: string;
+  jurusan?: string; // Added Jurusan to ClassData
 }
 
 // Example for Grades Table (Relational Data)
@@ -109,3 +110,4 @@ export interface GradeData {
   Nilai_Ujian?: number;
   Nilai_Akhir?: number;
 }
+

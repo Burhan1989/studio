@@ -78,7 +78,7 @@ const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2007-08-17",
     Alamat: "Jl. Pelajar No. 10, Jakarta",
     Nomor_Telepon: "085678901234",
-    Program_Studi: "IPA",
+    Program_Studi: "IPA", // This will be displayed as "Jurusan"
     Tanggal_Daftar: "2023-07-01",
     Status_Aktif: true,
     Password_Hash: "hashed_password_siswa1", // Placeholder
@@ -97,7 +97,7 @@ const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2006-05-22",
     Alamat: "Jl. Siswa No. 20, Bandung",
     Nomor_Telepon: "085678901235",
-    Program_Studi: "IPS",
+    Program_Studi: "IPS", // This will be displayed as "Jurusan"
     Tanggal_Daftar: "2022-07-01",
     Status_Aktif: true,
     Password_Hash: "hashed_password_siswa2", // Placeholder
@@ -116,7 +116,7 @@ const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2005-02-10",
     Alamat: "Jl. Prestasi No. 30, Surabaya",
     Nomor_Telepon: "085678901236",
-    Program_Studi: "Bahasa",
+    Program_Studi: "Bahasa", // This will be displayed as "Jurusan"
     Tanggal_Daftar: "2021-07-01",
     Status_Aktif: false, // Example of inactive student
     Password_Hash: "hashed_password_siswa3", // Placeholder
@@ -224,6 +224,7 @@ export default function AdminUsersPage() {
                 <TableHead>NISN</TableHead>
                 <TableHead>No. Induk</TableHead>
                 <TableHead>Kelas</TableHead>
+                <TableHead>Jurusan</TableHead> {/* Changed from Program Studi */}
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
@@ -237,6 +238,7 @@ export default function AdminUsersPage() {
                   <TableCell>{student.NISN}</TableCell>
                   <TableCell>{student.Nomor_Induk}</TableCell>
                   <TableCell>{student.Kelas}</TableCell>
+                  <TableCell>{student.Program_Studi}</TableCell> {/* Displaying Program_Studi here */}
                   <TableCell>
                     <Badge variant={student.Status_Aktif ? "default" : "destructive"}>
                       {student.Status_Aktif ? "Aktif" : "Tidak Aktif"}
@@ -254,7 +256,7 @@ export default function AdminUsersPage() {
               ))}
               {mockStudents.length === 0 && (
                  <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground">Belum ada data siswa.</TableCell>
+                  <TableCell colSpan={9} className="text-center text-muted-foreground">Belum ada data siswa.</TableCell>
                 </TableRow>
               )}
             </TableBody>

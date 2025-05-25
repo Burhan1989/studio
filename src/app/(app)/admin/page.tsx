@@ -13,12 +13,13 @@ import { useAuth } from '@/contexts/AuthContext'; // Impor useAuth
 import { useRouter } from 'next/navigation'; // Impor useRouter
 import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
+import type { ClassData } from '@/lib/types'; // Import ClassData
 
 // Mock data untuk tabel kelas & wali kelas
-const mockClasses = [
-  { id: 'kelasA', name: 'Kelas 10A', waliKelas: 'Budi Santoso', jumlahSiswa: 30 },
-  { id: 'kelasB', name: 'Kelas 11B', waliKelas: 'Siti Aminah', jumlahSiswa: 28 },
-  { id: 'kelasC', name: 'Kelas 12C', waliKelas: 'Agus Setiawan', jumlahSiswa: 32 },
+const mockClasses: ClassData[] = [
+  { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'Budi Santoso', jumlahSiswa: 30, jurusan: "IPA" },
+  { ID_Kelas: 'kelasB', Nama_Kelas: 'Kelas 11B', ID_Guru: 'Siti Aminah', jumlahSiswa: 28, jurusan: "IPS" },
+  { ID_Kelas: 'kelasC', Nama_Kelas: 'Kelas 12C', ID_Guru: 'Agus Setiawan', jumlahSiswa: 32, jurusan: "Bahasa" },
 ];
 
 export default function AdminPage() {
@@ -32,7 +33,7 @@ export default function AdminPage() {
   const adminSections = [
     {
       title: "Kelola Pengguna",
-      description: "Lihat, edit, atau hapus data pengguna.",
+      description: "Lihat, edit, atau hapus data pengguna (guru & siswa).",
       icon: <Users className="w-8 h-8 text-primary" />,
       href: "/admin/users",
       cta: "Buka Manajemen Pengguna"
@@ -258,7 +259,7 @@ export default function AdminPage() {
              <School className="w-8 h-8 text-primary" />
             <CardTitle className="text-xl">Manajemen Kelas & Wali Kelas</CardTitle>
           </div>
-          <CardDescription>Kelola data kelas dan penetapan wali kelas.</CardDescription>
+          <CardDescription>Kelola data kelas, jurusan, dan penetapan wali kelas.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="mb-4">
@@ -270,19 +271,21 @@ export default function AdminPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nama Kelas</TableHead>
-                <TableHead>Wali Kelas</TableHead>
-                <TableHead>Jumlah Siswa</TableHead>
+                <TableHead>Jurusan</TableHead>
+                <TableHead>Wali Kelas (ID Guru)</TableHead>
+                <TableHead>Jumlah Siswa (Contoh)</TableHead>
                 <TableHead>Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {mockClasses.map((kelas) => (
-                <TableRow key={kelas.id}>
-                  <TableCell>{kelas.name}</TableCell>
-                  <TableCell>{kelas.waliKelas}</TableCell>
-                  <TableCell>{kelas.jumlahSiswa}</TableCell>
+                <TableRow key={kelas.ID_Kelas}>
+                  <TableCell>{kelas.Nama_Kelas}</TableCell>
+                  <TableCell>{kelas.jurusan || '-'}</TableCell>
+                  <TableCell>{kelas.ID_Guru}</TableCell> {/* Displaying ID_Guru as Wali Kelas for now */}
+                  <TableCell>{(kelas as any).jumlahSiswa || 0}</TableCell> {/* Accessing mock-specific prop */}
                   <TableCell>
-                    <Button variant="outline" size="sm" onClick={() => toast({ title: "Fitur Dalam Pengembangan", description: `Opsi edit/hapus untuk ${kelas.name} akan segera hadir.`})}>
+                    <Button variant="outline" size="sm" onClick={() => toast({ title: "Fitur Dalam Pengembangan", description: `Opsi edit/hapus untuk ${kelas.Nama_Kelas} akan segera hadir.`})}>
                       Edit
                     </Button>
                   </TableCell>
@@ -290,7 +293,7 @@ export default function AdminPage() {
               ))}
               {mockClasses.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
                     Belum ada data kelas.
                   </TableCell>
                 </TableRow>
@@ -303,5 +306,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-    
