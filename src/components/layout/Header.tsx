@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { GraduationCap, LogIn, UserPlus, LogOut } from 'lucide-react';
+import { GraduationCap, LogIn, UserPlus, LogOut, Settings, UserCircle } from 'lucide-react'; // Added Settings, UserCircle
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -16,22 +16,24 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { mockSchoolProfile } from '@/lib/mockData';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation'; // Import useRouter
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const router = useRouter(); // Initialize router
   const schoolLogoUrl = (typeof mockSchoolProfile.logo === 'string' && mockSchoolProfile.logo.trim() !== '') ? mockSchoolProfile.logo : null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex items-center h-20 max-w-screen-2xl"> {/* Adjusted height for vertical logo */}
+      <div className="container flex items-center h-20 max-w-screen-2xl">
         <Link href="/" className="flex flex-col items-center gap-1 mr-4 text-center sm:mr-6">
           {schoolLogoUrl ? (
             <Image
               src={schoolLogoUrl}
               alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
-              width={160} // Aspect ratio base
-              height={40}  // Aspect ratio base
-              className="h-10 w-auto object-contain" // Tailwind for actual size
+              width={160}
+              height={40}
+              className="h-10 w-auto object-contain"
               data-ai-hint="school logo"
             />
           ) : (
@@ -41,7 +43,7 @@ export default function Header() {
             {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
           </span>
         </Link>
-        
+
         <nav className="flex items-center flex-1 gap-6 text-sm">
           {user && (
             <>
@@ -74,7 +76,7 @@ export default function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative w-8 h-8 rounded-full">
                   <Avatar className="w-8 h-8">
-                    <AvatarImage src={user.name ? `https://avatar.vercel.sh/${user.name}.png` : undefined} alt={user.name || user.email || "User"} />
+                    <AvatarImage src={user.Profil_Foto || `https://avatar.vercel.sh/${user.name || user.email}.png`} alt={user.name || user.email || "User"} />
                     <AvatarFallback>{user.email?.[0]?.toUpperCase()}</AvatarFallback>
                   </Avatar>
                 </Button>
@@ -88,6 +90,15 @@ export default function Header() {
                     </p>
                   </div>
                 </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                 <DropdownMenuItem onClick={() => router.push('/profile')}>
+                  <UserCircle className="w-4 h-4 mr-2" />
+                  Profil
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => router.push('/settings')}>
+                  <Settings className="w-4 h-4 mr-2" />
+                  Pengaturan
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="w-4 h-4 mr-2" />

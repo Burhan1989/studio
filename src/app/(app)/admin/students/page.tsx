@@ -7,10 +7,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, Users, KeyRound, Upload, Download, RefreshCw } from "lucide-react";
-import type { StudentData } from "@/lib/types"; 
-import { mockStudents } from "@/lib/mockData"; 
+import type { StudentData } from "@/lib/types";
+import { mockStudents } from "@/lib/mockData";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 export default function AdminStudentsPage() {
@@ -105,13 +106,14 @@ export default function AdminStudentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Foto</TableHead>
                 <TableHead>Nama Siswa</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>NISN</TableHead>
                 <TableHead>No. Induk</TableHead>
                 <TableHead>Kelas</TableHead>
-                <TableHead>Jurusan</TableHead> 
+                <TableHead>Jurusan</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
@@ -119,13 +121,19 @@ export default function AdminStudentsPage() {
             <TableBody>
               {students.map((student) => (
                 <TableRow key={student.ID_Siswa}>
+                  <TableCell>
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={student.Profil_Foto} alt={student.Nama_Lengkap} />
+                      <AvatarFallback>{student.Nama_Lengkap.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </TableCell>
                   <TableCell className="font-medium">{student.Nama_Lengkap}</TableCell>
                   <TableCell>{student.Username}</TableCell>
                   <TableCell>{student.Email}</TableCell>
                   <TableCell>{student.NISN}</TableCell>
                   <TableCell>{student.Nomor_Induk}</TableCell>
                   <TableCell>{student.Kelas}</TableCell>
-                  <TableCell>{student.Program_Studi}</TableCell> 
+                  <TableCell>{student.Program_Studi}</TableCell>
                   <TableCell>
                     <Badge variant={student.Status_Aktif ? "default" : "destructive"}>
                       {student.Status_Aktif ? "Aktif" : "Tidak Aktif"}
@@ -148,7 +156,7 @@ export default function AdminStudentsPage() {
               ))}
               {students.length === 0 && (
                  <TableRow>
-                  <TableCell colSpan={9} className="text-center text-muted-foreground">Belum ada data siswa.</TableCell>
+                  <TableCell colSpan={10} className="text-center text-muted-foreground">Belum ada data siswa.</TableCell>
                 </TableRow>
               )}
             </TableBody>

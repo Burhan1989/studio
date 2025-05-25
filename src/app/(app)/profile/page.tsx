@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ChangeEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -15,45 +15,47 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { UserCircle, Save, Loader2 } from 'lucide-react';
+import { UserCircle, Save, Loader2, Image as ImageIcon } from 'lucide-react'; // Added ImageIcon
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Image from "next/image"; // Import next/image
 
-
-// Combined schema for validation, fields will be shown conditionally
 const profileFormSchema = z.object({
   Nama_Lengkap: z.string().min(2, "Nama lengkap minimal 2 karakter."),
-  Email: z.string().email("Email tidak valid.").readonly(), // Email is read-only
+  Email: z.string().email("Email tidak valid.").readonly(),
   Nomor_Telepon: z.string().optional(),
   Alamat: z.string().optional(),
-  // Student specific
+  Profil_Foto_File: z.any().optional(), // For file input
+  Profil_Foto_Url: z.string().url().optional().or(z.literal("")), // For existing URL
   Nama_Panggilan: z.string().optional(),
   Jenis_Kelamin: z.enum(["Laki-laki", "Perempuan", ""]).optional(),
-  Tanggal_Lahir: z.string().optional(), // Consider date picker for better UX
+  Tanggal_Lahir: z.string().optional(),
   NISN: z.string().optional(),
   Nomor_Induk: z.string().optional(),
   Kelas: z.string().optional(),
-  Program_Studi: z.string().optional(), // Jurusan
-  // Teacher specific
+  Program_Studi: z.string().optional(),
   Mata_Pelajaran: z.string().optional(),
-  Kelas_Ajar: z.string().optional().transform(val => val ? val.split(',').map(s => s.trim()) : []), // Stored as array, edited as comma-separated string
+  Kelas_Ajar: z.string().optional().transform(val => val ? val.split(',').map(s => s.trim()) : []),
   Jabatan: z.string().optional(),
 });
 
 type ProfileFormData = z.infer<typeof profileFormSchema>;
 
 export default function ProfilePage() {
-  const { user, login } = useAuth(); // Get login to update AuthContext if name changes
+  const { user, login } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isStudent, setIsStudent] = useState(false);
   const [isTeacher, setIsTeacher] = useState(false);
-  const [initialData, setInitialData] = useState<Partial<ProfileFormData>>({});
-
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   const form = useForm<ProfileFormData>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues: initialData,
+    defaultValues: {
+      Nama_Lengkap: "",
+      Email: "",
+      Profil_Foto_Url: "",
+    },
   });
 
  useEffect(() => {
@@ -61,12 +63,17 @@ export default function ProfilePage() {
       let baseProfileData: Partial<ProfileFormData> = {
         Nama_Lengkap: user.name || "",
         Email: user.email,
+        Profil_Foto_Url: user.Profil_Foto || "",
       };
+      
+      if (user.Profil_Foto) {
+        setPhotoPreview(user.Profil_Foto);
+      }
 
       const studentMatch = mockStudents.find(s => s.Email === user.email);
       if (studentMatch) {
         setIsStudent(true);
-        setIsTeacher(false); // Ensure only one role is active
+        setIsTeacher(false);
         baseProfileData = {
           ...baseProfileData,
           Nama_Lengkap: studentMatch.Nama_Lengkap,
@@ -79,12 +86,14 @@ export default function ProfilePage() {
           Nomor_Induk: studentMatch.Nomor_Induk,
           Kelas: studentMatch.Kelas,
           Program_Studi: studentMatch.Program_Studi,
+          Profil_Foto_Url: studentMatch.Profil_Foto || user.Profil_Foto || "",
         };
+        if (studentMatch.Profil_Foto) setPhotoPreview(studentMatch.Profil_Foto);
       } else {
         const teacherMatch = mockTeachers.find(t => t.Email === user.email);
         if (teacherMatch) {
           setIsTeacher(true);
-          setIsStudent(false); // Ensure only one role is active
+          setIsStudent(false);
           baseProfileData = {
             ...baseProfileData,
             Nama_Lengkap: teacherMatch.Nama_Lengkap,
@@ -93,17 +102,16 @@ export default function ProfilePage() {
             Alamat: teacherMatch.Alamat,
             Nomor_Telepon: teacherMatch.Nomor_Telepon,
             Mata_Pelajaran: teacherMatch.Mata_Pelajaran,
-            Kelas_Ajar: teacherMatch.Kelas_Ajar as any, // Will be transformed to string for form
+            Kelas_Ajar: teacherMatch.Kelas_Ajar as any,
             Jabatan: teacherMatch.Jabatan,
+            Profil_Foto_Url: teacherMatch.Profil_Foto || user.Profil_Foto || "",
           };
+          if (teacherMatch.Profil_Foto) setPhotoPreview(teacherMatch.Profil_Foto);
         } else {
             setIsStudent(false);
             setIsTeacher(false);
         }
       }
-      setInitialData(baseProfileData);
-      // Reset form with new defaultValues from fetched/matched data
-      // Transform Kelas_Ajar to string for the form field
       const formDataForReset = {
         ...baseProfileData,
         Kelas_Ajar: Array.isArray(baseProfileData.Kelas_Ajar) ? (baseProfileData.Kelas_Ajar as string[]).join(', ') : undefined,
@@ -113,27 +121,42 @@ export default function ProfilePage() {
   }, [user, form]);
 
 
+  const handlePhotoChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      form.setValue("Profil_Foto_File", file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      form.setValue("Profil_Foto_File", undefined);
+      setPhotoPreview(form.getValues("Profil_Foto_Url") || user?.Profil_Foto || null);
+    }
+  };
+
   async function onSubmit(data: ProfileFormData) {
     setIsLoading(true);
     console.log("Data profil yang akan disimpan (simulasi):", data);
+    
+    let newPhotoUrl = data.Profil_Foto_Url;
+    if (data.Profil_Foto_File instanceof File) {
+      // Simulate upload and get new URL
+      newPhotoUrl = photoPreview || data.Profil_Foto_Url; // Use preview as new URL for simulation
+      console.log("Simulasi unggah foto baru:", data.Profil_Foto_File.name);
+    }
 
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Update AuthContext if name changed (simple update for demo)
-    if (user && data.Nama_Lengkap !== user.name) {
-      const updatedUser: User = { ...user, name: data.Nama_Lengkap };
-      // In a real app, you'd get the full updated user object from the backend
-      login(updatedUser); // This will also update localStorage
+    if (user && (data.Nama_Lengkap !== user.name || newPhotoUrl !== user.Profil_Foto)) {
+      const updatedUser: User = { ...user, name: data.Nama_Lengkap, Profil_Foto: newPhotoUrl };
+      login(updatedUser);
     }
     
-    // In a real app, here you would send the data to your backend to persist.
-    // You might also want to update the local mockData arrays if you want changes to reflect
-    // across the app during the session (this is more complex for a mock setup).
-
     toast({
       title: "Profil Disimpan (Simulasi)",
-      description: "Informasi profil Anda telah berhasil diperbarui (simulasi).",
+      description: "Informasi profil Anda telah berhasil diperbarui (simulasi). Perubahan foto mungkin memerlukan login ulang untuk terlihat di semua tempat.",
     });
     setIsLoading(false);
   }
@@ -150,7 +173,14 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <UserCircle className="w-12 h-12 text-primary" />
+         {photoPreview ? (
+          <Avatar className="w-16 h-16 text-primary">
+            <AvatarImage src={photoPreview} alt={user.name || "Foto Profil"} />
+            <AvatarFallback>{user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}</AvatarFallback>
+          </Avatar>
+        ) : (
+          <UserCircle className="w-16 h-16 text-primary" />
+        )}
         <div>
           <h1 className="text-3xl font-bold">Profil Pengguna</h1>
           <p className="text-muted-foreground">
@@ -168,12 +198,39 @@ export default function ProfilePage() {
             <CardContent className="space-y-6">
               <FormField
                 control={form.control}
+                name="Profil_Foto_File"
+                render={({ field }) => ( // field for react-hook-form to track, not directly used by Input type="file"
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <ImageIcon className="w-5 h-5" /> Ganti Foto Profil (Opsional)
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="file"
+                        accept="image/png, image/jpeg, image/svg+xml"
+                        onChange={handlePhotoChange}
+                      />
+                    </FormControl>
+                    <FormDescription>Format yang didukung: PNG, JPG, SVG. Perubahan mungkin memerlukan login ulang untuk terlihat sepenuhnya.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               {photoPreview && !form.getValues("Profil_Foto_File") && form.getValues("Profil_Foto_Url") && (
+                <div className="mt-2">
+                  <p className="text-xs text-muted-foreground mb-1">Foto saat ini:</p>
+                  <Image src={form.getValues("Profil_Foto_Url")!} alt="Pratinjau Foto Profil" width={100} height={100} className="rounded-md border object-cover" />
+                </div>
+              )}
+
+              <FormField
+                control={form.control}
                 name="Nama_Lengkap"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nama Lengkap</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nama lengkap Anda" {...field} />
+                      <Input placeholder="Nama lengkap Anda" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -186,7 +243,7 @@ export default function ProfilePage() {
                   <FormItem>
                     <FormLabel>Email (Username)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Email Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" />
+                      <Input placeholder="Email Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                      <p className="text-xs text-muted-foreground">Email tidak dapat diubah.</p>
@@ -258,7 +315,7 @@ export default function ProfilePage() {
                   />
                 </>
               )}
-              
+
 
               {isStudent && (
                 <>
@@ -357,16 +414,15 @@ export default function ProfilePage() {
                     control={form.control}
                     name="Kelas_Ajar"
                     render={({ field }) => {
-                      // Ensure field.value is a string for the input
                       const displayValue = Array.isArray(field.value) ? field.value.join(', ') : (field.value || "");
                       return (
                         <FormItem>
                           <FormLabel>Kelas yang Diajar</FormLabel>
                           <FormControl>
-                            <Input 
-                              placeholder="Pisahkan dengan koma, cth: Kelas 10A, Kelas 11B" 
-                              {...field} 
-                              value={displayValue} 
+                            <Input
+                              placeholder="Pisahkan dengan koma, cth: Kelas 10A, Kelas 11B"
+                              {...field}
+                              value={displayValue}
                             />
                           </FormControl>
                           <p className="text-xs text-muted-foreground">Pisahkan beberapa kelas dengan koma.</p>
@@ -382,10 +438,10 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Jabatan</FormLabel>
                         <FormControl>
-                          <Input 
-                            placeholder="Jabatan Anda" 
-                            {...field} 
-                            readOnly // Always readOnly for teachers editing their own profile
+                          <Input
+                            placeholder="Jabatan Anda"
+                            {...field}
+                            readOnly
                             className="bg-muted/50 cursor-not-allowed"
                             value={field.value || ""}
                           />

@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogIn, Loader2, ShieldCheck, User, Briefcase, Eye, EyeOff, Users as UsersIcon, UserCog } from "lucide-react"; // Added UsersIcon, UserCog
+import { LogIn, Loader2, ShieldCheck, User, Eye, EyeOff, Users as UsersIcon, UserCog } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -25,9 +25,9 @@ import type { UserRole } from "@/lib/types";
 
 const roles: { value: UserRole; label: string; icon?: React.ElementType }[] = [
   { value: "admin", label: "Admin", icon: ShieldCheck },
-  { value: "teacher", label: "Guru", icon: UserCog }, // Changed icon to UserCog for Guru
+  { value: "teacher", label: "Guru", icon: UserCog },
   { value: "student", label: "Siswa", icon: User },
-  { value: "parent", label: "Orang Tua Murid", icon: UsersIcon }, // Changed icon for Orang Tua
+  { value: "parent", label: "Orang Tua Murid", icon: UsersIcon },
 ];
 
 const formSchema = z.object({
@@ -36,8 +36,8 @@ const formSchema = z.object({
   password: z.string().min(6, { message: "Kata sandi minimal harus 6 karakter." }),
 });
 
-// Kredensial contoh
-const ADMIN_EMAIL = "admin@example.com";
+// Kredensial contoh dari mockData
+const ADMIN_EMAIL = "admin@example.com"; // Akan dicocokkan dengan isAdmin flag
 const ADMIN_PASSWORD = "adminpassword";
 const STUDENT_EMAIL = "student@example.com";
 const STUDENT_PASSWORD = "password";
@@ -45,6 +45,12 @@ const TEACHER_EMAIL = "teacher@example.com";
 const TEACHER_PASSWORD = "password";
 const PARENT_EMAIL = "parent@example.com";
 const PARENT_PASSWORD = "password";
+
+// Foto profil contoh
+const ADMIN_PHOTO = "https://placehold.co/100x100.png?text=AD";
+const STUDENT_PHOTO = "https://placehold.co/100x100.png?text=SR";
+const TEACHER_PHOTO = "https://placehold.co/100x100.png?text=GI";
+const PARENT_PHOTO = "https://placehold.co/100x100.png?text=OB";
 
 
 export default function LoginForm() {
@@ -71,24 +77,29 @@ export default function LoginForm() {
     let userName = "Pengguna";
     let userId = String(Math.random());
     let isAdmin = false;
+    let profilFoto = undefined;
 
     if (selectedRole === "admin" && values.email === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
       loginSuccess = true;
       userName = "Admin AdeptLearn";
       userId = "admin001";
       isAdmin = true;
+      profilFoto = ADMIN_PHOTO;
     } else if (selectedRole === "student" && values.email === STUDENT_EMAIL && values.password === STUDENT_PASSWORD) {
       loginSuccess = true;
       userName = "Siswa Rajin";
       userId = "student001";
+      profilFoto = STUDENT_PHOTO;
     } else if (selectedRole === "teacher" && values.email === TEACHER_EMAIL && values.password === TEACHER_PASSWORD) {
       loginSuccess = true;
       userName = "Guru Inovatif";
       userId = "teacher001";
+      profilFoto = TEACHER_PHOTO;
     } else if (selectedRole === "parent" && values.email === PARENT_EMAIL && values.password === PARENT_PASSWORD) {
       loginSuccess = true;
       userName = "Orang Tua Bijak";
       userId = "parent001";
+      profilFoto = PARENT_PHOTO;
     }
 
     if (loginSuccess) {
@@ -98,7 +109,8 @@ export default function LoginForm() {
         name: userName, 
         role: selectedRole, 
         isAdmin: isAdmin, 
-        username: values.email.split('@')[0] 
+        username: values.email.split('@')[0],
+        Profil_Foto: profilFoto,
       });
       toast({
         title: `Login ${selectedRole.charAt(0).toUpperCase() + selectedRole.slice(1)} Berhasil`,

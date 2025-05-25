@@ -6,11 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Edit, Trash2, UserCog, KeyRound, Upload, Download, RefreshCw } from "lucide-react"; 
-import type { TeacherData } from "@/lib/types"; 
+import { UserPlus, Edit, Trash2, UserCog, KeyRound, Upload, Download, RefreshCw } from "lucide-react";
+import type { TeacherData } from "@/lib/types";
 import Link from "next/link";
 import { mockTeachers } from "@/lib/mockData";
 import { useState, useEffect } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 export default function AdminTeachersPage() {
@@ -18,8 +19,7 @@ export default function AdminTeachersPage() {
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
 
   useEffect(() => {
-    // Simulate fetching or initializing teachers.
-    setTeachers([...mockTeachers]); 
+    setTeachers([...mockTeachers]);
   }, []);
 
 
@@ -31,8 +31,6 @@ export default function AdminTeachersPage() {
   };
 
   const handleResetPassword = (teacher: TeacherData) => {
-    // In a real app, you'd call an API to reset the password.
-    // Here, we just show a toast.
     console.log(`Simulasi reset password untuk ${teacher.Nama_Lengkap} menjadi tanggal lahir: ${teacher.Tanggal_Lahir}`);
     toast({
       title: "Password Direset (Simulasi)",
@@ -40,15 +38,6 @@ export default function AdminTeachersPage() {
       variant: "default",
       duration: 5000,
     });
-    // Optionally, you could update the mockTeachers array here if Password_Hash was being used for login simulation
-    // For example:
-    // const updatedTeachers = teachers.map(t => 
-    //   t.ID_Guru === teacher.ID_Guru ? { ...t, Password_Hash: teacher.Tanggal_Lahir } : t
-    // );
-    // setTeachers(updatedTeachers); // This would update the local state
-    // // And if mockTeachers is a let variable in mockData.ts:
-    // const index = mockTeachers.findIndex(t => t.ID_Guru === teacher.ID_Guru);
-    // if (index !== -1) mockTeachers[index].Password_Hash = teacher.Tanggal_Lahir;
   };
 
 
@@ -82,7 +71,7 @@ export default function AdminTeachersPage() {
             <UserCog className="w-8 h-8 text-primary" />
             <CardTitle className="text-xl">Manajemen Data Guru (Excel)</CardTitle>
           </div>
-          <CardDescription>Import dan export data guru menggunakan file Excel.</CardDescription>
+          <CardDescription>Impor dan ekspor data guru menggunakan file Excel.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -93,7 +82,7 @@ export default function AdminTeachersPage() {
               <Download className="w-4 h-4 mr-2" /> Export Guru
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur import/export Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor/ekspor Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
         </CardContent>
       </Card>
 
@@ -120,6 +109,7 @@ export default function AdminTeachersPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Foto</TableHead>
                 <TableHead>Nama Guru</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>Email</TableHead>
@@ -133,6 +123,12 @@ export default function AdminTeachersPage() {
             <TableBody>
               {teachers.map((teacher) => (
                 <TableRow key={teacher.ID_Guru}>
+                  <TableCell>
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={teacher.Profil_Foto} alt={teacher.Nama_Lengkap} />
+                      <AvatarFallback>{teacher.Nama_Lengkap.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </TableCell>
                   <TableCell className="font-medium">{teacher.Nama_Lengkap}</TableCell>
                   <TableCell>{teacher.Username}</TableCell>
                   <TableCell>{teacher.Email}</TableCell>
@@ -161,7 +157,7 @@ export default function AdminTeachersPage() {
               ))}
               {teachers.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground">Belum ada data guru.</TableCell>
+                  <TableCell colSpan={9} className="text-center text-muted-foreground">Belum ada data guru.</TableCell>
                 </TableRow>
               )}
             </TableBody>

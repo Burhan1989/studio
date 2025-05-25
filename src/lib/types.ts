@@ -5,10 +5,11 @@ export interface User {
   name?: string;
   isAdmin?: boolean;
   username?: string;
-  role?: UserRole; // Added role
+  role?: UserRole;
+  Profil_Foto?: string; // Added profile photo
 }
 
-export type UserRole = 'admin' | 'teacher' | 'student' | 'parent'; // Define UserRole
+export type UserRole = 'admin' | 'teacher' | 'student' | 'parent';
 
 export interface LearningResource {
   resourceType: string;
@@ -33,7 +34,7 @@ export interface Lesson {
 }
 
 export interface Question {
-  id: string;
+  id:string;
   text: string;
   type: 'multiple-choice' | 'true-false';
   options?: string[];
@@ -70,7 +71,7 @@ export interface StudentData {
   Alamat: string;
   Email: string;
   Nomor_Telepon: string;
-  Program_Studi: string; // Jurusan - Ini sudah wajib, bagus.
+  Program_Studi: string;
   Kelas: string;
   Tanggal_Daftar: string;
   Status_Aktif: boolean;
@@ -106,20 +107,20 @@ export interface ParentData {
   Email: string;
   Nomor_Telepon?: string;
   Status_Aktif: boolean;
-  Password_Hash: string; // For mock consistency with other user types
+  Password_Hash: string;
   Profil_Foto?: string;
-  Anak_Terkait?: Array<{ ID_Siswa: string, Nama_Siswa: string }>; // Optional: for linking to students
+  Anak_Terkait?: Array<{ ID_Siswa: string, Nama_Siswa: string }>;
 }
 
 
 export interface ClassData {
   ID_Kelas: string;
   Nama_Kelas: string;
-  ID_Guru: string; // ID Guru Wali Kelas
+  ID_Guru: string;
   Deskripsi_Kelas?: string;
   Waktu_Kelas?: string;
-  jurusan: string; 
-  jumlahSiswa?: number; // Contoh field tambahan
+  jurusan: string;
+  jumlahSiswa?: number;
 }
 
 export interface GradeData {
@@ -147,12 +148,12 @@ export interface SchoolProfileData {
   websiteSekolah?: string;
   visi?: string;
   misi?: string;
-  logo?: File | string; // File for upload, string for URL if already uploaded
+  logo?: File | string;
 }
 
 export interface MajorData {
   ID_Jurusan: string;
   Nama_Jurusan: string;
   Deskripsi_Jurusan?: string;
-  Nama_Kepala_Program?: string; // Field baru untuk Kepala Program
+  Nama_Kepala_Program?: string;
 }

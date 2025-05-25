@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       router.replace('/login');
     }
     if (!isLoading && user && (pathname === '/login' || pathname === '/register' || pathname === '/')) {
-      if (user.role === 'admin') {
+      if (user.isAdmin) { // Prioritize isAdmin check
         router.replace('/admin');
       } else if (user.role === 'parent') {
         router.replace('/parent/dashboard');
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = (userData: User) => {
     localStorage.setItem('adeptlearn-user', JSON.stringify(userData));
     setUser(userData);
-    if (userData.role === 'admin') {
+    if (userData.isAdmin) { // Prioritize isAdmin check
       router.push('/admin');
     } else if (userData.role === 'parent') {
       router.push('/parent/dashboard');
@@ -88,4 +88,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

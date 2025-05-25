@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, Users, KeyRound, Upload, Download } from "lucide-react";
 import type { ParentData } from "@/lib/types";
-import { mockParents } from "@/lib/mockData"; // Import mockParents
+import { mockParents } from "@/lib/mockData";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AdminParentsPage() {
   const { toast } = useToast();
@@ -59,7 +60,7 @@ export default function AdminParentsPage() {
               <Download className="w-4 h-4 mr-2" /> Export Data Orang Tua
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur import/export Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor/ekspor Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
         </CardContent>
       </Card>
 
@@ -79,6 +80,7 @@ export default function AdminParentsPage() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Foto</TableHead>
                 <TableHead>Nama Lengkap</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>Email</TableHead>
@@ -91,13 +93,19 @@ export default function AdminParentsPage() {
             <TableBody>
               {mockParents.map((parent) => (
                 <TableRow key={parent.ID_OrangTua}>
+                  <TableCell>
+                    <Avatar className="w-10 h-10">
+                      <AvatarImage src={parent.Profil_Foto} alt={parent.Nama_Lengkap} />
+                      <AvatarFallback>{parent.Nama_Lengkap.substring(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                  </TableCell>
                   <TableCell className="font-medium">{parent.Nama_Lengkap}</TableCell>
                   <TableCell>{parent.Username}</TableCell>
                   <TableCell>{parent.Email}</TableCell>
                   <TableCell>{parent.Nomor_Telepon || '-'}</TableCell>
                   <TableCell>
-                    {parent.Anak_Terkait && parent.Anak_Terkait.length > 0 
-                      ? parent.Anak_Terkait.map(anak => anak.Nama_Siswa).join(', ') 
+                    {parent.Anak_Terkait && parent.Anak_Terkait.length > 0
+                      ? parent.Anak_Terkait.map(anak => anak.Nama_Siswa).join(', ')
                       : '-'}
                   </TableCell>
                   <TableCell>
@@ -120,7 +128,7 @@ export default function AdminParentsPage() {
               ))}
               {mockParents.length === 0 && (
                  <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">Belum ada data orang tua.</TableCell>
+                  <TableCell colSpan={8} className="text-center text-muted-foreground">Belum ada data orang tua.</TableCell>
                 </TableRow>
               )}
             </TableBody>

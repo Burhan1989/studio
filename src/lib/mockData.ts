@@ -134,7 +134,7 @@ export let mockStudents: StudentData[] = [
     Email: "student@example.com",
     NISN: "0098765432",
     Nomor_Induk: "S1004",
-    Kelas: "Kelas 10A IPA", 
+    Kelas: "Kelas 10A IPA",
     Jenis_Kelamin: "Perempuan",
     Tanggal_Lahir: "2008-01-15",
     Alamat: "Jl. Belajar No. 5, Kota Ilmu",
@@ -142,8 +142,8 @@ export let mockStudents: StudentData[] = [
     Program_Studi: "IPA",
     Tanggal_Daftar: "2023-08-01",
     Status_Aktif: true,
-    Password_Hash: "password", 
-    Profil_Foto: "https://placehold.co/100x100.png"
+    Password_Hash: "password",
+    Profil_Foto: "https://placehold.co/100x100.png?text=SR"
   },
   {
     ID_Siswa: "siswa1",
@@ -153,7 +153,7 @@ export let mockStudents: StudentData[] = [
     Email: "ahmad.z@example.com",
     NISN: "0012345678",
     Nomor_Induk: "S1001",
-    Kelas: "Kelas 10A IPA", 
+    Kelas: "Kelas 10A IPA",
     Jenis_Kelamin: "Laki-laki",
     Tanggal_Lahir: "2007-08-17",
     Alamat: "Jl. Pelajar No. 10, Jakarta",
@@ -162,7 +162,7 @@ export let mockStudents: StudentData[] = [
     Tanggal_Daftar: "2023-07-01",
     Status_Aktif: true,
     Password_Hash: "hashed_password_siswa1",
-    Profil_Foto: "https://placehold.co/100x100.png"
+    Profil_Foto: "https://placehold.co/100x100.png?text=AZ"
   },
    {
     ID_Siswa: "siswa2",
@@ -172,7 +172,7 @@ export let mockStudents: StudentData[] = [
     Email: "rina.a@example.com",
     NISN: "0023456789",
     Nomor_Induk: "S1002",
-    Kelas: "Kelas 11B IPS", 
+    Kelas: "Kelas 11B IPS",
     Jenis_Kelamin: "Perempuan",
     Tanggal_Lahir: "2006-05-22",
     Alamat: "Jl. Siswa No. 20, Bandung",
@@ -181,7 +181,7 @@ export let mockStudents: StudentData[] = [
     Tanggal_Daftar: "2022-07-01",
     Status_Aktif: true,
     Password_Hash: "hashed_password_siswa2",
-    Profil_Foto: "https://placehold.co/100x100.png"
+    Profil_Foto: "https://placehold.co/100x100.png?text=RP"
   },
   {
     ID_Siswa: "siswa3",
@@ -191,7 +191,7 @@ export let mockStudents: StudentData[] = [
     Email: "kevin.s@example.com",
     NISN: "0034567890",
     Nomor_Induk: "S1003",
-    Kelas: "Kelas 12C Bahasa", 
+    Kelas: "Kelas 12C Bahasa",
     Jenis_Kelamin: "Laki-laki",
     Tanggal_Lahir: "2005-02-10",
     Alamat: "Jl. Prestasi No. 30, Surabaya",
@@ -200,7 +200,7 @@ export let mockStudents: StudentData[] = [
     Tanggal_Daftar: "2021-07-01",
     Status_Aktif: false,
     Password_Hash: "hashed_password_siswa3",
-    Profil_Foto: "https://placehold.co/100x100.png"
+    Profil_Foto: "https://placehold.co/100x100.png?text=KS"
   },
 ];
 
@@ -217,10 +217,10 @@ export let mockTeachers: TeacherData[] = [
     Alamat: "Jl. Mengajar No. 10, Kota Edukasi",
     Nomor_Telepon: "089876543210",
     Status_Aktif: true,
-    Password_Hash: "password", 
+    Password_Hash: "password",
     Tanggal_Pendaftaran: "2015-06-01",
     Jabatan: "Guru Senior Kimia",
-    Profil_Foto: "https://placehold.co/100x100.png"
+    Profil_Foto: "https://placehold.co/100x100.png?text=GI"
   },
   {
     ID_Guru: "guru1",
@@ -237,7 +237,7 @@ export let mockTeachers: TeacherData[] = [
     Password_Hash: "hashed_password_guru1",
     Tanggal_Pendaftaran: "2010-08-01",
     Jabatan: "Guru Senior Matematika",
-    Profil_Foto: "https://placehold.co/100x100.png"
+    Profil_Foto: "https://placehold.co/100x100.png?text=BD"
   },
   {
     ID_Guru: "guru2",
@@ -254,7 +254,7 @@ export let mockTeachers: TeacherData[] = [
     Password_Hash: "hashed_password_guru2",
     Tanggal_Pendaftaran: "2012-07-15",
     Jabatan: "Guru Bahasa Indonesia",
-    Profil_Foto: "https://placehold.co/100x100.png"
+    Profil_Foto: "https://placehold.co/100x100.png?text=SN"
   },
   {
     ID_Guru: "guru3",
@@ -271,11 +271,11 @@ export let mockTeachers: TeacherData[] = [
     Password_Hash: "hashed_password_guru3",
     Tanggal_Pendaftaran: "2005-01-20",
     Jabatan: "Kepala Jurusan IPA",
-    Profil_Foto: "https://placehold.co/100x100.png"
+    Profil_Foto: "https://placehold.co/100x100.png?text=AS"
   },
 ];
 
-export const mockParents: ParentData[] = [
+export let mockParents: ParentData[] = [
     {
         ID_OrangTua: "parent001",
         Nama_Lengkap: "Orang Tua Bijak",
@@ -283,8 +283,8 @@ export const mockParents: ParentData[] = [
         Email: "parent@example.com",
         Nomor_Telepon: "081122334455",
         Status_Aktif: true,
-        Password_Hash: "password", 
-        Profil_Foto: "https://placehold.co/100x100.png",
+        Password_Hash: "password",
+        Profil_Foto: "https://placehold.co/100x100.png?text=OB",
         Anak_Terkait: [
             { ID_Siswa: "student001", Nama_Siswa: "Siswa Rajin" },
         ]
@@ -297,7 +297,7 @@ export const mockParents: ParentData[] = [
         Nomor_Telepon: "085566778899",
         Status_Aktif: true,
         Password_Hash: "hashed_password_parent2",
-        Profil_Foto: "https://placehold.co/100x100.png",
+        Profil_Foto: "https://placehold.co/100x100.png?text=AZP",
         Anak_Terkait: [
             { ID_Siswa: "siswa1", Nama_Siswa: "Ahmad Zulkifli Zaini" },
         ]
@@ -310,7 +310,7 @@ export const mockParents: ParentData[] = [
         Nomor_Telepon: "087711223344",
         Status_Aktif: false,
         Password_Hash: "hashed_password_parent3",
-        Profil_Foto: "https://placehold.co/100x100.png",
+        Profil_Foto: "https://placehold.co/100x100.png?text=BR",
         Anak_Terkait: [
             { ID_Siswa: "siswa2", Nama_Siswa: "Rina Amelia Putri" },
         ]
@@ -347,9 +347,9 @@ export const mockSchoolProfile: SchoolProfileData = {
 
 
 export const mockUserProgress: UserProgress = {
-  userId: 'student001', 
-  completedLessons: ['1', '2'], 
-  inProgressLessons: ['3'], 
+  userId: 'student001',
+  completedLessons: ['1', '2'],
+  inProgressLessons: ['3'],
   quizScores: [
     { quizId: 'quiz1', score: 2, totalQuestions: 3 },
     { quizId: 'quiz2', score: 3, totalQuestions: 3 },
