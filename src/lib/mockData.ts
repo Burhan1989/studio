@@ -110,18 +110,22 @@ export const mockQuestionsQuiz2: Question[] = [
 ];
 
 
-export const mockQuizzes: Quiz[] = [
+export let mockQuizzes: Quiz[] = [
   {
     id: 'quiz1',
     title: 'Kuis Dasar JavaScript',
     lessonId: '1',
+    teacherId: 'teacher001', // Contoh ID guru
     questions: mockQuestionsQuiz1,
+    description: "Kuis dasar untuk menguji pemahaman JavaScript awal.",
   },
   {
     id: 'quiz2',
     title: 'Dasar-Dasar React Hooks',
     lessonId: '3',
+    teacherId: 'teacher001', // Contoh ID guru
     questions: mockQuestionsQuiz2,
+    description: "Kuis untuk menguji pemahaman tentang React Hooks.",
   },
 ];
 
@@ -217,11 +221,11 @@ export let mockTeachers: TeacherData[] = [
     Alamat: "Jl. Kantor Pusat No. 1",
     Nomor_Telepon: "081200000001",
     Status_Aktif: true,
-    Password_Hash: "adminpassword", // Pastikan ini cocok dengan yang diharapkanLoginForm
+    Password_Hash: "adminpassword", 
     Tanggal_Pendaftaran: "2020-01-01",
     Jabatan: "Administrator Utama",
     Profil_Foto: "https://placehold.co/100x100.png?text=AD",
-    isAdmin: true, // Flag admin
+    isAdmin: true, 
   },
   {
     ID_Guru: "teacher001",
@@ -423,6 +427,21 @@ export function getQuizById(id: string): Quiz | undefined {
   return mockQuizzes.find(quiz => quiz.id === id);
 }
 
+export function getQuizzesByTeacherId(teacherId: string): Quiz[] {
+  return mockQuizzes.filter(quiz => quiz.teacherId === teacherId);
+}
+
+export function addQuiz(quizData: Omit<Quiz, 'id'> & { teacherId: string }): Quiz {
+  const newQuiz: Quiz = {
+    id: `quiz${mockQuizzes.length + 1 + Date.now()}`,
+    ...quizData,
+    questions: quizData.questions || [], // Ensure questions is an array
+  };
+  mockQuizzes.push(newQuiz);
+  console.log("Kuis baru ditambahkan (simulasi):", newQuiz);
+  return newQuiz;
+}
+
 export function getClassById(id: string): ClassData | undefined {
   return mockClasses.find(kelas => kelas.ID_Kelas === id);
 }
@@ -463,13 +482,11 @@ export function updateTeacher(updatedTeacher: TeacherData): boolean {
 }
 
 export function addAdminUser(newAdmin: TeacherData): boolean {
-    // Check if email or username already exists to prevent duplicates
     const emailExists = mockTeachers.some(teacher => teacher.Email === newAdmin.Email);
     const usernameExists = mockTeachers.some(teacher => teacher.Username === newAdmin.Username);
 
     if (emailExists) {
         console.warn(`Gagal menambahkan admin: Email ${newAdmin.Email} sudah digunakan.`);
-        // Di aplikasi nyata, Anda akan melempar error atau mengembalikan false dengan pesan
         return false; 
     }
     if (usernameExists) {
@@ -495,4 +512,3 @@ export function updateStudent(updatedStudent: StudentData): boolean {
   }
   return false;
 }
-

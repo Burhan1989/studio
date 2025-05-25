@@ -45,7 +45,7 @@ interface NavItem {
 }
 
 const baseNavItems: NavItem[] = [
-  // General items (visible to Student, Teacher, Admin unless explicitly filtered out by role logic)
+  // General items
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard },
   { href: '/lessons', label: 'Pelajaran', icon: BookOpen },
   { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck },
@@ -58,6 +58,7 @@ const baseNavItems: NavItem[] = [
 
   // Teacher Specific
   { href: '/teacher/materials', label: 'Materi Saya', icon: UploadCloud, teacherOnly: true },
+  { href: '/teacher/quizzes', label: 'Kuis Saya', icon: FileQuestion, teacherOnly: true },
   
   // Parent Specific
   { href: '/parent/dashboard', label: 'Dasbor Anak', icon: ParentIcon, parentOnly: true },
@@ -89,77 +90,64 @@ export default function AppShell({ children }: { children: ReactNode }) {
     let items = baseNavItems.filter(item => {
       const isGeneralItem = !item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly;
 
-      if (user.isAdmin) {
-        // Admin sees admin-specific items and general items.
-        // Admin should not see items that are exclusively for other roles (parentOnly, studentOnly, teacherOnly).
-        if (item.parentOnly || item.studentOnly || item.teacherOnly) return false; // Exclude other role specific items
+      if (user.isAdmin) { // Admin melihat semua item admin dan general. Sembunyikan item khusus peran lain.
+        if (item.parentOnly || item.studentOnly || item.teacherOnly) return false;
         return item.adminOnly || isGeneralItem;
       }
-      if (userRole === 'teacher') {
-        // Teacher sees teacher-specific items and general items.
-        // Exclude adminOnly, parentOnly, studentOnly items.
+      if (userRole === 'teacher') { // Guru melihat item teacher dan general. Sembunyikan item khusus peran lain.
         if (item.adminOnly || item.parentOnly || item.studentOnly) return false;
         return item.teacherOnly || isGeneralItem;
       }
-      if (userRole === 'student') {
-        // Student sees student-specific items and general items.
-        // Exclude adminOnly, parentOnly, teacherOnly items.
+      if (userRole === 'student') { // Siswa melihat item student dan general. Sembunyikan item khusus peran lain.
         if (item.adminOnly || item.parentOnly || item.teacherOnly) return false;
         return item.studentOnly || isGeneralItem;
       }
-      if (userRole === 'parent') {
-        // Parent sees parent-specific items and specific general items (Profil, Pengaturan).
-        // Exclude adminOnly, teacherOnly, studentOnly items.
+      if (userRole === 'parent') { // Ortu melihat item parent dan item general tertentu.
         if (item.adminOnly || item.teacherOnly || item.studentOnly) return false;
-        if (item.parentOnly) return true; // Dasbor Anak
-        // For parents, only Profile and Settings are general items they see
+        if (item.parentOnly) return true;
         return isGeneralItem && (item.href === '/profile' || item.href === '/settings');
       }
-      // Fallback for unknown roles (should not happen ideally)
       return isGeneralItem; 
     });
 
     // Sorting logic
-    if (user.isAdmin) {
-      items.sort((a, b) => {
-        if (a.href === '/dashboard') return -1; if (b.href === '/dashboard') return 1;
-        if (a.href === '/admin') return -1; if (b.href === '/admin') return 1;
-        
-        const aIsAdminSpecific = a.adminOnly && a.href !== '/admin' && a.href !== '/dashboard';
-        const bIsAdminSpecific = b.adminOnly && b.href !== '/admin' && b.href !== '/dashboard';
+     items.sort((a, b) => {
+        // Prioritas utama: Dasbor spesifik peran
+        const roleDashboardOrder = (href?: string) => {
+            if (href === '/admin' && user.isAdmin) return -100;
+            if (href === '/parent/dashboard' && userRole === 'parent') return -100;
+            if (href === '/dashboard' && (userRole === 'student' || userRole === 'teacher')) return -90; // Dasbor umum untuk siswa/guru
+            return 0;
+        };
 
-        if (aIsAdminSpecific && !bIsAdminSpecific) return -1;
-        if (!aIsAdminSpecific && bIsAdminSpecific) return 1;
-        if (aIsAdminSpecific && bIsAdminSpecific) return a.label.localeCompare(b.label);
+        const orderA = roleDashboardOrder(a.href);
+        const orderB = roleDashboardOrder(b.href);
+        if (orderA !== orderB) return orderA - orderB;
         
-        const isAGeneralSetting = a.href === '/profile' || a.href === '/settings';
-        const isBGeneralSetting = b.href === '/profile' || b.href === '/settings';
-        if (isAGeneralSetting && !isBGeneralSetting) return 1;
-        if (!isAGeneralSetting && isBGeneralSetting) return -1;
+        // Admin-specific items after their dashboard
+        if (user.isAdmin) {
+            if (a.adminOnly && !b.adminOnly) return -1;
+            if (!a.adminOnly && b.adminOnly) return 1;
+        }
+
+        // Role-specific items (teacher, student)
+        if (userRole === 'teacher') {
+            if (a.teacherOnly && !b.teacherOnly) return -1;
+            if (!a.teacherOnly && b.teacherOnly) return 1;
+        }
+        if (userRole === 'student') {
+            if (a.studentOnly && !b.studentOnly) return -1;
+            if (!a.studentOnly && b.studentOnly) return 1;
+        }
+
+        // General items: Profile and Settings last
+        const isGeneralSetting = (href?: string) => href === '/profile' || href === '/settings';
+        if (isGeneralSetting(a.href) && !isGeneralSetting(b.href)) return 1;
+        if (!isGeneralSetting(a.href) && isGeneralSetting(b.href)) return -1;
+        
+        // Alphabetical for the rest
         return a.label.localeCompare(b.label);
-      });
-    } else if (userRole === 'parent') {
-        items.sort((a, b) => {
-            if (a.href === '/parent/dashboard') return -1; if (b.href === '/parent/dashboard') return 1;
-            const isAGeneralSetting = a.href === '/profile' || a.href === '/settings';
-            const isBGeneralSetting = b.href === '/profile' || b.href === '/settings';
-            if (isAGeneralSetting && !isBGeneralSetting) return 1;
-            if (!isAGeneralSetting && isBGeneralSetting) return -1;
-            return a.label.localeCompare(b.label); // Fallback to alphabetical for other parent items if any
-        });
-    } else { // Basic alphabetical sort for Student and Teacher
-        items.sort((a, b) => {
-            // Put Dashboard first for students and teachers
-            if (a.href === '/dashboard') return -1;
-            if (b.href === '/dashboard') return 1;
-            // Put Profile and Settings last
-            const isAGeneralSetting = a.href === '/profile' || a.href === '/settings';
-            const isBGeneralSetting = b.href === '/profile' || b.href === '/settings';
-            if (isAGeneralSetting && !isBGeneralSetting) return 1;
-            if (!isAGeneralSetting && isBGeneralSetting) return -1;
-            return a.label.localeCompare(b.label);
-        });
-    }
+    });
     return items;
   }, [user]);
 
@@ -172,9 +160,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <SidebarProvider defaultOpen>
       <Sidebar className="bg-card border-r" collapsible="icon">
         <SidebarHeader className="p-2 border-b flex flex-col items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
+           {/* Bagian logo dan nama sekolah di atas */}
           <Link
             href={user?.role === 'parent' ? "/parent/dashboard" : (user?.isAdmin ? "/admin" : "/dashboard")}
-            className="flex flex-col items-center gap-1 text-center group-data-[collapsible=icon]:flex-row group-data-[collapsible=icon]:gap-2"
+            className="flex flex-col items-center gap-1 text-center mb-2 group-data-[collapsible=icon]:hidden" // mb-2 untuk spasi
           >
             {schoolLogoUrl ? (
               <Image
@@ -182,15 +171,33 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
                 width={100} 
                 height={25}  
-                className="h-8 w-auto object-contain mb-1 group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:mb-0" 
+                className="h-8 w-auto object-contain mb-1" 
                 data-ai-hint="school logo"
               />
             ) : (
-              <GraduationCap className="w-8 h-8 text-primary mb-1 group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:mb-0" />
+              <GraduationCap className="w-8 h-8 text-primary mb-1" />
             )}
-            <span className="text-xs font-semibold text-foreground group-data-[collapsible=icon]:hidden truncate max-w-[120px]">
+            <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">
               {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
             </span>
+          </Link>
+          {/* Hanya logo saat diciutkan */}
+          <Link
+            href={user?.role === 'parent' ? "/parent/dashboard" : (user?.isAdmin ? "/admin" : "/dashboard")}
+            className="hidden group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10"
+          >
+             {schoolLogoUrl ? (
+              <Image
+                src={schoolLogoUrl}
+                alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
+                width={32} 
+                height={32}  
+                className="h-7 w-7 object-contain"
+                data-ai-hint="school logo"
+              />
+            ) : (
+              <GraduationCap className="w-7 h-7 text-primary" />
+            )}
           </Link>
         </SidebarHeader>
         <SidebarSeparator className="group-data-[collapsible=icon]:hidden" />
@@ -204,8 +211,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
                                 (item.href !== '/dashboard' &&
                                  item.href !== '/parent/dashboard' &&
                                  item.href !== '/admin' &&
-                                 pathname.startsWith(item.href) && item.href.length > 1 && !item.href.startsWith('/admin/')) ||
+                                 pathname.startsWith(item.href) && item.href.length > 1 && 
+                                 !item.href.startsWith('/admin/') && !item.href.startsWith('/teacher/') 
+                                 ) ||
                                  (item.href.startsWith('/admin/') && pathname.startsWith(item.href)) || 
+                                 (item.href.startsWith('/teacher/') && pathname.startsWith(item.href)) ||
                                  (item.href === '/admin' && pathname === '/admin') ||
                                  (item.href === '/parent/dashboard' && pathname === '/parent/dashboard')
                               }

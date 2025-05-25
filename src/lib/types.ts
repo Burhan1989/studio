@@ -36,16 +36,18 @@ export interface Lesson {
 export interface Question {
   id:string;
   text: string;
-  type: 'multiple-choice' | 'true-false';
-  options?: string[];
-  correctAnswer: string | boolean;
+  type: 'multiple-choice' | 'true-false' | 'essay'; // Ditambahkan 'essay'
+  options?: string[]; // Opsional, karena esai tidak punya opsi
+  correctAnswer?: string | boolean; // Opsional, esai mungkin tidak punya jawaban benar tunggal
 }
 
 export interface Quiz {
   id: string;
   title: string;
   lessonId?: string;
+  teacherId?: string; // Ditambahkan untuk melacak pembuat kuis
   questions: Question[];
+  description?: string; // Deskripsi kuis (opsional)
 }
 
 export interface UserProgress {
@@ -120,7 +122,7 @@ export interface ClassData {
   ID_Guru: string;
   Deskripsi_Kelas?: string;
   Waktu_Kelas?: string;
-  jurusan: string; // Diubah menjadi wajib
+  jurusan: string; 
   jumlahSiswa?: number;
 }
 
