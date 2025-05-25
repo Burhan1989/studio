@@ -3,7 +3,8 @@
 
 import type { Quiz, Question } from '@/lib/types';
 import { useState } from 'react';
-import { useActionState, useFormStatus } from 'react'; // Updated import
+import { useActionState } from 'react'; // Correct for React 19+
+import { useFormStatus } from 'react-dom'; // Correct import for useFormStatus
 import { submitQuizAction, type QuizSubmissionState } from '@/lib/actions';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +23,7 @@ export default function QuizView({ quiz }: QuizViewProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   const initialState: QuizSubmissionState = { message: null, errors: {} };
-  const [state, formAction] = useActionState(submitQuizAction, initialState); // Updated hook
+  const [state, formAction] = useActionState(submitQuizAction, initialState); 
 
   const handleAnswerChange = (questionId: string, value: string | boolean) => {
     setSelectedAnswers(prev => ({ ...prev, [questionId]: value }));
@@ -35,8 +36,9 @@ export default function QuizView({ quiz }: QuizViewProps) {
   };
 
   const handlePrevQuestion = () => {
+    // Bug fix: should be prev - 1
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex(prev => prev - 1);
     }
   };
   
@@ -102,7 +104,7 @@ export default function QuizView({ quiz }: QuizViewProps) {
                 {currentQuestion.options.map((option, index) => {
                   const itemId = `${currentQuestion.id}-option-${index}`;
                   return (
-                    <div key={index} className="flex items-center p-3 space-x-3 transition-colors border rounded-md hover:bg-muted/50 has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+                     <div key={itemId} className="flex items-center p-3 space-x-3 transition-colors border rounded-md hover:bg-muted/50 has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
                       <RadioGroupItem value={option} id={itemId} />
                       <Label htmlFor={itemId} className="font-normal cursor-pointer">
                         {option}
