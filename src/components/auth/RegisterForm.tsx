@@ -22,9 +22,9 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email({ message: "Invalid email address." }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  name: z.string().min(2, { message: "Nama minimal harus 2 karakter." }),
+  email: z.string().email({ message: "Alamat email tidak valid." }),
+  password: z.string().min(6, { message: "Kata sandi minimal harus 6 karakter." }),
 });
 
 export default function RegisterForm() {
@@ -50,17 +50,17 @@ export default function RegisterForm() {
     // In a real app, you'd save the user to a database and get back a user object
     login({ id: String(Math.random()), email: values.email, name: values.name });
     toast({
-      title: "Registration Successful",
-      description: "Welcome to AdeptLearn! You are now logged in.",
+      title: "Pendaftaran Berhasil",
+      description: "Selamat datang di AdeptLearn! Anda sekarang sudah masuk.",
     });
     
     // If registration failed:
     // toast({
-    //   title: "Registration Failed",
-    //   description: "Could not create your account. Please try again.",
+    //   title: "Pendaftaran Gagal",
+    //   description: "Tidak dapat membuat akun Anda. Silakan coba lagi.",
     //   variant: "destructive",
     // });
-    // form.setError("email", { type: "manual", message: "This email is already taken." });
+    // form.setError("email", { type: "manual", message: "Email ini sudah digunakan." });
     
     setIsLoading(false);
   }
@@ -68,8 +68,8 @@ export default function RegisterForm() {
   return (
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold">Create Your Account</CardTitle>
-        <CardDescription>Join AdeptLearn and start your personalized learning adventure.</CardDescription>
+        <CardTitle className="text-3xl font-bold">Buat Akun Anda</CardTitle>
+        <CardDescription>Bergabunglah dengan AdeptLearn dan mulai petualangan belajar pribadi Anda.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -79,9 +79,9 @@ export default function RegisterForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>Nama Lengkap</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="Nama Anda" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -94,7 +94,7 @@ export default function RegisterForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="you@example.com" {...field} />
+                    <Input placeholder="anda@contoh.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -105,7 +105,7 @@ export default function RegisterForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Kata Sandi</FormLabel>
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
@@ -119,14 +119,14 @@ export default function RegisterForm() {
               ) : (
                 <UserPlus className="w-4 h-4 mr-2" />
               )}
-              Register
+              Daftar
             </Button>
           </form>
         </Form>
         <p className="mt-6 text-sm text-center text-muted-foreground">
-          Already have an account?{" "}
+          Sudah punya akun?{" "}
           <Link href="/login" className="font-medium text-primary hover:underline">
-            Log in here
+            Masuk di sini
           </Link>
         </p>
       </CardContent>

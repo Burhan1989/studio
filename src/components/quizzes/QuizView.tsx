@@ -45,7 +45,7 @@ export default function QuizView({ quiz }: QuizViewProps) {
     return (
       <Button type="submit" className="w-full md:w-auto" disabled={pending || Object.keys(selectedAnswers).length !== quiz.questions.length}>
         {pending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Send className="w-4 h-4 mr-2" />}
-        Submit Quiz
+        Kirim Kuis
       </Button>
     );
   }
@@ -59,18 +59,18 @@ export default function QuizView({ quiz }: QuizViewProps) {
     return (
       <Card className="w-full max-w-2xl mx-auto shadow-xl">
         <CardHeader>
-          <CardTitle className="text-2xl">Quiz Results: {quiz.title}</CardTitle>
+          <CardTitle className="text-2xl">Hasil Kuis: {quiz.title}</CardTitle>
         </CardHeader>
         <CardContent>
           <Alert variant={isSuccess ? "default" : "destructive"} className={isSuccess ? "bg-accent/20 border-accent" : ""}>
             {isSuccess ? <CheckCircle className="w-5 h-5 text-accent-foreground" /> : <XCircle className="w-5 h-5" />}
-            <AlertTitle className={isSuccess ? "text-accent-foreground" : ""}>{isSuccess ? "Congratulations!" : "Needs Improvement"}</AlertTitle>
+            <AlertTitle className={isSuccess ? "text-accent-foreground" : ""}>{isSuccess ? "Selamat!" : "Perlu Peningkatan"}</AlertTitle>
             <AlertDescription>
-              {state.message} You scored {state.score} out of {state.totalQuestions}.
+              {state.message} Anda mendapat skor {state.score} dari {state.totalQuestions}.
             </AlertDescription>
           </Alert>
           <Button onClick={() => window.location.reload()} variant="outline" className="w-full mt-6">
-            Retake Quiz (Mock)
+            Ulangi Kuis (Contoh)
           </Button>
         </CardContent>
       </Card>
@@ -82,7 +82,7 @@ export default function QuizView({ quiz }: QuizViewProps) {
       <CardHeader>
         <CardTitle className="text-2xl">{quiz.title}</CardTitle>
         <CardDescription>
-          Question {currentQuestionIndex + 1} of {quiz.questions.length}
+          Pertanyaan {currentQuestionIndex + 1} dari {quiz.questions.length}
         </CardDescription>
         <Progress value={progressPercentage} className="w-full mt-2 h-2" />
       </CardHeader>
@@ -121,13 +121,13 @@ export default function QuizView({ quiz }: QuizViewProps) {
                   <FormControl>
                     <RadioGroupItem value="true" id={`${currentQuestion.id}-true`} />
                   </FormControl>
-                  <Label htmlFor={`${currentQuestion.id}-true`} className="font-normal cursor-pointer">True</Label>
+                  <Label htmlFor={`${currentQuestion.id}-true`} className="font-normal cursor-pointer">Benar</Label>
                 </FormItem>
                 <FormItem className="flex items-center p-3 space-x-3 transition-colors border rounded-md hover:bg-muted/50 has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
                   <FormControl>
                     <RadioGroupItem value="false" id={`${currentQuestion.id}-false`} />
                   </FormControl>
-                  <Label htmlFor={`${currentQuestion.id}-false`} className="font-normal cursor-pointer">False</Label>
+                  <Label htmlFor={`${currentQuestion.id}-false`} className="font-normal cursor-pointer">Salah</Label>
                 </FormItem>
               </RadioGroup>
             )}
@@ -136,18 +136,18 @@ export default function QuizView({ quiz }: QuizViewProps) {
           {state.errors?._form && (
             <Alert variant="destructive" className="mb-4">
               <XCircle className="w-4 h-4" />
-              <AlertTitle>Error</AlertTitle>
+              <AlertTitle>Kesalahan</AlertTitle>
               <AlertDescription>{state.errors._form.join(', ')}</AlertDescription>
             </Alert>
           )}
 
           <div className="flex justify-between mt-8">
             <Button type="button" variant="outline" onClick={handlePrevQuestion} disabled={currentQuestionIndex === 0}>
-              Previous
+              Sebelumnya
             </Button>
             {currentQuestionIndex < quiz.questions.length - 1 ? (
               <Button type="button" onClick={handleNextQuestion} disabled={selectedAnswers[currentQuestion.id] === undefined}>
-                Next
+                Berikutnya
               </Button>
             ) : (
               <SubmitButton />
@@ -156,7 +156,7 @@ export default function QuizView({ quiz }: QuizViewProps) {
         </form>
       </CardContent>
       <CardFooter className="text-sm text-muted-foreground">
-        Ensure all questions are answered before submitting.
+        Pastikan semua pertanyaan dijawab sebelum mengirim.
       </CardFooter>
     </Card>
   );

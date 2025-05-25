@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         <div className="flex flex-col items-center justify-center min-h-screen bg-background">
           <div className="w-1/3">
             <Progress value={50} className="w-full h-2 mb-4" />
-            <p className="text-center text-foreground">Loading AdeptLearn...</p>
+            <p className="text-center text-foreground">Memuat AdeptLearn...</p>
           </div>
         </div>
       );

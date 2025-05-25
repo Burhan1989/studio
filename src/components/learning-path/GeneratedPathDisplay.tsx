@@ -21,7 +21,7 @@ const ResourceCard = ({ resource }: { resource: LearningResource }) => (
     <CardContent>
       <Button variant="outline" size="sm" asChild>
         <Link href={resource.resourceLink} target="_blank" rel="noopener noreferrer">
-          Access Resource <ExternalLink className="w-4 h-4 ml-2" />
+          Akses Sumber Daya <ExternalLink className="w-4 h-4 ml-2" />
         </Link>
       </Button>
     </CardContent>
@@ -32,27 +32,27 @@ export default function GeneratedPathDisplay({ pathData }: GeneratedPathDisplayP
   return (
     <Card className="w-full mt-8 shadow-xl bg-primary/5">
       <CardHeader>
-        <CardTitle className="text-2xl text-primary">Your Personalized Learning Path</CardTitle>
+        <CardTitle className="text-2xl text-primary">Jalur Belajar Pribadi Anda</CardTitle>
         <CardDescription>
-          Based on your inputs, here&apos;s a learning path tailored for you:
+          Berdasarkan masukan Anda, berikut adalah jalur belajar yang disesuaikan untuk Anda:
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
-          <h3 className="mb-2 text-xl font-semibold text-foreground">Learning Path Overview</h3>
+          <h3 className="mb-2 text-xl font-semibold text-foreground">Gambaran Umum Jalur Belajar</h3>
           <p className="text-foreground/80">{pathData.learningPathDescription}</p>
         </div>
 
         {pathData.customQuizzes && pathData.customQuizzes.length > 0 && (
           <div>
             <h3 className="mb-3 text-xl font-semibold text-foreground flex items-center">
-              <ListChecks className="w-5 h-5 mr-2 text-primary" /> Custom Quizzes
+              <ListChecks className="w-5 h-5 mr-2 text-primary" /> Kuis Khusus
             </h3>
             <Accordion type="single" collapsible className="w-full">
               {pathData.customQuizzes.map((quiz, index) => (
                 <AccordionItem value={`quiz-${index}`} key={`quiz-${index}`}>
                   <AccordionTrigger className="text-base font-medium hover:no-underline">
-                    Quiz {index + 1}: {quiz.resourceType}
+                    Kuis {index + 1}: {quiz.resourceType}
                   </AccordionTrigger>
                   <AccordionContent>
                     <ResourceCard resource={quiz} />
@@ -66,13 +66,13 @@ export default function GeneratedPathDisplay({ pathData }: GeneratedPathDisplayP
         {pathData.customLearningResources && pathData.customLearningResources.length > 0 && (
           <div>
             <h3 className="mb-3 text-xl font-semibold text-foreground flex items-center">
-              <Lightbulb className="w-5 h-5 mr-2 text-primary" /> Custom Learning Resources
+              <Lightbulb className="w-5 h-5 mr-2 text-primary" /> Sumber Belajar Khusus
             </h3>
             <Accordion type="single" collapsible className="w-full">
               {pathData.customLearningResources.map((resource, index) => (
                 <AccordionItem value={`resource-${index}`} key={`resource-${index}`}>
                   <AccordionTrigger className="text-base font-medium hover:no-underline">
-                     Resource {index + 1}: {resource.resourceType}
+                     Sumber {index + 1}: {resource.resourceType}
                   </AccordionTrigger>
                   <AccordionContent>
                     <ResourceCard resource={resource} />

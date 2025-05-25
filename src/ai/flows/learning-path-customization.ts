@@ -1,11 +1,12 @@
+
 'use server';
 
 /**
- * @fileOverview A learning path customization AI agent.
+ * @fileOverview Agen AI kustomisasi jalur belajar.
  *
- * - customizeLearningPath - A function that handles the learning path customization process.
- * - CustomizeLearningPathInput - The input type for the customizeLearningPath function.
- * - CustomizeLearningPathOutput - The return type for the customizeLearningPath function.
+ * - customizeLearningPath - Fungsi yang menangani proses kustomisasi jalur belajar.
+ * - CustomizeLearningPathInput - Tipe input untuk fungsi customizeLearningPath.
+ * - CustomizeLearningPathOutput - Tipe kembalian untuk fungsi customizeLearningPath.
  */
 
 import {ai} from '@/ai/genkit';
@@ -14,33 +15,33 @@ import {z} from 'genkit';
 const CustomizeLearningPathInputSchema = z.object({
   userInteractions: z
     .string()
-    .describe('A summary of the user interactions with the learning platform.'),
+    .describe('Ringkasan interaksi pengguna dengan platform pembelajaran.'),
   quizPerformance: z
     .string()
-    .describe('A summary of the user performance on quizzes.'),
+    .describe('Ringkasan kinerja pengguna pada kuis.'),
   learningStylePreferences: z
-    .string() // Consider making this an optional field with a default value
-    .describe('The preferred learning style of the user.'),
-  topic: z.string().describe('The topic for learning path customization.'),
+    .string() 
+    .describe('Gaya belajar yang disukai pengguna.'),
+  topic: z.string().describe('Topik untuk kustomisasi jalur belajar.'),
 });
 export type CustomizeLearningPathInput = z.infer<typeof CustomizeLearningPathInputSchema>;
 
 const LearningResourceSchema = z.object({
-  resourceType: z.string().describe('The type of learning resource (e.g., quiz, video, article).'),
-  resourceLink: z.string().describe('The link to the learning resource.'),
-  description: z.string().describe('A short description of the resource.'),
+  resourceType: z.string().describe('Jenis sumber belajar (misalnya, kuis, video, artikel).'),
+  resourceLink: z.string().describe('Tautan ke sumber belajar.'),
+  description: z.string().describe('Deskripsi singkat sumber daya.'),
 });
 
 const CustomizeLearningPathOutputSchema = z.object({
   learningPathDescription: z
     .string()
-    .describe('A description of the customized learning path based on the user data.'),
+    .describe('Deskripsi jalur belajar yang disesuaikan berdasarkan data pengguna.'),
   customQuizzes: z
     .array(LearningResourceSchema)
-    .describe('Custom quizzes tailored to the learning style.'),
+    .describe('Kuis khusus yang disesuaikan dengan gaya belajar.'),
   customLearningResources: z
     .array(LearningResourceSchema)
-    .describe('Custom learning resources tailored to the learning style.'),
+    .describe('Sumber belajar khusus yang disesuaikan dengan gaya belajar.'),
 });
 
 export type CustomizeLearningPathOutput = z.infer<typeof CustomizeLearningPathOutputSchema>;
@@ -53,22 +54,22 @@ const prompt = ai.definePrompt({
   name: 'customizeLearningPathPrompt',
   input: {schema: CustomizeLearningPathInputSchema},
   output: {schema: CustomizeLearningPathOutputSchema},
-  prompt: `You are an expert in adaptive learning and personalized education.
+  prompt: `Anda adalah seorang ahli dalam pembelajaran adaptif dan pendidikan yang dipersonalisasi.
 
-You will analyze the user's interactions, quiz performance, learning style preferences, and the topic to create a customized learning path.
+Anda akan menganalisis interaksi pengguna, kinerja kuis, preferensi gaya belajar, dan topik untuk membuat jalur belajar yang disesuaikan.
 
-User Interactions: {{{userInteractions}}}
-Quiz Performance: {{{quizPerformance}}}
-Learning Style Preferences: {{{learningStylePreferences}}}
-Topic: {{{topic}}}
+Interaksi Pengguna: {{{userInteractions}}}
+Kinerja Kuis: {{{quizPerformance}}}
+Preferensi Gaya Belajar: {{{learningStylePreferences}}}
+Topik: {{{topic}}}
 
-Based on this information, create a learning path description, custom quizzes, and custom learning resources tailored to the user's learning style and the topic.
+Berdasarkan informasi ini, buat deskripsi jalur belajar, kuis khusus, dan sumber belajar khusus yang disesuaikan dengan gaya belajar pengguna dan topik.
 
-Ensure that the quizzes and learning resources are diverse and engaging, covering different aspects of the topic and catering to the user's preferred learning style.
+Pastikan kuis dan sumber belajar beragam dan menarik, mencakup berbagai aspek topik dan sesuai dengan gaya belajar yang disukai pengguna.
 
-Consider the user's strengths and weaknesses when designing the quizzes and learning resources.
+Pertimbangkan kekuatan dan kelemahan pengguna saat merancang kuis dan sumber belajar.
 
-Output in JSON format.
+Keluaran dalam format JSON.
 `,
 });
 

@@ -11,10 +11,10 @@ import { revalidatePath } from "next/cache";
 
 // Schema for learning path customization form
 const CustomizeLearningPathInputSchema = z.object({
-  userInteractions: z.string().min(10, "Please provide more details about user interactions."),
-  quizPerformance: z.string().min(10, "Please describe quiz performance in more detail."),
-  learningStylePreferences: z.string().min(1, "Please select a learning style preference."),
-  topic: z.string().min(3, "Topic must be at least 3 characters long."),
+  userInteractions: z.string().min(10, "Mohon berikan detail lebih lanjut tentang interaksi pengguna."),
+  quizPerformance: z.string().min(10, "Mohon deskripsikan performa kuis lebih detail."),
+  learningStylePreferences: z.string().min(1, "Mohon pilih preferensi gaya belajar."),
+  topic: z.string().min(3, "Topik minimal harus 3 karakter."),
 });
 
 export interface LearningPathFormState {
@@ -45,7 +45,7 @@ export async function generateCustomizedLearningPathAction(
 
   if (!validatedFields.success) {
     return {
-      message: "Validation failed. Please check your inputs.",
+      message: "Validasi gagal. Silakan periksa input Anda.",
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
@@ -55,18 +55,18 @@ export async function generateCustomizedLearningPathAction(
     const result = await customizeLearningPath(validatedFields.data as CustomizeLearningPathInput);
     revalidatePath("/learning-path"); // If you want to ensure fresh data if path is re-used
     return { 
-      message: "Learning path generated successfully!", 
+      message: "Jalur belajar berhasil dibuat!", 
       data: result,
       timestamp: Date.now(), // Add timestamp to trigger re-render of display component
     };
   } catch (error) {
-    console.error("Error generating learning path:", error);
-    let errorMessage = "An unexpected error occurred.";
+    console.error("Kesalahan saat membuat jalur belajar:", error);
+    let errorMessage = "Terjadi kesalahan tak terduga.";
     if (error instanceof Error) {
         errorMessage = error.message;
     }
     return { 
-      message: "Failed to generate learning path.",
+      message: "Gagal membuat jalur belajar.",
       errors: { _form: [errorMessage] } 
     };
   }
@@ -97,14 +97,14 @@ export async function submitQuizAction(
   const answersData = formData.get("answers") as string; // Assuming answers are stringified JSON
 
   if (!quizId || !answersData) {
-    return { message: "Invalid submission data.", errors: { _form: ["Quiz ID or answers missing."] } };
+    return { message: "Data pengiriman tidak valid.", errors: { _form: ["ID Kuis atau jawaban tidak ada."] } };
   }
   
   let answers;
   try {
     answers = JSON.parse(answersData);
   } catch (e) {
-    return { message: "Invalid answers format.", errors: { _form: ["Answers could not be parsed."] } };
+    return { message: "Format jawaban tidak valid.", errors: { _form: ["Jawaban tidak dapat diproses."] } };
   }
 
 
@@ -115,12 +115,12 @@ export async function submitQuizAction(
   const score = Math.floor(Math.random() * 5) + 1; // Random score out of 5
   const totalQuestions = 5; // Assuming 5 questions for this mock
 
-  console.log(`Quiz ${quizId} submitted with answers:`, answers);
+  console.log(`Kuis ${quizId} dikirim dengan jawaban:`, answers);
   revalidatePath(`/quizzes/${quizId}`);
   revalidatePath('/reports'); // Revalidate reports page
   
   return {
-    message: "Quiz submitted successfully!",
+    message: "Kuis berhasil dikirim!",
     score,
     totalQuestions,
   };

@@ -10,9 +10,9 @@ export default function LessonsListPage() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-foreground">Explore Our Lessons</h1>
+        <h1 className="text-4xl font-bold text-foreground">Jelajahi Pelajaran Kami</h1>
         <p className="mt-2 text-lg text-muted-foreground">
-          Dive into a variety of topics designed to enhance your skills.
+          Selami berbagai topik yang dirancang untuk meningkatkan keahlian Anda.
         </p>
       </div>
 
@@ -23,7 +23,7 @@ export default function LessonsListPage() {
                <div className="aspect-video overflow-hidden">
                 <Image
                     src="https://placehold.co/400x225.png" // Using a generic placeholder for list view
-                    alt={`Preview for ${lesson.title}`}
+                    alt={`Pratinjau untuk ${lesson.title}`}
                     width={400}
                     height={225}
                     className="object-cover w-full h-full"
@@ -50,7 +50,7 @@ export default function LessonsListPage() {
             <CardFooter>
               <Button asChild className="w-full">
                 <Link href={`/lessons/${lesson.id}`}>
-                  Start Lesson <ArrowRight className="w-4 h-4 ml-2" />
+                  Mulai Pelajaran <ArrowRight className="w-4 h-4 ml-2" />
                 </Link>
               </Button>
             </CardFooter>

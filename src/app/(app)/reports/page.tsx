@@ -17,13 +17,13 @@ const mockUserProgress: UserProgress = {
     { quizId: 'quiz2', score: 3, totalQuestions: 3 },
   ],
   currentLearningPath: { // Example, could be populated by AI
-    learningPathDescription: "A beginner-friendly path focusing on JavaScript fundamentals, followed by an introduction to React.",
+    learningPathDescription: "Jalur ramah pemula yang berfokus pada dasar-dasar JavaScript, diikuti oleh pengenalan React.",
     customQuizzes: [
-      { resourceType: "Interactive Quiz", resourceLink: "#", description: "Test your core JS knowledge." }
+      { resourceType: "Kuis Interaktif", resourceLink: "#", description: "Uji pengetahuan inti JS Anda." }
     ],
     customLearningResources: [
-      { resourceType: "Video Tutorial", resourceLink: "#", description: "Deep dive into JS closures." },
-      { resourceType: "Article", resourceLink: "#", description: "Understanding ES6 features." }
+      { resourceType: "Tutorial Video", resourceLink: "#", description: "Selami lebih dalam closure JS." },
+      { resourceType: "Artikel", resourceLink: "#", description: "Memahami fitur ES6." }
     ]
   }
 };
@@ -37,9 +37,9 @@ export default function ReportsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Your Learning Report</h1>
+        <h1 className="text-3xl font-bold text-foreground">Laporan Belajar Anda</h1>
         <p className="mt-1 text-muted-foreground">
-          An overview of your progress, achievements, and learning path.
+          Gambaran umum kemajuan, pencapaian, dan jalur belajar Anda.
         </p>
       </div>
 
@@ -50,8 +50,8 @@ export default function ReportsPage() {
         
         <Card className="shadow-md">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2"><BookMarked className="w-5 h-5 text-primary"/> Current Learning Path</CardTitle>
-                <CardDescription>Your AI-customized learning journey.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><BookMarked className="w-5 h-5 text-primary"/> Jalur Belajar Saat Ini</CardTitle>
+                <CardDescription>Perjalanan belajar Anda yang disesuaikan AI.</CardDescription>
             </CardHeader>
             <CardContent>
                 {userProgress.currentLearningPath ? (
@@ -59,7 +59,7 @@ export default function ReportsPage() {
                         <p className="mb-2 font-semibold">{userProgress.currentLearningPath.learningPathDescription}</p>
                         {userProgress.currentLearningPath.customQuizzes.length > 0 && (
                             <>
-                                <h4 className="mt-4 mb-1 text-sm font-medium text-muted-foreground">Custom Quizzes:</h4>
+                                <h4 className="mt-4 mb-1 text-sm font-medium text-muted-foreground">Kuis Khusus:</h4>
                                 <ul className="pl-5 text-sm list-disc list-inside">
                                     {userProgress.currentLearningPath.customQuizzes.map(q => <li key={q.description}>{q.description}</li>)}
                                 </ul>
@@ -67,7 +67,7 @@ export default function ReportsPage() {
                         )}
                         {userProgress.currentLearningPath.customLearningResources.length > 0 && (
                              <>
-                                <h4 className="mt-3 mb-1 text-sm font-medium text-muted-foreground">Custom Resources:</h4>
+                                <h4 className="mt-3 mb-1 text-sm font-medium text-muted-foreground">Sumber Daya Khusus:</h4>
                                 <ul className="pl-5 text-sm list-disc list-inside">
                                     {userProgress.currentLearningPath.customLearningResources.map(r => <li key={r.description}>{r.description}</li>)}
                                 </ul>
@@ -75,7 +75,7 @@ export default function ReportsPage() {
                         )}
                     </div>
                 ) : (
-                    <p className="text-muted-foreground">No custom learning path generated yet. Visit the "Customize Path" section!</p>
+                    <p className="text-muted-foreground">Belum ada jalur belajar khusus yang dibuat. Kunjungi bagian "Sesuaikan Jalur"!</p>
                 )}
             </CardContent>
         </Card>

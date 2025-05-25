@@ -19,9 +19,9 @@ export default function Error({
   return (
     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-6 text-center bg-background">
       <AlertTriangle className="w-16 h-16 mb-4 text-destructive" />
-      <h2 className="mb-4 text-2xl font-semibold text-foreground">Oops, Something Went Wrong!</h2>
+      <h2 className="mb-4 text-2xl font-semibold text-foreground">Ups, Terjadi Kesalahan!</h2>
       <p className="mb-6 text-muted-foreground">
-        We encountered an unexpected issue. Please try again.
+        Kami menemukan masalah tak terduga. Silakan coba lagi.
       </p>
       <Button
         onClick={
@@ -29,7 +29,7 @@ export default function Error({
           () => reset()
         }
       >
-        Try Again
+        Coba Lagi
       </Button>
     </div>
   );

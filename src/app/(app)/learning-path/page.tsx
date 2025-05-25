@@ -33,10 +33,10 @@ export default function LearningPathPage() {
     <div className="max-w-3xl mx-auto">
       <Alert className="mb-8 border-primary/50 text-primary bg-primary/10">
         <Info className="w-5 h-5 text-primary" />
-        <AlertTitle className="font-semibold">AI-Powered Path Customization</AlertTitle>
+        <AlertTitle className="font-semibold">Kustomisasi Jalur Berbasis AI</AlertTitle>
         <AlertDescription>
-          Provide details about your learning preferences, and our AI will generate a tailored learning path, 
-          including custom quizzes and resources, to help you achieve your goals more effectively.
+          Berikan detail tentang preferensi belajar Anda, dan AI kami akan menghasilkan jalur belajar yang disesuaikan,
+          termasuk kuis dan sumber daya khusus, untuk membantu Anda mencapai tujuan dengan lebih efektif.
         </AlertDescription>
       </Alert>
       

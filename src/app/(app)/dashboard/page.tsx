@@ -14,14 +14,14 @@ export default function DashboardPage() {
 
   // Mock data
   const currentModule = {
-    title: "Introduction to JavaScript",
+    title: "Pengenalan JavaScript", // Example, real data from mockData
     progress: 65,
-    nextLesson: "Variables and Data Types",
+    nextLesson: "Variabel dan Tipe Data", // Example, real data from mockData
   };
 
   const upcomingActivities = [
-    { type: "Quiz", title: "Basic Syntax Quiz", due: "Tomorrow" },
-    { type: "Lesson", title: "Functions in JavaScript", due: "Next Week" },
+    { type: "Kuis", title: "Kuis Sintaks Dasar", due: "Besok" },
+    { type: "Pelajaran", title: "Fungsi dalam JavaScript", due: "Minggu Depan" },
   ];
 
   const overallProgress = 42; // Percentage
@@ -29,8 +29,8 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <div className="p-6 mb-8 rounded-lg shadow bg-gradient-to-r from-primary to-blue-400 text-primary-foreground">
-        <h1 className="text-3xl font-bold">Welcome back, {user?.name || user?.email}!</h1>
-        <p className="mt-1 text-lg opacity-90">Let&apos;s continue your learning journey.</p>
+        <h1 className="text-3xl font-bold">Selamat datang kembali, {user?.name || user?.email}!</h1>
+        <p className="mt-1 text-lg opacity-90">Mari lanjutkan perjalanan belajar Anda.</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -38,18 +38,18 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="w-6 h-6 text-primary" />
-              Current Module
+              Modul Saat Ini
             </CardTitle>
             <CardDescription>{currentModule.title}</CardDescription>
           </CardHeader>
           <CardContent>
             <Progress value={currentModule.progress} className="w-full mb-2 h-3" />
-            <p className="text-sm text-muted-foreground">{currentModule.progress}% completed</p>
-            <p className="mt-2 text-sm">Next up: <strong>{currentModule.nextLesson}</strong></p>
+            <p className="text-sm text-muted-foreground">{currentModule.progress}% selesai</p>
+            <p className="mt-2 text-sm">Berikutnya: <strong>{currentModule.nextLesson}</strong></p>
           </CardContent>
           <CardFooter>
             <Button asChild className="w-full">
-              <Link href="/lessons/1">Continue Learning</Link>
+              <Link href="/lessons/1">Lanjutkan Belajar</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -58,9 +58,9 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="w-6 h-6 text-accent-foreground" /> {/* Using accent color */}
-              Overall Progress
+              Kemajuan Keseluruhan
             </CardTitle>
-            <CardDescription>Your learning path completion.</CardDescription>
+            <CardDescription>Penyelesaian jalur belajar Anda.</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center">
              <div className="relative w-32 h-32">
@@ -90,11 +90,11 @@ export default function DashboardPage() {
                 <span className="text-3xl font-bold text-primary">{overallProgress}%</span>
               </div>
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">Keep up the great work!</p>
+            <p className="mt-4 text-sm text-muted-foreground">Pertahankan kerja bagus ini!</p>
           </CardContent>
            <CardFooter>
             <Button variant="outline" className="w-full" asChild>
-              <Link href="/reports">View Detailed Report</Link>
+              <Link href="/reports">Lihat Laporan Rinci</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -103,26 +103,26 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BrainCircuit className="w-6 h-6 text-primary" />
-              Adaptive Learning
+              Pembelajaran Adaptif
             </CardTitle>
-            <CardDescription>Tailor your learning experience.</CardDescription>
+            <CardDescription>Sesuaikan pengalaman belajar Anda.</CardDescription>
           </CardHeader>
           <CardContent>
             <Image 
               src="https://placehold.co/300x150.png" 
-              alt="Adaptive Learning" 
+              alt="Pembelajaran Adaptif" 
               width={300} 
               height={150} 
               className="w-full mb-4 rounded-md"
               data-ai-hint="abstract brain"
             />
             <p className="text-sm text-muted-foreground">
-              Our AI can help you customize your learning path, quizzes, and resources to match your style.
+              AI kami dapat membantu Anda menyesuaikan jalur belajar, kuis, dan sumber daya agar sesuai dengan gaya Anda.
             </p>
           </CardContent>
           <CardFooter>
             <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-              <Link href="/learning-path">Customize Your Path</Link>
+              <Link href="/learning-path">Sesuaikan Jalur Anda</Link>
             </Button>
           </CardFooter>
         </Card>
@@ -132,7 +132,7 @@ export default function DashboardPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ListChecks className="w-6 h-6 text-primary" />
-            Upcoming Activities
+            Aktivitas Mendatang
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -141,7 +141,7 @@ export default function DashboardPage() {
               {upcomingActivities.map((activity, index) => (
                 <li key={index} className="flex items-center justify-between p-3 rounded-md bg-muted/50">
                   <div>
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${activity.type === "Quiz" ? "bg-orange-200 text-orange-800" : "bg-blue-200 text-blue-800"}`}>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${activity.type === "Kuis" ? "bg-orange-200 text-orange-800" : "bg-blue-200 text-blue-800"}`}>
                       {activity.type}
                     </span>
                     <p className="mt-1 font-medium">{activity.title}</p>
@@ -151,7 +151,7 @@ export default function DashboardPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-muted-foreground">No upcoming activities scheduled.</p>
+            <p className="text-sm text-muted-foreground">Tidak ada aktivitas mendatang yang dijadwalkan.</p>
           )}
         </CardContent>
       </Card>

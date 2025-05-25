@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation'; // Added for programmatic navigation
 
 interface NavItem {
   href: string;
@@ -28,11 +29,11 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/learning-path', label: 'Customize Path', icon: BrainCircuit },
-  { href: '/lessons', label: 'Lessons', icon: BookOpen },
-  { href: '/quizzes', label: 'Quizzes', icon: ClipboardCheck },
-  { href: '/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard },
+  { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit },
+  { href: '/lessons', label: 'Pelajaran', icon: BookOpen },
+  { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck },
+  { href: '/reports', label: 'Laporan', icon: BarChart3 },
   { href: '/profile', label: 'Profil', icon: UserCircle },
   { href: '/settings', label: 'Pengaturan', icon: Settings },
 ];
@@ -40,10 +41,11 @@ const navItems: NavItem[] = [
 export default function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
+  const router = useRouter(); // Initialize router
 
   if (!user) {
     // This should ideally be handled by AuthContext redirects, but as a fallback:
-    return <div className="flex items-center justify-center h-screen">Redirecting to login...</div>;
+    return <div className="flex items-center justify-center h-screen">Mengarahkan ke halaman masuk...</div>;
   }
 
   return (
@@ -78,11 +80,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <DropdownMenuTrigger asChild>
                <Button variant="ghost" className="flex items-center justify-start w-full gap-2 group-data-[collapsible=icon]:justify-center">
                 <Avatar className="w-8 h-8">
-                  <AvatarImage src={user.name ? `https://avatar.vercel.sh/${user.name}.png` : undefined} alt={user.name || "User"} />
+                  <AvatarImage src={user.name ? `https://avatar.vercel.sh/${user.name}.png` : undefined} alt={user.name || "Pengguna"} />
                   <AvatarFallback>{user.email?.[0]?.toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="flex-col items-start hidden group-data-[collapsible=icon]:hidden">
-                    <span className="text-sm font-medium">{user.name || "User"}</span>
+                    <span className="text-sm font-medium">{user.name || "Pengguna"}</span>
                     <span className="text-xs text-muted-foreground">{user.email}</span>
                 </div>
               </Button>
@@ -90,7 +92,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <DropdownMenuContent side="right" align="start" className="w-56 mb-2">
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user.name || "User"}</p>
+                  <p className="text-sm font-medium leading-none">{user.name || "Pengguna"}</p>
                   <p className="text-xs leading-none text-muted-foreground">
                     {user.email}
                   </p>
@@ -108,7 +110,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout}>
                 <LogOut className="w-4 h-4 mr-2" />
-                Log out
+                Keluar
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -140,5 +142,3 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRouter } from 'next/navigation'; // Added for programmatic navigation
-

@@ -25,19 +25,19 @@ import { useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 const learningStylePreferences = [
-  { value: "visual", label: "Visual (Graphs, Diagrams)" },
-  { value: "auditory", label: "Auditory (Lectures, Discussions)" },
-  { value: "kinesthetic", label: "Kinesthetic (Hands-on, Interactive)" },
-  { value: "reading-writing", label: "Reading/Writing (Texts, Notes)" },
-  { value: "mixed", label: "Mixed (A bit of everything)" },
+  { value: "visual", label: "Visual (Grafik, Diagram)" },
+  { value: "auditory", label: "Auditori (Ceramah, Diskusi)" },
+  { value: "kinesthetic", label: "Kinestetik (Praktik Langsung, Interaktif)" },
+  { value: "reading-writing", label: "Membaca/Menulis (Teks, Catatan)" },
+  { value: "mixed", label: "Campuran (Sedikit dari semuanya)" },
 ];
 
 // Client-side schema for react-hook-form
 const formSchema = z.object({
-  userInteractions: z.string().min(10, { message: "Please describe your typical interactions in at least 10 characters." }),
-  quizPerformance: z.string().min(10, { message: "Please describe your quiz performance in at least 10 characters." }),
-  learningStylePreferences: z.string().min(1, { message: "Please select your preferred learning style." }),
-  topic: z.string().min(3, { message: "Topic must be at least 3 characters long." }),
+  userInteractions: z.string().min(10, { message: "Mohon deskripsikan interaksi tipikal Anda setidaknya 10 karakter." }),
+  quizPerformance: z.string().min(10, { message: "Mohon deskripsikan performa kuis Anda setidaknya 10 karakter." }),
+  learningStylePreferences: z.string().min(1, { message: "Mohon pilih preferensi gaya belajar Anda." }),
+  topic: z.string().min(3, { message: "Topik minimal harus 3 karakter." }),
 });
 
 
@@ -66,7 +66,7 @@ export default function CustomizationForm({ onFormSubmitSuccess }: Customization
     if (state.message) {
       if (state.data) {
         toast({
-          title: "Success!",
+          title: "Sukses!",
           description: state.message,
           variant: "default",
         });
@@ -74,8 +74,8 @@ export default function CustomizationForm({ onFormSubmitSuccess }: Customization
         form.reset(); // Reset form on successful submission
       } else if (state.errors && Object.keys(state.errors).length > 0) {
          toast({
-          title: "Error",
-          description: state.message || "Please check the form for errors.",
+          title: "Kesalahan",
+          description: state.message || "Silakan periksa formulir untuk kesalahan.",
           variant: "destructive",
         });
         // Set form errors from server action state
@@ -99,7 +99,7 @@ export default function CustomizationForm({ onFormSubmitSuccess }: Customization
         ) : (
           <BrainCircuit className="w-4 h-4 mr-2" />
         )}
-        Generate My Learning Path
+        Buat Jalur Belajar Saya
       </Button>
     );
   }
@@ -108,9 +108,9 @@ export default function CustomizationForm({ onFormSubmitSuccess }: Customization
   return (
     <Card className="w-full shadow-xl">
       <CardHeader>
-        <CardTitle className="text-2xl">Customize Your Learning Path</CardTitle>
+        <CardTitle className="text-2xl">Sesuaikan Jalur Belajar Anda</CardTitle>
         <CardDescription>
-          Tell us about your learning habits and preferences. Our AI will generate a personalized path for you.
+          Beri tahu kami tentang kebiasaan dan preferensi belajar Anda. AI kami akan membuat jalur yang dipersonalisasi untuk Anda.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -121,11 +121,11 @@ export default function CustomizationForm({ onFormSubmitSuccess }: Customization
               name="topic"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Topic of Interest</FormLabel>
+                  <FormLabel>Topik Minat</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., Advanced JavaScript, Quantum Physics Basics" {...field} />
+                    <Input placeholder="cth., JavaScript Lanjutan, Dasar-Dasar Fisika Kuantum" {...field} />
                   </FormControl>
-                  <FormDescription>What subject or skill do you want to learn?</FormDescription>
+                  <FormDescription>Subjek atau keahlian apa yang ingin Anda pelajari?</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -136,11 +136,11 @@ export default function CustomizationForm({ onFormSubmitSuccess }: Customization
               name="learningStylePreferences"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Preferred Learning Style</FormLabel>
+                  <FormLabel>Gaya Belajar Pilihan</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Select your learning style" />
+                        <SelectValue placeholder="Pilih gaya belajar Anda" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -151,7 +151,7 @@ export default function CustomizationForm({ onFormSubmitSuccess }: Customization
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>How do you learn best?</FormDescription>
+                  <FormDescription>Bagaimana cara belajar terbaik Anda?</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -162,15 +162,15 @@ export default function CustomizationForm({ onFormSubmitSuccess }: Customization
               name="userInteractions"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Typical Platform Interactions</FormLabel>
+                  <FormLabel>Interaksi Platform Umum</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="e.g., I prefer watching videos then trying examples. I often re-read articles."
+                      placeholder="cth., Saya lebih suka menonton video lalu mencoba contoh. Saya sering membaca ulang artikel."
                       className="resize-y min-h-[100px]"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>Describe how you usually interact with learning materials.</FormDescription>
+                  <FormDescription>Deskripsikan bagaimana Anda biasanya berinteraksi dengan materi pembelajaran.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -181,15 +181,15 @@ export default function CustomizationForm({ onFormSubmitSuccess }: Customization
               name="quizPerformance"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Typical Quiz Performance & Challenges</FormLabel>
+                  <FormLabel>Performa & Tantangan Kuis Umum</FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="e.g., I do well on multiple choice but struggle with open-ended questions. I sometimes miss details."
+                      placeholder="cth., Saya berhasil baik pada pilihan ganda tetapi kesulitan dengan pertanyaan terbuka. Saya terkadang melewatkan detail."
                       className="resize-y min-h-[100px]"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription>How do you usually perform on quizzes? What are your common difficulties?</FormDescription>
+                  <FormDescription>Bagaimana biasanya performa Anda dalam kuis? Apa kesulitan umum Anda?</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

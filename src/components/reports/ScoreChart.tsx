@@ -16,14 +16,14 @@ interface ScoreChartProps {
 
 const chartConfig = {
   score: {
-    label: "Score",
+    label: "Skor",
     color: "hsl(var(--primary))",
   },
 } satisfies import("@/components/ui/chart").ChartConfig
 
 export default function ScoreChart({ quizScores }: ScoreChartProps) {
   const chartData = quizScores.map(qs => ({
-    name: `Quiz ${qs.quizId.slice(-2)}`, // Shorten quizId for display
+    name: `Kuis ${qs.quizId.slice(-2)}`, // Shorten quizId for display
     score: (qs.score / qs.totalQuestions) * 100,
   }));
 
@@ -31,11 +31,11 @@ export default function ScoreChart({ quizScores }: ScoreChartProps) {
     return (
       <Card className="shadow-md">
         <CardHeader>
-          <CardTitle>Quiz Performance</CardTitle>
-          <CardDescription>No quiz data available to display.</CardDescription>
+          <CardTitle>Performa Kuis</CardTitle>
+          <CardDescription>Tidak ada data kuis yang tersedia untuk ditampilkan.</CardDescription>
         </CardHeader>
         <CardContent className="flex items-center justify-center h-64">
-          <p className="text-muted-foreground">Take some quizzes to see your performance here!</p>
+          <p className="text-muted-foreground">Ambil beberapa kuis untuk melihat performa Anda di sini!</p>
         </CardContent>
       </Card>
     );
@@ -44,8 +44,8 @@ export default function ScoreChart({ quizScores }: ScoreChartProps) {
   return (
     <Card className="shadow-md">
       <CardHeader>
-        <CardTitle>Quiz Performance (%)</CardTitle>
-        <CardDescription>Your scores on recent quizzes.</CardDescription>
+        <CardTitle>Performa Kuis (%)</CardTitle>
+        <CardDescription>Skor Anda pada kuis terbaru.</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">

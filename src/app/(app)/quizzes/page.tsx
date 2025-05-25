@@ -9,9 +9,9 @@ export default function QuizzesListPage() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-4xl font-bold text-foreground">Test Your Knowledge</h1>
+        <h1 className="text-4xl font-bold text-foreground">Uji Pengetahuan Anda</h1>
         <p className="mt-2 text-lg text-muted-foreground">
-          Challenge yourself with our quizzes and solidify your understanding.
+          Tantang diri Anda dengan kuis kami dan perkuat pemahaman Anda.
         </p>
       </div>
 
@@ -28,19 +28,19 @@ export default function QuizzesListPage() {
                   <CardTitle className="text-xl">{quiz.title}</CardTitle>
                   {relatedLesson && (
                      <CardDescription className="flex items-center gap-1 text-sm">
-                        <BookText className="w-4 h-4"/> Related to: {relatedLesson.title}
+                        <BookText className="w-4 h-4"/> Terkait dengan: {relatedLesson.title}
                     </CardDescription>
                   )}
                 </CardHeader>
                 <CardContent className="flex-grow">
                   <p className="text-sm text-muted-foreground">
-                    Contains {quiz.questions.length} questions to test your understanding. Ready to start?
+                    Berisi {quiz.questions.length} pertanyaan untuk menguji pemahaman Anda. Siap untuk memulai?
                   </p>
                 </CardContent>
                 <CardFooter>
                   <Button asChild className="w-full">
                     <Link href={`/quizzes/${quiz.id}`}>
-                      Take Quiz <ArrowRight className="w-4 h-4 ml-2" />
+                      Ambil Kuis <ArrowRight className="w-4 h-4 ml-2" />
                     </Link>
                   </Button>
                 </CardFooter>
@@ -49,7 +49,7 @@ export default function QuizzesListPage() {
           })}
         </div>
       ) : (
-        <p className="text-center text-muted-foreground">No quizzes available at the moment. Check back soon!</p>
+        <p className="text-center text-muted-foreground">Tidak ada kuis yang tersedia saat ini. Periksa kembali nanti!</p>
       )}
     </div>
   );

@@ -33,7 +33,7 @@ export default function LessonContentDisplay({ lesson, prevLessonId, nextLessonI
           <div className="my-6 aspect-video">
             <Image
               src={lesson.videoUrl}
-              alt={`Video for ${lesson.title}`}
+              alt={`Video untuk ${lesson.title}`}
               width={600}
               height={338}
               className="w-full rounded-lg shadow-md"
@@ -50,14 +50,14 @@ export default function LessonContentDisplay({ lesson, prevLessonId, nextLessonI
          {prevLessonId && (
             <Button variant="outline" asChild>
               <Link href={`/lessons/${prevLessonId}`}>
-                <ChevronLeft className="w-4 h-4 mr-2" /> Previous Lesson
+                <ChevronLeft className="w-4 h-4 mr-2" /> Pelajaran Sebelumnya
               </Link>
             </Button>
           )}
           {nextLessonId && (
             <Button variant="outline" asChild>
               <Link href={`/lessons/${nextLessonId}`}>
-                Next Lesson <ChevronRight className="w-4 h-4 ml-2" />
+                Pelajaran Berikutnya <ChevronRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
           )}
@@ -65,7 +65,7 @@ export default function LessonContentDisplay({ lesson, prevLessonId, nextLessonI
         {lesson.quizId && (
           <Button asChild className="bg-accent hover:bg-accent/90 text-accent-foreground">
             <Link href={`/quizzes/${lesson.quizId}`}>
-              <FileQuestion className="w-4 h-4 mr-2" /> Take Quiz
+              <FileQuestion className="w-4 h-4 mr-2" /> Ambil Kuis
             </Link>
           </Button>
         )}

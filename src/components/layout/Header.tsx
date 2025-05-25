@@ -30,16 +30,16 @@ export default function Header() {
           {user && (
             <>
               <Link href="/dashboard" className="transition-colors text-foreground/60 hover:text-foreground/80">
-                Dashboard
+                Dasbor
               </Link>
               <Link href="/learning-path" className="transition-colors text-foreground/60 hover:text-foreground/80">
-                Customize Path
+                Sesuaikan Jalur
               </Link>
               <Link href="/lessons" className="transition-colors text-foreground/60 hover:text-foreground/80">
-                Lessons
+                Pelajaran
               </Link>
                <Link href="/reports" className="transition-colors text-foreground/60 hover:text-foreground/80">
-                Reports
+                Laporan
               </Link>
             </>
           )}
@@ -59,7 +59,7 @@ export default function Header() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name || "User"}</p>
+                    <p className="text-sm font-medium leading-none">{user.name || "Pengguna"}</p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user.email}
                     </p>
@@ -68,7 +68,7 @@ export default function Header() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={logout}>
                   <LogOut className="w-4 h-4 mr-2" />
-                  Log out
+                  Keluar
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -77,13 +77,13 @@ export default function Header() {
               <Button variant="ghost" asChild>
                 <Link href="/login">
                   <LogIn className="w-4 h-4 mr-2" />
-                  Login
+                  Masuk
                 </Link>
               </Button>
               <Button asChild>
                 <Link href="/register">
                   <UserPlus className="w-4 h-4 mr-2" />
-                  Register
+                  Daftar
                 </Link>
               </Button>
             </>

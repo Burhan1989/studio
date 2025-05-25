@@ -23,8 +23,8 @@ import { useToast } from "@/hooks/use-toast";
 
 
 const formSchema = z.object({
-  email: z.string().email({ message: "Invalid email address." }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters." }),
+  email: z.string().email({ message: "Alamat email tidak valid." }),
+  password: z.string().min(6, { message: "Kata sandi minimal harus 6 karakter." }),
 });
 
 export default function LoginForm() {
@@ -48,19 +48,19 @@ export default function LoginForm() {
     
     // In a real app, you'd validate credentials against a backend
     if (values.email === "user@example.com" && values.password === "password") {
-      login({ id: "1", email: values.email, name: "Test User" });
+      login({ id: "1", email: values.email, name: "Pengguna Tes" }); // Translated name
       toast({
-        title: "Login Successful",
-        description: "Welcome back to AdeptLearn!",
+        title: "Login Berhasil",
+        description: "Selamat datang kembali di AdeptLearn!",
       });
     } else {
       toast({
-        title: "Login Failed",
-        description: "Invalid email or password.",
+        title: "Login Gagal",
+        description: "Email atau kata sandi tidak valid.",
         variant: "destructive",
       });
       form.setError("email", { type: "manual", message: " " }); // Add error to trigger form state change for general error
-      form.setError("password", { type: "manual", message: "Invalid email or password." });
+      form.setError("password", { type: "manual", message: "Email atau kata sandi tidak valid." });
     }
     setIsLoading(false);
   }
@@ -68,8 +68,8 @@ export default function LoginForm() {
   return (
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader className="text-center">
-        <CardTitle className="text-3xl font-bold">Welcome Back!</CardTitle>
-        <CardDescription>Log in to continue your learning journey on AdeptLearn.</CardDescription>
+        <CardTitle className="text-3xl font-bold">Selamat Datang Kembali!</CardTitle>
+        <CardDescription>Masuk untuk melanjutkan perjalanan belajar Anda di AdeptLearn.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -81,7 +81,7 @@ export default function LoginForm() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="you@example.com" {...field} />
+                    <Input placeholder="anda@contoh.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -92,7 +92,7 @@ export default function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Password</FormLabel>
+                  <FormLabel>Kata Sandi</FormLabel>
                   <FormControl>
                     <Input type="password" placeholder="••••••••" {...field} />
                   </FormControl>
@@ -106,14 +106,14 @@ export default function LoginForm() {
               ) : (
                 <LogIn className="w-4 h-4 mr-2" />
               )}
-              Log In
+              Masuk
             </Button>
           </form>
         </Form>
         <p className="mt-6 text-sm text-center text-muted-foreground">
-          Don&apos;t have an account?{" "}
+          Belum punya akun?{" "}
           <Link href="/register" className="font-medium text-primary hover:underline">
-            Register here
+            Daftar di sini
           </Link>
         </p>
       </CardContent>
