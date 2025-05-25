@@ -28,6 +28,7 @@ import { getMajorById, updateMajor } from "@/lib/mockData";
 const editMajorSchema = z.object({
   Nama_Jurusan: z.string().min(3, "Nama jurusan minimal 3 karakter."),
   Deskripsi_Jurusan: z.string().optional(),
+  Nama_Kepala_Program: z.string().optional(),
 });
 
 type EditMajorFormData = z.infer<typeof editMajorSchema>;
@@ -46,6 +47,7 @@ export default function AdminEditMajorPage() {
     defaultValues: {
       Nama_Jurusan: "",
       Deskripsi_Jurusan: "",
+      Nama_Kepala_Program: "",
     },
   });
 
@@ -57,6 +59,7 @@ export default function AdminEditMajorPage() {
         form.reset({
           Nama_Jurusan: majorData.Nama_Jurusan,
           Deskripsi_Jurusan: majorData.Deskripsi_Jurusan || "",
+          Nama_Kepala_Program: majorData.Nama_Kepala_Program || "",
         });
       } else {
         toast({
@@ -77,6 +80,7 @@ export default function AdminEditMajorPage() {
       ...initialData,
       Nama_Jurusan: values.Nama_Jurusan,
       Deskripsi_Jurusan: values.Deskripsi_Jurusan,
+      Nama_Kepala_Program: values.Nama_Kepala_Program,
     };
 
     console.log("Data jurusan yang akan diperbarui (simulasi):", updatedMajorData);
@@ -133,7 +137,7 @@ export default function AdminEditMajorPage() {
               <CardTitle className="text-xl">Informasi Data Jurusan</CardTitle>
               <CardDescription>Perbarui detail jurusan di bawah ini.</CardDescription>
             </CardHeader>
-            <CardContent className="grid gap-6">
+            <CardContent className="grid gap-6 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="Nama_Jurusan"
@@ -147,11 +151,24 @@ export default function AdminEditMajorPage() {
                   </FormItem>
                 )}
               />
+               <FormField
+                control={form.control}
+                name="Nama_Kepala_Program"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nama Kepala Program (Opsional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="cth. Dr. Annisa Fitri, M.Si." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="Deskripsi_Jurusan"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="md:col-span-2">
                     <FormLabel>Deskripsi Jurusan (Opsional)</FormLabel>
                     <FormControl>
                       <Textarea placeholder="Deskripsi singkat mengenai jurusan..." {...field} className="min-h-[100px]" />

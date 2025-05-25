@@ -380,19 +380,19 @@ export const lessonStatusData: LessonStatusCounts[] = [
   { name: 'Belum Dimulai', value: notStartedCount, fill: 'hsl(var(--chart-3))' },
 ];
 
-export const lessonStatusChartConfig = {
+export const lessonStatusChartConfig: ChartConfig = {
   Selesai: { label: 'Selesai', color: 'hsl(var(--chart-1))' },
   Dikerjakan: { label: 'Dikerjakan', color: 'hsl(var(--chart-2))' },
   'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
-} satisfies ChartConfig;
+};
 
 
 export let mockMajors: MajorData[] = [
-  { ID_Jurusan: "major001", Nama_Jurusan: "Ilmu Pengetahuan Alam (IPA)", Deskripsi_Jurusan: "Fokus pada studi sains seperti Fisika, Kimia, Biologi." },
-  { ID_Jurusan: "major002", Nama_Jurusan: "Ilmu Pengetahuan Sosial (IPS)", Deskripsi_Jurusan: "Fokus pada studi sosial seperti Sejarah, Ekonomi, Geografi." },
-  { ID_Jurusan: "major003", Nama_Jurusan: "Bahasa dan Budaya", Deskripsi_Jurusan: "Fokus pada studi bahasa, sastra, dan budaya." },
-  { ID_Jurusan: "major004", Nama_Jurusan: "Teknik Komputer dan Jaringan (TKJ)", Deskripsi_Jurusan: "Untuk SMK, fokus pada teknologi informasi dan jaringan." },
-  { ID_Jurusan: "major005", Nama_Jurusan: "Akuntansi dan Keuangan Lembaga (AKL)", Deskripsi_Jurusan: "Untuk SMK, fokus pada akuntansi dan keuangan." },
+  { ID_Jurusan: "major001", Nama_Jurusan: "Ilmu Pengetahuan Alam (IPA)", Deskripsi_Jurusan: "Fokus pada studi sains seperti Fisika, Kimia, Biologi.", Nama_Kepala_Program: "Dr. Annisa Fitri, M.Si." },
+  { ID_Jurusan: "major002", Nama_Jurusan: "Ilmu Pengetahuan Sosial (IPS)", Deskripsi_Jurusan: "Fokus pada studi sosial seperti Sejarah, Ekonomi, Geografi.", Nama_Kepala_Program: "Prof. Bambang W., S.Sos." },
+  { ID_Jurusan: "major003", Nama_Jurusan: "Bahasa dan Budaya", Deskripsi_Jurusan: "Fokus pada studi bahasa, sastra, dan budaya.", Nama_Kepala_Program: "Dra. Endang S., M.Hum." },
+  { ID_Jurusan: "major004", Nama_Jurusan: "Teknik Komputer dan Jaringan (TKJ)", Deskripsi_Jurusan: "Untuk SMK, fokus pada teknologi informasi dan jaringan.", Nama_Kepala_Program: "Rahmat Hidayat, S.Kom." },
+  { ID_Jurusan: "major005", Nama_Jurusan: "Akuntansi dan Keuangan Lembaga (AKL)", Deskripsi_Jurusan: "Untuk SMK, fokus pada akuntansi dan keuangan.", Nama_Kepala_Program: "Sri Mulyani, S.E., Ak." },
 ];
 
 

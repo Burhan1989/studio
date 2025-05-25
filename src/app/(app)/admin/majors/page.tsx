@@ -81,6 +81,7 @@ export default function AdminMajorsPage() {
               <TableRow>
                 <TableHead>ID Jurusan</TableHead>
                 <TableHead>Nama Jurusan</TableHead>
+                <TableHead>Kepala Program</TableHead>
                 <TableHead>Deskripsi</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
@@ -90,6 +91,7 @@ export default function AdminMajorsPage() {
                 <TableRow key={major.ID_Jurusan}>
                   <TableCell>{major.ID_Jurusan}</TableCell>
                   <TableCell className="font-medium">{major.Nama_Jurusan}</TableCell>
+                  <TableCell>{major.Nama_Kepala_Program || '-'}</TableCell>
                   <TableCell>{major.Deskripsi_Jurusan || '-'}</TableCell>
                   <TableCell className="text-right space-x-2">
                     <Button variant="outline" size="sm" asChild>
@@ -105,7 +107,7 @@ export default function AdminMajorsPage() {
               ))}
               {majors.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  <TableCell colSpan={5} className="text-center text-muted-foreground">
                     Belum ada data jurusan.
                   </TableCell>
                 </TableRow>

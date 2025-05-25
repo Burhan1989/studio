@@ -118,7 +118,7 @@ export interface ClassData {
   ID_Guru: string; // ID Guru Wali Kelas
   Deskripsi_Kelas?: string;
   Waktu_Kelas?: string;
-  jurusan: string; // Diubah menjadi wajib
+  jurusan: string; 
   jumlahSiswa?: number; // Contoh field tambahan
 }
 
@@ -154,4 +154,5 @@ export interface MajorData {
   ID_Jurusan: string;
   Nama_Jurusan: string;
   Deskripsi_Jurusan?: string;
+  Nama_Kepala_Program?: string; // Field baru untuk Kepala Program
 }
