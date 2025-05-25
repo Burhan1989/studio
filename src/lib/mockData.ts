@@ -59,7 +59,7 @@ Hook tidak bekerja di dalam kelas — mereka memungkinkan Anda menggunakan React
     videoUrl: 'https://placehold.co/600x338.png',
     quizId: 'quiz2',
     estimatedTime: "1 jam",
-    difficulty: "Menengah",
+    difficulty: "Menengah", // Corrected typo
   },
 ];
 

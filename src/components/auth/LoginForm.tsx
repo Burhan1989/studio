@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogIn, Loader2 } from "lucide-react";
+import { LogIn, Loader2, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -26,6 +26,9 @@ const formSchema = z.object({
   email: z.string().email({ message: "Alamat email tidak valid." }),
   password: z.string().min(6, { message: "Kata sandi minimal harus 6 karakter." }),
 });
+
+const ADMIN_EMAIL = "admin@example.com";
+const ADMIN_PASSWORD = "adminpassword";
 
 export default function LoginForm() {
   const { login } = useAuth();
@@ -40,15 +43,19 @@ export default function LoginForm() {
     },
   });
 
-  // Mock login function
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
-    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // In a real app, you'd validate credentials against a backend
-    if (values.email === "user@example.com" && values.password === "password") {
-      login({ id: "1", email: values.email, name: "Pengguna Tes" }); // Translated name
+    if (values.email === ADMIN_EMAIL && values.password === ADMIN_PASSWORD) {
+      login({ id: "admin001", email: values.email, name: "Admin AdeptLearn", isAdmin: true });
+      toast({
+        title: "Login Admin Berhasil",
+        description: "Selamat datang, Admin!",
+        action: <ShieldCheck className="w-5 h-5 text-green-500" />
+      });
+    } else if (values.email === "user@example.com" && values.password === "password") {
+      login({ id: "1", email: values.email, name: "Pengguna Tes" });
       toast({
         title: "Login Berhasil",
         description: "Selamat datang kembali di AdeptLearn!",
@@ -59,7 +66,7 @@ export default function LoginForm() {
         description: "Email atau kata sandi tidak valid.",
         variant: "destructive",
       });
-      form.setError("email", { type: "manual", message: " " }); // Add error to trigger form state change for general error
+      form.setError("email", { type: "manual", message: " " }); 
       form.setError("password", { type: "manual", message: "Email atau kata sandi tidak valid." });
     }
     setIsLoading(false);

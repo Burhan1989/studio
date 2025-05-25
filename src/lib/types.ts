@@ -3,6 +3,7 @@ export interface User {
   id: string;
   email: string;
   name?: string;
+  isAdmin?: boolean; // Tambahkan properti isAdmin
 }
 
 export interface LearningResource {
@@ -25,7 +26,7 @@ export interface Lesson {
   videoUrl?: string; // Placeholder for video URLs
   quizId?: string;   // Optional: ID of a quiz associated with this lesson
   estimatedTime: string; // e.g., "45 minutes"
-  difficulty: 'Beginner' | 'Intermediate' | 'Advanced';
+  difficulty: 'Pemula' | 'Menengah' | 'Mahir'; // Updated to Indonesian
 }
 
 export interface Question {

@@ -20,15 +20,16 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield } from 'lucide-react';
-import { useRouter } from 'next/navigation'; // Added for programmatic navigation
+import { useRouter } from 'next/navigation'; 
 
 interface NavItem {
   href: string;
   label: string;
   icon: React.ElementType;
+  adminOnly?: boolean; // Tambahkan properti adminOnly
 }
 
-const navItems: NavItem[] = [
+const baseNavItems: NavItem[] = [
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard },
   { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit },
   { href: '/lessons', label: 'Pelajaran', icon: BookOpen },
@@ -36,18 +37,20 @@ const navItems: NavItem[] = [
   { href: '/reports', label: 'Laporan', icon: BarChart3 },
   { href: '/profile', label: 'Profil', icon: UserCircle },
   { href: '/settings', label: 'Pengaturan', icon: Settings },
-  { href: '/admin', label: 'Admin', icon: Shield }, // Added Admin link
+  { href: '/admin', label: 'Admin', icon: Shield, adminOnly: true }, // Tandai sebagai adminOnly
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
-  const router = useRouter(); // Initialize router
+  const router = useRouter(); 
 
   if (!user) {
-    // This should ideally be handled by AuthContext redirects, but as a fallback:
     return <div className="flex items-center justify-center h-screen">Mengarahkan ke halaman masuk...</div>;
   }
+
+  // Saring item navigasi berdasarkan status admin pengguna
+  const navItems = baseNavItems.filter(item => !item.adminOnly || (item.adminOnly && user?.isAdmin));
 
   return (
     <SidebarProvider defaultOpen>
