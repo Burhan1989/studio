@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Users, BookCopy, FileQuestion, LineChart, Shield, MessageSquare, School, UserCog, Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, Edit, PlusCircle } from 'lucide-react';
+import { Shield, MessageSquare, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, Edit, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -17,6 +17,8 @@ import { mockSchedules, mockClasses, mockTeachers } from "@/lib/mockData"; // Im
 import type { ScheduleItem } from "@/lib/types";
 import { format, parseISO } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
+
+export const dynamic = 'force-dynamic'; // Ensure admin dashboard always gets fresh schedule data
 
 export default function AdminPage() {
   const { user, isLoading: authIsLoading } = useAuth();
