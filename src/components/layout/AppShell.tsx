@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud, Network, ShieldCheck } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud, Network, ShieldCheck, CalendarDays } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { UserRole } from '@/lib/types';
 import { mockSchoolProfile } from '@/lib/mockData';
@@ -42,16 +42,18 @@ interface NavItem {
   parentOnly?: boolean;
   teacherOnly?: boolean;
   studentOnly?: boolean;
+  general?: boolean; // New flag for items visible to most authenticated roles
 }
 
 const baseNavItems: NavItem[] = [
-  // General items (should be visible to student, teacher, admin unless specified otherwise)
-  { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard },
-  { href: '/lessons', label: 'Pelajaran', icon: BookOpen },
-  { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck },
-  { href: '/reports', label: 'Laporan', icon: BarChart3 },
-  { href: '/profile', label: 'Profil', icon: UserCircle },
-  { href: '/settings', label: 'Pengaturan', icon: Settings },
+  // General items for authenticated users
+  { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard, general: true },
+  { href: '/lessons', label: 'Pelajaran', icon: BookOpen, general: true },
+  { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck, general: true },
+  { href: '/schedule', label: 'Jadwal Pembelajaran', icon: CalendarDays, general: true }, // New Schedule Item
+  { href: '/reports', label: 'Laporan', icon: BarChart3, general: true },
+  { href: '/profile', label: 'Profil', icon: UserCircle, general: true },
+  { href: '/settings', label: 'Pengaturan', icon: Settings, general: true },
 
   // Student Specific
   { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit, studentOnly: true },
@@ -59,13 +61,12 @@ const baseNavItems: NavItem[] = [
   // Teacher Specific
   { href: '/teacher/materials', label: 'Materi Saya', icon: UploadCloud, teacherOnly: true },
   { href: '/teacher/quizzes', label: 'Kuis Saya', icon: FileQuestion, teacherOnly: true },
-  
+
   // Parent Specific
   { href: '/parent/dashboard', label: 'Dasbor Anak', icon: ParentIcon, parentOnly: true },
 
-  // Admin Menu (general admin dashboard)
+  // Admin Menu
   { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
-  // Admin specific sub-menus
   { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building, adminOnly: true },
   { href: '/admin/admins', label: 'Kelola Admin', icon: ShieldCheck, adminOnly: true },
   { href: '/admin/teachers', label: 'Kelola Guru', icon: UserCog, adminOnly: true },
@@ -74,7 +75,7 @@ const baseNavItems: NavItem[] = [
   { href: '/admin/classes', label: 'Manajemen Kelas', icon: School, adminOnly: true },
   { href: '/admin/majors', label: 'Manajemen Jurusan', icon: Network, adminOnly: true },
   { href: '/admin/courses', label: 'Kelola Pelajaran', icon: BookCopy, adminOnly: true },
-  { href: '/admin/quizzes', label: 'Kelola Kuis', icon: FileQuestion, adminOnly: true }, // Admin's quiz management
+  { href: '/admin/quizzes', label: 'Kelola Kuis Admin', icon: FileQuestion, adminOnly: true }, // Admin's quiz management
   { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart, adminOnly: true },
 ];
 
@@ -89,112 +90,104 @@ export default function AppShell({ children }: { children: ReactNode }) {
     const userRole = user.role;
 
     let items = baseNavItems.filter(item => {
-      const isGeneralItem = !item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly;
-
       if (user.isAdmin) {
-        if (item.parentOnly || item.studentOnly || item.teacherOnly) return false;
-        return item.adminOnly || isGeneralItem;
+        // Admin sees adminOnly items and general items
+        return item.adminOnly || item.general;
       }
-      
       if (userRole === 'teacher') {
-        // Hide items specifically for admin, parent, or student
-        if (item.adminOnly || item.parentOnly || item.studentOnly) {
-          return false;
-        }
-        // Show items that are teacher-specific OR general
-        return item.teacherOnly || isGeneralItem;
+        // Teacher sees teacherOnly items and general items
+        // Exclude adminOnly, parentOnly, studentOnly items
+        return (item.teacherOnly || item.general) && !item.adminOnly && !item.parentOnly && !item.studentOnly;
       }
-      
       if (userRole === 'student') {
-        // Hide items specifically for admin, parent, or teacher
-        if (item.adminOnly || item.parentOnly || item.teacherOnly) {
-          return false;
-        }
-        // Show items that are student-specific OR general
-        return item.studentOnly || isGeneralItem;
+        // Student sees studentOnly items and general items
+        // Exclude adminOnly, parentOnly, teacherOnly items
+        return (item.studentOnly || item.general) && !item.adminOnly && !item.parentOnly && !item.teacherOnly;
       }
-      
       if (userRole === 'parent') {
-        if (item.adminOnly || item.teacherOnly || item.studentOnly) return false;
+        // Parent sees parentOnly items and specific general items (profile, settings, dashboard for them)
+        // Exclude adminOnly, teacherOnly, studentOnly items
         if (item.parentOnly) return true;
-        // Only specific general items for parents
-        return isGeneralItem && (item.href === '/profile' || item.href === '/settings' || item.href === '/dashboard');
+        return item.general && (item.href === '/profile' || item.href === '/settings'); // Parents don't see general dashboard for now
       }
-      // Fallback for any other role (should not happen with defined roles) or if userRole is undefined
-      // This would show only general items.
-      return isGeneralItem; 
+      // Fallback for any other role or if role is undefined
+      return item.general && !item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly;
     });
 
     // Sorting logic
      items.sort((a, b) => {
-        const roleDashboardOrder = (href?: string) => {
-            if (href === '/admin' && user.isAdmin) return -100;
-            if (href === '/teacher/materials' && userRole === 'teacher') return -95; // Specific teacher item
-            if (href === '/teacher/quizzes' && userRole === 'teacher') return -94; // Specific teacher item
-            if (href === '/parent/dashboard' && userRole === 'parent') return -100;
-            if (href === '/learning-path' && userRole === 'student') return -95; // Specific student item
-            if (href === '/dashboard' && (userRole === 'student' || userRole === 'teacher' || userRole === 'parent' || user.isAdmin)) return -90;
-            return 0;
+        const roleSpecificOrder = (item: NavItem) => {
+            if (user.isAdmin) {
+                if (item.href === '/admin') return -200; // Admin dashboard first
+                if (item.adminOnly) return -100 + item.label.localeCompare(b.label); // Then other admin items
+            }
+            if (userRole === 'teacher') {
+                if (item.href === '/dashboard') return -200; // Teacher dashboard first
+                if (item.teacherOnly) return -100; // Then specific teacher items
+            }
+            if (userRole === 'student') {
+                if (item.href === '/dashboard') return -200; // Student dashboard first
+                if (item.studentOnly) return -100; // Then specific student items
+            }
+            if (userRole === 'parent') {
+                if (item.href === '/parent/dashboard') return -200; // Parent dashboard first
+            }
+            return 0; // General items or non-primary role items
         };
 
-        const orderA = roleDashboardOrder(a.href);
-        const orderB = roleDashboardOrder(b.href);
-        if (orderA !== orderB) return orderA - orderB;
-        
-        if (user.isAdmin) {
-            if (a.adminOnly && !b.adminOnly) return -1;
-            if (!a.adminOnly && b.adminOnly) return 1;
-             // Urutkan submenu admin berdasarkan label
-            if (a.adminOnly && b.adminOnly && a.href !== '/admin' && b.href !== '/admin') {
-              return a.label.localeCompare(b.label);
-            }
-        }
+        const orderA = roleSpecificOrder(a);
+        const orderB = roleSpecificOrder(b);
 
-        const generalOrder = ['/lessons', '/quizzes', '/reports'];
+        if (orderA !== orderB) return orderA - orderB;
+
+        // General item sorting order
+        const generalOrder = ['/dashboard', '/schedule', '/lessons', '/quizzes', '/reports', '/learning-path', '/teacher/materials', '/teacher/quizzes'];
         const indexA = generalOrder.indexOf(a.href);
         const indexB = generalOrder.indexOf(b.href);
 
         if (indexA !== -1 && indexB !== -1) {
             if (indexA !== indexB) return indexA - indexB;
         } else if (indexA !== -1) {
-            return -1; // General items come before profile/settings
+            return -1;
         } else if (indexB !== -1) {
             return 1;
         }
-        
-        const isGeneralSetting = (href?: string) => href === '/profile' || href === '/settings';
-        if (isGeneralSetting(a.href) && !isGeneralSetting(b.href)) return 1;
-        if (!isGeneralSetting(a.href) && isGeneralSetting(b.href)) return -1;
-        if (isGeneralSetting(a.href) && isGeneralSetting(b.href)) {
-             return a.label.localeCompare(b.label); // Urutkan profile lalu settings
-        }
-        
-        return a.label.localeCompare(b.label);
+
+        // Settings and Profile last for general users
+        const settingsProfileOrder = (item: NavItem) => {
+            if (item.href === '/profile') return 100;
+            if (item.href === '/settings') return 200;
+            return 0;
+        };
+        const settingsOrderA = settingsProfileOrder(a);
+        const settingsOrderB = settingsProfileOrder(b);
+        if (settingsOrderA !== settingsOrderB) return settingsOrderA - settingsOrderB;
+
+        return a.label.localeCompare(b.label); // Fallback to alphabetical
     });
     return items;
   }, [user]);
 
   if (!user) {
     console.log("AppShell: No user, rendering null (AuthProvider should have redirected).");
-    return null; 
+    return null;
   }
 
   return (
     <SidebarProvider defaultOpen>
       <Sidebar className="bg-card border-r" collapsible="icon">
         <SidebarHeader className="p-2 border-b flex flex-col items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
-           {/* Section for logo and school name */}
           <Link
-            href={user?.role === 'parent' ? "/parent/dashboard" : (user?.isAdmin ? "/admin" : "/dashboard")}
+            href={user?.isAdmin ? "/admin" : (user?.role === 'parent' ? "/parent/dashboard" : "/dashboard")}
             className="flex flex-col items-center gap-1 text-center mb-2 group-data-[collapsible=icon]:hidden"
           >
             {schoolLogoUrl ? (
               <Image
                 src={schoolLogoUrl}
                 alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
-                width={100} 
-                height={25}  
-                className="h-8 w-auto object-contain mb-1"
+                width={80}
+                height={20}
+                className="h-7 w-auto object-contain mb-1"
                 data-ai-hint="school logo"
               />
             ) : (
@@ -204,17 +197,16 @@ export default function AppShell({ children }: { children: ReactNode }) {
               {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
             </span>
           </Link>
-          {/* Logo only when collapsed */}
           <Link
-            href={user?.role === 'parent' ? "/parent/dashboard" : (user?.isAdmin ? "/admin" : "/dashboard")}
+            href={user?.isAdmin ? "/admin" : (user?.role === 'parent' ? "/parent/dashboard" : "/dashboard")}
             className="hidden group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:h-10 group-data-[collapsible=icon]:w-10"
           >
              {schoolLogoUrl ? (
               <Image
                 src={schoolLogoUrl}
                 alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
-                width={32} 
-                height={32}  
+                width={32}
+                height={32}
                 className="h-7 w-7 object-contain"
                 data-ai-hint="school logo"
               />
@@ -223,30 +215,20 @@ export default function AppShell({ children }: { children: ReactNode }) {
             )}
           </Link>
         </SidebarHeader>
-
         <SidebarSeparator className="group-data-[collapsible=icon]:hidden" />
-
         <SidebarContent className="p-2">
           <SidebarMenu>
             {filteredNavItems.map((item) => (
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} legacyBehavior passHref>
                   <SidebarMenuButton
-                    isActive={pathname === item.href ||
-                                (item.href !== '/dashboard' && // Avoid overly broad matching for root dashboard
-                                 item.href !== '/parent/dashboard' &&
-                                 item.href !== '/admin' &&
-                                 pathname.startsWith(item.href) && 
-                                 item.href.length > 1 && // ensure it's not just '/'
-                                 !item.href.startsWith('/admin/') && // handle admin sub-routes separately
-                                 !item.href.startsWith('/teacher/')  // handle teacher sub-routes separately
-                                 ) ||
-                                 (item.href.startsWith('/admin/') && pathname.startsWith(item.href)) || // for admin sub-pages
-                                 (item.href.startsWith('/teacher/') && pathname.startsWith(item.href)) || // for teacher sub-pages
-                                 (item.href === '/admin' && pathname === '/admin') || // Exact match for /admin
-                                 (item.href === '/parent/dashboard' && pathname === '/parent/dashboard') || // Exact match for parent dashboard
-                                 (item.href === '/dashboard' && pathname === '/dashboard' && !user.isAdmin && user.role !=='parent') // Exact for general dashboard
-                              }
+                    isActive={
+                      pathname === item.href ||
+                      (item.href !== '/' && pathname.startsWith(item.href) && item.href.length > 1 && !item.general) || // More specific match for non-general items
+                      (item.href === '/admin' && pathname.startsWith('/admin')) ||
+                      (item.href === '/teacher/quizzes' && pathname.startsWith('/teacher/quizzes')) ||
+                      (item.href === '/teacher/materials' && pathname.startsWith('/teacher/materials'))
+                    }
                     tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
                     className="justify-start"
                   >
@@ -261,8 +243,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </Sidebar>
       <SidebarInset className="bg-background">
          <header className="sticky top-0 z-40 flex items-center justify-between h-16 gap-4 px-4 border-b bg-background/80 backdrop-blur md:px-6">
-            <div className="flex items-center"> 
-                <SidebarTrigger className="md:hidden" /> 
+            <div className="flex items-center">
+                <SidebarTrigger className="md:hidden" />
             </div>
             {user && (
                 <DropdownMenu>

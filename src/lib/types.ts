@@ -37,19 +37,19 @@ export interface Question {
   id:string;
   text: string;
   type: 'multiple-choice' | 'true-false' | 'essay';
-  options?: string[]; 
-  correctAnswer?: string | boolean; 
-  points: number; // Skor/poin untuk pertanyaan ini
+  options?: string[];
+  correctAnswer?: string | boolean;
+  points: number;
 }
 
 export interface Quiz {
   id: string;
   title: string;
   lessonId?: string;
-  teacherId?: string; 
+  teacherId?: string;
   questions: Question[];
-  description?: string; 
-  assignedClassId?: string; // ID kelas yang ditugaskan kuis ini
+  description?: string;
+  assignedClassIds?: string[];
 }
 
 export interface UserProgress {
@@ -75,7 +75,7 @@ export interface StudentData {
   Alamat: string;
   Email: string;
   Nomor_Telepon: string;
-  Program_Studi: string; 
+  Program_Studi: string;
   Kelas: string;
   Tanggal_Daftar: string;
   Status_Aktif: boolean;
@@ -102,7 +102,7 @@ export interface TeacherData {
   Password_Hash: string;
   Tanggal_Pendaftaran: string;
   Jabatan?: string;
-  isAdmin?: boolean; 
+  isAdmin?: boolean;
 }
 
 export interface ParentData {
@@ -124,7 +124,7 @@ export interface ClassData {
   ID_Guru: string;
   Deskripsi_Kelas?: string;
   Waktu_Kelas?: string;
-  jurusan: string; 
+  jurusan: string;
   jumlahSiswa?: number;
 }
 
@@ -161,4 +161,19 @@ export interface MajorData {
   Nama_Jurusan: string;
   Deskripsi_Jurusan?: string;
   Nama_Kepala_Program?: string;
+}
+
+export interface ScheduleItem {
+  id: string;
+  title: string; // Judul kegiatan, e.g., "Pelajaran Matematika Bab 1", "Kuis Fisika Semester 1"
+  date: string; // Format YYYY-MM-DD
+  time: string; // Format HH:MM - HH:MM atau deskripsi waktu
+  classId?: string; // ID kelas yang terkait
+  className?: string; // Nama kelas (untuk tampilan mudah)
+  lessonId?: string; // Opsional, jika terkait langsung dengan pelajaran
+  quizId?: string; // Opsional, jika terkait langsung dengan kuis
+  teacherId?: string; // ID guru yang bertanggung jawab (jika relevan)
+  teacherName?: string; // Nama guru (untuk tampilan mudah)
+  description?: string; // Catatan tambahan
+  category: 'Pelajaran' | 'Kuis' | 'Tugas' | 'Diskusi' | 'Lainnya'; // Kategori jadwal
 }

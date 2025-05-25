@@ -1,5 +1,5 @@
 
-import type { Lesson, Quiz, Question, StudentData, TeacherData, ParentData, UserProgress, LessonStatusCounts, SchoolProfileData, ClassData, MajorData } from './types';
+import type { Lesson, Quiz, Question, StudentData, TeacherData, ParentData, UserProgress, LessonStatusCounts, SchoolProfileData, ClassData, MajorData, ScheduleItem } from './types';
 import type { ChartConfig } from "@/components/ui/chart";
 
 export const mockLessons: Lesson[] = [
@@ -121,7 +121,7 @@ export let mockQuizzes: Quiz[] = [
     id: 'quiz1',
     title: 'Kuis Dasar JavaScript',
     lessonId: '1',
-    teacherId: 'teacher001', 
+    teacherId: 'teacher001',
     questions: mockQuestionsQuiz1,
     description: "Kuis dasar untuk menguji pemahaman JavaScript awal.",
     assignedClassIds: ['kelasA'],
@@ -130,7 +130,7 @@ export let mockQuizzes: Quiz[] = [
     id: 'quiz2',
     title: 'Dasar-Dasar React Hooks',
     lessonId: '3',
-    teacherId: 'teacher001', 
+    teacherId: 'teacher001',
     questions: mockQuestionsQuiz2,
     description: "Kuis untuk menguji pemahaman tentang React Hooks.",
     assignedClassIds: ['kelasB', 'kelasC'],
@@ -218,7 +218,7 @@ export let mockStudents: StudentData[] = [
 
 export let mockTeachers: TeacherData[] = [
   {
-    ID_Guru: "admin001", 
+    ID_Guru: "admin001",
     Nama_Lengkap: "Admin AdeptLearn",
     Username: "adminutama",
     Email: "admin@example.com",
@@ -229,11 +229,11 @@ export let mockTeachers: TeacherData[] = [
     Alamat: "Jl. Kantor Pusat No. 1",
     Nomor_Telepon: "081200000001",
     Status_Aktif: true,
-    Password_Hash: "adminpassword", 
+    Password_Hash: "adminpassword",
     Tanggal_Pendaftaran: "2020-01-01",
     Jabatan: "Administrator Utama",
     Profil_Foto: "https://placehold.co/100x100.png?text=AD",
-    isAdmin: true, 
+    isAdmin: true,
   },
   {
     ID_Guru: "teacher001",
@@ -426,6 +426,70 @@ export let mockMajors: MajorData[] = [
   { ID_Jurusan: "major005", Nama_Jurusan: "Akuntansi dan Keuangan Lembaga (AKL)", Deskripsi_Jurusan: "Untuk SMK, fokus pada akuntansi dan keuangan.", Nama_Kepala_Program: "Sri Mulyani, S.E., Ak." },
 ];
 
+export const mockSchedules: ScheduleItem[] = [
+  {
+    id: 'schedule1',
+    title: 'Pelajaran Matematika: Aljabar Dasar',
+    date: '2024-08-15',
+    time: '08:00 - 09:30',
+    classId: 'kelasA',
+    className: 'Kelas 10A IPA',
+    lessonId: '1', // Assuming lesson with id '1' is related
+    teacherId: 'teacher001',
+    teacherName: 'Guru Inovatif, M.Pd.',
+    description: 'Pembahasan Bab 1 dan latihan soal.',
+    category: 'Pelajaran',
+  },
+  {
+    id: 'schedule2',
+    title: 'Kuis Fisika: Mekanika Fluida',
+    date: '2024-08-16',
+    time: '10:00 - 10:45',
+    classId: 'kelasB',
+    className: 'Kelas 11B IPS', // Example, might not be relevant if IPS doesn't have Fisika
+    quizId: 'quiz2', // Assuming quiz with id 'quiz2' is related
+    teacherId: 'guru3',
+    teacherName: 'Prof. Dr. Agus Salim, M.Sc.',
+    description: 'Kuis mencakup materi mekanika fluida statis dan dinamis.',
+    category: 'Kuis',
+  },
+  {
+    id: 'schedule3',
+    title: 'Diskusi Kelompok: Analisis Puisi Chairil Anwar',
+    date: '2024-08-17',
+    time: '13:00 - 14:00',
+    classId: 'kelasC',
+    className: 'Kelas 12C Bahasa',
+    teacherId: 'guru2',
+    teacherName: 'Siti Nurhaliza, M.Pd.',
+    description: 'Setiap kelompok mempresentasikan hasil analisisnya.',
+    category: 'Diskusi',
+  },
+  {
+    id: 'schedule4',
+    title: 'Pengumpulan Tugas Sejarah Kontemporer',
+    date: '2024-08-18',
+    time: 'Batas Akhir 23:59',
+    classId: 'kelasB',
+    className: 'Kelas 11B IPS',
+    teacherId: 'guru1', // Assuming teacher teaches multiple subjects/classes
+    teacherName: 'Dr. Budi Darmawan, S.Kom., M.Cs.',
+    category: 'Tugas',
+  },
+   {
+    id: 'schedule5',
+    title: 'Pelajaran Kimia: Stoikiometri Lanjutan',
+    date: '2024-08-19',
+    time: '09:00 - 10:30',
+    classId: 'kelasA',
+    className: 'Kelas 10A IPA',
+    teacherId: 'teacher001',
+    teacherName: 'Guru Inovatif, M.Pd.',
+    description: 'Membahas konsep mol dan perhitungan reaksi kimia kompleks.',
+    category: 'Pelajaran',
+  }
+];
+
 
 export function getLessonById(id: string): Lesson | undefined {
   return mockLessons.find(lesson => lesson.id === id);
@@ -448,7 +512,7 @@ export function addQuiz(quizData: Omit<Quiz, 'id'> & { teacherId: string }): Qui
   const newQuiz: Quiz = {
     id: `quiz${mockQuizzes.length + 1 + Date.now()}`,
     ...quizData,
-    questions: quizData.questions || [], 
+    questions: quizData.questions || [],
     assignedClassIds: quizData.assignedClassIds || [],
   };
   mockQuizzes.push(newQuiz);
@@ -512,7 +576,7 @@ export function addAdminUser(newAdmin: TeacherData): boolean {
 
     if (emailExists) {
         console.warn(`Gagal menambahkan admin: Email ${newAdmin.Email} sudah digunakan.`);
-        return false; 
+        return false;
     }
     if (usernameExists) {
         console.warn(`Gagal menambahkan admin: Username ${newAdmin.Username} sudah digunakan.`);
