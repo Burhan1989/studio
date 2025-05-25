@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { BookCopy, PlusCircle, Edit, Trash2, Eye, Upload, Download, Link2, FileUp, Film } from "lucide-react"; // Pastikan UploadCloud diimpor jika digunakan
+import { BookCopy, PlusCircle, Edit, Trash2, Eye, Upload, Download, Link2, FileUp, Film } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,6 @@ import { useRef, type ChangeEvent } from "react";
 import { getSchedules } from "@/lib/mockData"; 
 import { format, parseISO } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
-
 
 // Mock Data (Sementara)
 const mockCourses = [
@@ -44,7 +43,7 @@ export default function AdminCoursesPage() {
   const handleExportJadwal = () => {
     toast({
       title: "Memulai Ekspor Jadwal Pelajaran",
-      description: "Sedang mempersiapkan file CSV...",
+      description: "Sedang mempersiapkan file Excel (TSV)...",
     });
     const dataToExport = getSchedules(); 
     if (dataToExport.length === 0) {
@@ -55,30 +54,30 @@ export default function AdminCoursesPage() {
       });
       return;
     }
-    const header = "ID,Judul,Tanggal,Waktu,ID_Kelas,Nama_Kelas,ID_Guru,Nama_Guru,ID_Pelajaran,ID_Kuis,Deskripsi,Kategori\n";
-    const csvRows = dataToExport.map(schedule =>
+    const header = "ID\tJudul\tTanggal\tWaktu\tID_Kelas\tNama_Kelas\tID_Guru\tNama_Guru\tID_Pelajaran\tID_Kuis\tDeskripsi\tKategori\n";
+    const tsvRows = dataToExport.map(schedule =>
       [
         schedule.id,
-        `"${schedule.title.replace(/"/g, '""')}"`,
+        schedule.title,
         schedule.date ? format(parseISO(schedule.date), 'yyyy-MM-dd') : '',
-        `"${schedule.time.replace(/"/g, '""')}"`,
+        schedule.time,
         schedule.classId || '',
-        `"${(schedule.className || '').replace(/"/g, '""')}"`,
+        schedule.className || '',
         schedule.teacherId || '',
-        `"${(schedule.teacherName || '').replace(/"/g, '""')}"`,
+        schedule.teacherName || '',
         schedule.lessonId || '',
         schedule.quizId || '',
-        `"${(schedule.description || '').replace(/"/g, '""')}"`,
+        schedule.description || '',
         schedule.category
-      ].join(",")
+      ].join("\t")
     ).join("\n");
-    const csvString = header + csvRows;
+    const tsvString = header + tsvRows;
 
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", "jadwal_pelajaran.csv");
+    link.setAttribute("download", "jadwal_pelajaran.xlsx");
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -87,7 +86,7 @@ export default function AdminCoursesPage() {
 
     toast({
       title: "Ekspor Berhasil",
-      description: "Jadwal pelajaran telah berhasil diekspor sebagai jadwal_pelajaran.csv.",
+      description: "Jadwal pelajaran telah berhasil diekspor sebagai jadwal_pelajaran.xlsx (format TSV, buka dengan Excel).",
     });
   };
 
@@ -128,7 +127,7 @@ export default function AdminCoursesPage() {
         ref={fileInputRef} 
         style={{ display: 'none' }} 
         onChange={handleFileSelectedJadwal}
-        accept=".csv,.xlsx"
+        accept=".xlsx,.xls,.tsv,.csv"
       />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -144,9 +143,9 @@ export default function AdminCoursesPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <BookCopy className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Jadwal Pelajaran (CSV/Excel)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Jadwal Pelajaran (Excel/TSV)</CardTitle>
           </div>
-          <CardDescription>Import dan export jadwal pelajaran menggunakan file CSV atau Excel.</CardDescription>
+          <CardDescription>Import dan export jadwal pelajaran menggunakan file Excel (format TSV).</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -154,10 +153,10 @@ export default function AdminCoursesPage() {
               <Upload className="w-4 h-4 mr-2" /> Import Jadwal
             </Button>
             <Button onClick={handleExportJadwal} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Export Jadwal (CSV)
+              <Download className="w-4 h-4 mr-2" /> Export Jadwal (Excel - TSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file CSV contoh.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data TSV.</p>
         </CardContent>
       </Card>
 
@@ -214,7 +213,6 @@ export default function AdminCoursesPage() {
       <Card className="shadow-lg">
         <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
-                {/* Ganti UploadCloud dengan FileUp jika itu yang dimaksud */}
                 <FileUp className="w-6 h-6 text-primary" /> Pengelolaan Materi untuk Pelajaran (Contoh)
             </CardTitle>
             <CardDescription>
@@ -248,10 +246,6 @@ export default function AdminCoursesPage() {
             </Button>
         </CardContent>
       </Card>
-
     </div>
   );
 }
-
-
-    

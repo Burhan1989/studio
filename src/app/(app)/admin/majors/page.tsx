@@ -32,7 +32,6 @@ export default function AdminMajorsPage() {
   const [isAddMajorDialogOpen, setIsAddMajorDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form state for adding new major
   const [newMajorName, setNewMajorName] = useState("");
   const [newMajorDescription, setNewMajorDescription] = useState("");
   const [newMajorHead, setNewMajorHead] = useState("");
@@ -80,7 +79,7 @@ export default function AdminMajorsPage() {
   const handleExportData = () => {
     toast({
       title: "Memulai Ekspor Data Jurusan",
-      description: "Sedang mempersiapkan file CSV...",
+      description: "Sedang mempersiapkan file Excel (TSV)...",
     });
     const dataToExport = getMajors();
     if (dataToExport.length === 0) {
@@ -91,22 +90,22 @@ export default function AdminMajorsPage() {
       });
       return;
     }
-    const header = "ID_Jurusan,Nama_Jurusan,Deskripsi_Jurusan,Nama_Kepala_Program\n";
-    const csvRows = dataToExport.map(major =>
+    const header = "ID_Jurusan\tNama_Jurusan\tDeskripsi_Jurusan\tNama_Kepala_Program\n";
+    const tsvRows = dataToExport.map(major =>
       [
         major.ID_Jurusan,
-        `"${major.Nama_Jurusan.replace(/"/g, '""')}"`,
-        `"${(major.Deskripsi_Jurusan || '').replace(/"/g, '""')}"`,
-        `"${(major.Nama_Kepala_Program || '').replace(/"/g, '""')}"`
-      ].join(",")
+        major.Nama_Jurusan,
+        major.Deskripsi_Jurusan || '',
+        major.Nama_Kepala_Program || ''
+      ].join("\t")
     ).join("\n");
-    const csvString = header + csvRows;
+    const tsvString = header + tsvRows;
 
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", "data_jurusan.csv");
+    link.setAttribute("download", "data_jurusan.xlsx");
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -115,7 +114,7 @@ export default function AdminMajorsPage() {
 
     toast({
       title: "Ekspor Berhasil",
-      description: "Data jurusan telah berhasil diekspor sebagai data_jurusan.csv.",
+      description: "Data jurusan telah berhasil diekspor sebagai data_jurusan.xlsx (format TSV, buka dengan Excel).",
     });
   };
 
@@ -149,7 +148,7 @@ export default function AdminMajorsPage() {
         ref={fileInputRef} 
         style={{ display: 'none' }} 
         onChange={handleFileSelected}
-        accept=".csv,.xlsx"
+        accept=".xlsx,.xls,.tsv,.csv"
       />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -162,9 +161,9 @@ export default function AdminMajorsPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <Network className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Data Jurusan (CSV/Excel)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Data Jurusan (Excel/TSV)</CardTitle>
           </div>
-          <CardDescription>Impor dan ekspor data jurusan menggunakan file CSV atau Excel.</CardDescription>
+          <CardDescription>Impor dan ekspor data jurusan menggunakan file Excel (format TSV).</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -172,10 +171,10 @@ export default function AdminMajorsPage() {
               <Upload className="w-4 h-4 mr-2" /> Impor Data Jurusan
             </Button>
             <Button onClick={handleExportData} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Ekspor Data Jurusan (CSV)
+              <Download className="w-4 h-4 mr-2" /> Ekspor Data Jurusan (Excel - TSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file CSV contoh.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data TSV.</p>
         </CardContent>
       </Card>
 
@@ -281,6 +280,3 @@ export default function AdminMajorsPage() {
     </div>
   );
 }
-
-
-    

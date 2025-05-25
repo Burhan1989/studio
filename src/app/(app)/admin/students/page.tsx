@@ -22,8 +22,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { format, parseISO } from 'date-fns'; // Import date-fns
-import { id as LocaleID } from 'date-fns/locale'; // Import locale if needed
+import { format, parseISO } from 'date-fns';
+import { id as LocaleID } from 'date-fns/locale';
 
 export default function AdminStudentsPage() {
   const { toast } = useToast();
@@ -79,7 +79,7 @@ export default function AdminStudentsPage() {
   const handleExportData = () => {
     toast({
       title: "Memulai Ekspor Data Siswa",
-      description: "Sedang mempersiapkan file CSV...",
+      description: "Sedang mempersiapkan file Excel (TSV)...",
     });
     const dataToExport = getStudents();
     if (dataToExport.length === 0) {
@@ -90,32 +90,32 @@ export default function AdminStudentsPage() {
       });
       return;
     }
-    const header = "ID_Siswa,Nama_Lengkap,Nama_Panggilan,Username,Email,NISN,Nomor_Induk,Jenis_Kelamin,Tanggal_Lahir,Alamat,Nomor_Telepon,Jurusan,Kelas,Tanggal_Daftar,Status_Aktif\n";
-    const csvRows = dataToExport.map(student => [
+    const header = "ID_Siswa\tNama_Lengkap\tNama_Panggilan\tUsername\tEmail\tNISN\tNomor_Induk\tJenis_Kelamin\tTanggal_Lahir\tAlamat\tNomor_Telepon\tJurusan\tKelas\tTanggal_Daftar\tStatus_Aktif\n";
+    const tsvRows = dataToExport.map(student => [
         student.ID_Siswa,
-        `"${student.Nama_Lengkap.replace(/"/g, '""')}"`,
-        `"${(student.Nama_Panggilan || '').replace(/"/g, '""')}"`,
-        `"${student.Username.replace(/"/g, '""')}"`,
+        student.Nama_Lengkap,
+        student.Nama_Panggilan || '',
+        student.Username,
         student.Email,
         student.NISN,
         student.Nomor_Induk,
         student.Jenis_Kelamin,
         student.Tanggal_Lahir ? format(parseISO(student.Tanggal_Lahir), 'yyyy-MM-dd') : '',
-        `"${(student.Alamat || '').replace(/"/g, '""')}"`,
-        `"${(student.Nomor_Telepon || '').replace(/"/g, '""')}"`,
-        `"${student.Program_Studi.replace(/"/g, '""')}"`,
-        `"${student.Kelas.replace(/"/g, '""')}"`,
+        student.Alamat || '',
+        student.Nomor_Telepon || '',
+        student.Program_Studi,
+        student.Kelas,
         student.Tanggal_Daftar ? format(parseISO(student.Tanggal_Daftar), 'yyyy-MM-dd') : '',
         student.Status_Aktif
-      ].join(",")
+      ].join("\t")
     ).join("\n");
-    const csvString = header + csvRows;
+    const tsvString = header + tsvRows;
 
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", "data_siswa.csv");
+    link.setAttribute("download", "data_siswa.xlsx");
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -124,7 +124,7 @@ export default function AdminStudentsPage() {
 
     toast({
       title: "Ekspor Berhasil",
-      description: "Data siswa telah berhasil diekspor sebagai data_siswa.csv.",
+      description: "Data siswa telah berhasil diekspor sebagai data_siswa.xlsx (format TSV, buka dengan Excel).",
     });
   };
 
@@ -167,7 +167,7 @@ export default function AdminStudentsPage() {
         ref={fileInputRef} 
         style={{ display: 'none' }} 
         onChange={handleFileSelected}
-        accept=".csv,.xlsx"
+        accept=".xlsx,.xls,.tsv,.csv"
       />
        <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Siswa</h1>
@@ -177,9 +177,9 @@ export default function AdminStudentsPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Data Siswa (CSV/Excel)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Data Siswa (Excel/TSV)</CardTitle>
           </div>
-          <CardDescription>Impor dan ekspor data siswa menggunakan file CSV atau Excel.</CardDescription>
+          <CardDescription>Impor dan ekspor data siswa menggunakan file Excel (format TSV).</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -187,10 +187,10 @@ export default function AdminStudentsPage() {
               <Upload className="w-4 h-4 mr-2" /> Import Siswa
             </Button>
             <Button onClick={handleExportData} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Export Siswa (CSV)
+              <Download className="w-4 h-4 mr-2" /> Export Siswa (Excel - TSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file CSV contoh.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data TSV.</p>
         </CardContent>
       </Card>
 
@@ -291,6 +291,3 @@ export default function AdminStudentsPage() {
     </div>
   );
 }
-
-
-    

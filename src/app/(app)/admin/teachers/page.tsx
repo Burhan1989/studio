@@ -23,8 +23,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { format, parseISO } from 'date-fns'; // Import date-fns
-import { id as LocaleID } from 'date-fns/locale'; // Import locale if needed
+import { format, parseISO } from 'date-fns';
+import { id as LocaleID } from 'date-fns/locale';
 
 export default function AdminTeachersPage() {
   const { toast } = useToast();
@@ -60,7 +60,6 @@ export default function AdminTeachersPage() {
     }
   };
 
-
   const handleResetPassword = (teacher: TeacherData) => {
     console.log(`Simulasi reset password untuk ${teacher.Nama_Lengkap} menjadi tanggal lahir: ${teacher.Tanggal_Lahir}`);
     toast({
@@ -74,7 +73,7 @@ export default function AdminTeachersPage() {
   const handleExportData = () => {
     toast({
       title: "Memulai Ekspor Data Guru",
-      description: "Sedang mempersiapkan file CSV...",
+      description: "Sedang mempersiapkan file Excel (TSV)...",
     });
     
     const dataToExport = getTeachers();
@@ -87,33 +86,33 @@ export default function AdminTeachersPage() {
       return;
     }
     
-    const header = "ID_Guru,Nama_Lengkap,Username,Email,Jenis_Kelamin,Tanggal_Lahir,Alamat,Nomor_Telepon,Mata_Pelajaran,Kelas_Ajar,Jabatan,Status_Aktif,Tanggal_Pendaftaran,isAdmin\n";
-    const csvRows = dataToExport.map(teacher => {
-      const kelasAjarCsv = Array.isArray(teacher.Kelas_Ajar) ? teacher.Kelas_Ajar.join('; ') : teacher.Kelas_Ajar; // Join array with semicolon
+    const header = "ID_Guru\tNama_Lengkap\tUsername\tEmail\tJenis_Kelamin\tTanggal_Lahir\tAlamat\tNomor_Telepon\tMata_Pelajaran\tKelas_Ajar\tJabatan\tStatus_Aktif\tTanggal_Pendaftaran\tisAdmin\n";
+    const tsvRows = dataToExport.map(teacher => {
+      const kelasAjarTsv = Array.isArray(teacher.Kelas_Ajar) ? teacher.Kelas_Ajar.join('; ') : teacher.Kelas_Ajar;
       return [
         teacher.ID_Guru,
-        `"${teacher.Nama_Lengkap.replace(/"/g, '""')}"`,
-        `"${teacher.Username.replace(/"/g, '""')}"`,
+        teacher.Nama_Lengkap,
+        teacher.Username,
         teacher.Email,
         teacher.Jenis_Kelamin,
         teacher.Tanggal_Lahir ? format(parseISO(teacher.Tanggal_Lahir), 'yyyy-MM-dd') : '',
-        `"${(teacher.Alamat || '').replace(/"/g, '""')}"`,
-        `"${(teacher.Nomor_Telepon || '').replace(/"/g, '""')}"`,
-        `"${teacher.Mata_Pelajaran.replace(/"/g, '""')}"`,
-        `"${kelasAjarCsv.replace(/"/g, '""')}"`,
-        `"${(teacher.Jabatan || '').replace(/"/g, '""')}"`,
+        teacher.Alamat || '',
+        teacher.Nomor_Telepon || '',
+        teacher.Mata_Pelajaran,
+        kelasAjarTsv,
+        teacher.Jabatan || '',
         teacher.Status_Aktif,
         teacher.Tanggal_Pendaftaran ? format(parseISO(teacher.Tanggal_Pendaftaran), 'yyyy-MM-dd') : '',
         teacher.isAdmin || false
-      ].join(",");
+      ].join("\t");
     }).join("\n");
-    const csvString = header + csvRows;
+    const tsvString = header + tsvRows;
 
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", "data_guru.csv");
+    link.setAttribute("download", "data_guru.xlsx");
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -122,7 +121,7 @@ export default function AdminTeachersPage() {
 
     toast({
       title: "Ekspor Berhasil",
-      description: "Data guru telah berhasil diekspor sebagai data_guru.csv.",
+      description: "Data guru telah berhasil diekspor sebagai data_guru.xlsx (format TSV, buka dengan Excel).",
     });
   };
 
@@ -149,7 +148,6 @@ export default function AdminTeachersPage() {
     }
   };
 
-
   const handleMassPasswordGenerate = () => {
     toast({
       title: "Simulasi Generate Password Massal",
@@ -166,7 +164,7 @@ export default function AdminTeachersPage() {
         ref={fileInputRef} 
         style={{ display: 'none' }} 
         onChange={handleFileSelected}
-        accept=".csv,.xlsx" 
+        accept=".xlsx,.xls,.tsv,.csv" 
       />
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Guru</h1>
@@ -176,9 +174,9 @@ export default function AdminTeachersPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <UserCog className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Data Guru (CSV/Excel)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Data Guru (Excel/TSV)</CardTitle>
           </div>
-          <CardDescription>Impor dan ekspor data guru menggunakan file CSV atau Excel.</CardDescription>
+          <CardDescription>Impor dan ekspor data guru menggunakan file Excel (format TSV).</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -186,10 +184,10 @@ export default function AdminTeachersPage() {
               <Upload className="w-4 h-4 mr-2" /> Import Guru
             </Button>
             <Button onClick={handleExportData} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Export Guru (CSV)
+              <Download className="w-4 h-4 mr-2" /> Export Guru (Excel - TSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file CSV contoh.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data TSV.</p>
         </CardContent>
       </Card>
 
@@ -290,6 +288,3 @@ export default function AdminTeachersPage() {
     </div>
   );
 }
-
-
-    
