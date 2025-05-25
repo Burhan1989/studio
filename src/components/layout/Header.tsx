@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { mockSchoolProfile } from '@/lib/mockData';
+import { mockSchoolProfile } from '@/lib/mockData'; // Import data sekolah
 import Image from 'next/image';
 import { useRouter } from 'next/navigation'; // Import useRouter
 
@@ -25,21 +25,21 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex items-center h-20 max-w-screen-2xl">
-        <Link href="/" className="flex flex-col items-center gap-1 mr-4 text-center sm:mr-6">
+      <div className="container flex items-center h-16 max-w-screen-2xl"> {/* Adjusted height from h-20 */}
+        <Link href="/" className="flex flex-row items-center gap-2 mr-4 sm:mr-6"> {/* Changed to flex-row and added gap */}
           {schoolLogoUrl ? (
             <Image
               src={schoolLogoUrl}
               alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
-              width={160}
-              height={40}
-              className="h-10 w-auto object-contain"
+              width={120} // Adjusted for side-by-side view, ensure aspect ratio is maintained by height or object-contain
+              height={30} // Adjusted height
+              className="h-8 w-auto object-contain" // Example: h-8 (32px)
               data-ai-hint="school logo"
             />
           ) : (
-            <GraduationCap className="w-8 h-8 text-primary" />
+            <GraduationCap className="w-7 h-7 text-primary" /> // Slightly smaller icon
           )}
-          <span className="text-sm font-semibold text-foreground mt-1">
+          <span className="text-base font-semibold text-foreground"> {/* Removed mt-1 */}
             {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
           </span>
         </Link>
@@ -72,13 +72,17 @@ export default function Header() {
 
         <div className="flex items-center gap-4">
           {user ? (
-            <DropdownMenu>
+             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative w-8 h-8 rounded-full">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={user.Profil_Foto || `https://avatar.vercel.sh/${user.name || user.email}.png`} alt={user.name || user.email || "User"} />
-                    <AvatarFallback>{user.email?.[0]?.toUpperCase()}</AvatarFallback>
-                  </Avatar>
+                <Button variant="ghost" className="flex items-center justify-start gap-2 p-1.5 h-auto rounded-full">
+                    <Avatar className="w-8 h-8">
+                    <AvatarImage src={user.Profil_Foto || `https://avatar.vercel.sh/${user.name || user.email}.png`} alt={user.name || "Pengguna"} />
+                    <AvatarFallback>{user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-col items-start hidden sm:flex">
+                        <span className="text-sm font-medium truncate max-w-[120px]">{user.name || "Pengguna"}</span>
+                        <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
+                    </div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>

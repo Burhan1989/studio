@@ -137,7 +137,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           );
     }
     return items;
-  }, [user]); // Kalkulasi ulang hanya jika objek user berubah
+  }, [user]);
 
   if (!user) {
     console.log("AppShell: No user, rendering null (AuthProvider should have redirected).");
@@ -147,24 +147,24 @@ export default function AppShell({ children }: { children: ReactNode }) {
   return (
     <SidebarProvider defaultOpen>
       <Sidebar className="bg-card border-r" collapsible="icon">
-        <SidebarHeader className="p-2 border-b flex flex-col items-center justify-center group-data-[collapsible=icon]:min-h-0">
+        <SidebarHeader className="p-2 border-b flex items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
           <Link
             href={user?.role === 'parent' ? "/parent/dashboard" : (user?.isAdmin ? "/admin" : "/dashboard")}
-            className="flex flex-col items-center w-full gap-1 mb-2 text-center"
+            className="flex flex-row items-center gap-2 group-data-[collapsible=icon]:justify-center"
           >
             {schoolLogoUrl ? (
               <Image
                 src={schoolLogoUrl}
                 alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
-                width={48} 
-                height={48}
-                className="h-12 w-auto object-contain group-data-[collapsible=icon]:h-8" 
+                width={120} // Width for aspect ratio calculation
+                height={30} // Height for aspect ratio calculation
+                className="h-8 w-auto object-contain group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:mx-auto" 
                 data-ai-hint="school logo"
               />
             ) : (
-              <GraduationCap className="w-10 h-10 text-primary group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7" />
+              <GraduationCap className="w-8 h-8 text-primary group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:mx-auto" />
             )}
-            <span className="text-xs font-medium text-foreground px-1 group-data-[collapsible=icon]:hidden w-full truncate">
+            <span className="text-sm font-semibold text-foreground group-data-[collapsible=icon]:hidden truncate">
               {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
             </span>
           </Link>
@@ -199,8 +199,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
       </Sidebar>
       <SidebarInset className="bg-background">
         <header className="sticky top-0 z-40 flex items-center justify-between h-16 gap-4 px-4 border-b bg-background/80 backdrop-blur md:px-6">
-            <div className="flex items-center"> {/* Grup untuk trigger sidebar */}
-                <SidebarTrigger className="md:hidden" /> {/* Hanya tampil di mobile dan medium */}
+            <div className="flex items-center"> 
+                <SidebarTrigger className="md:hidden" /> 
             </div>
             {user && (
                 <DropdownMenu>
