@@ -1,7 +1,8 @@
 
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react"; // Changed from "react-dom" and renamed
+import { useFormStatus } from "react-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -49,7 +50,8 @@ export default function CustomizationForm({ onFormSubmitSuccess }: Customization
   const { toast } = useToast();
 
   const initialState: LearningPathFormState = { message: null, errors: {}, data: undefined };
-  const [state, formAction] = useFormState(generateCustomizedLearningPathAction, initialState);
+  // Changed useFormState to useActionState
+  const [state, formAction] = useActionState(generateCustomizedLearningPathAction, initialState);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
