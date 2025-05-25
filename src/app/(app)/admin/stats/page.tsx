@@ -1,7 +1,9 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, BookOpenCheck, Activity, BarChartBig, TrendingUp, Percent } from "lucide-react";
+import { Users, BookOpenCheck, Activity, BarChartBig, TrendingUp, Percent, FileQuestion } from "lucide-react";
+import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 // Mock Data (Sementara)
 const mockStats = {
@@ -12,6 +14,24 @@ const mockStats = {
   newUsersThisMonth: 150,
   quizAttempts: 2300,
 };
+
+const userGrowthData = [
+  { month: "Jan", users: 65 },
+  { month: "Feb", users: 59 },
+  { month: "Mar", users: 80 },
+  { month: "Apr", users: 81 },
+  { month: "Mei", users: 56 },
+  { month: "Jun", users: 70 },
+  { month: "Jul", users: 40 },
+];
+
+const chartConfig = {
+  users: {
+    label: "Pengguna Baru",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies import("@/components/ui/chart").ChartConfig;
+
 
 export default function AdminStatsPage() {
   return (
@@ -93,11 +113,24 @@ export default function AdminStatsPage() {
       <Card className="shadow-lg">
         <CardHeader>
             <CardTitle>Grafik Pertumbuhan Pengguna (Contoh)</CardTitle>
-            <CardDescription>Visualisasi pertumbuhan pengguna dari waktu ke waktu.</CardDescription>
+            <CardDescription>Visualisasi pertumbuhan pengguna baru per bulan.</CardDescription>
         </CardHeader>
-        <CardContent className="flex items-center justify-center h-64 bg-muted/50 rounded-md">
-            <p className="text-muted-foreground">Placeholder untuk grafik pertumbuhan pengguna</p>
-             {/* Di sini bisa ditambahkan komponen chart dari ShadCN/Recharts jika sudah siap */}
+        <CardContent className="h-[350px] p-4">
+            <ChartContainer config={chartConfig} className="w-full h-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={userGrowthData} margin={{ top: 5, right: 20, left: -5, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                  <XAxis dataKey="month" stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false}/>
+                  <YAxis stroke="hsl(var(--foreground))" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    cursor={{ fill: "hsl(var(--muted))" }}
+                    content={<ChartTooltipContent indicator="dot" />}
+                  />
+                  <Legend />
+                  <Bar dataKey="users" fill="var(--color-users)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
         </CardContent>
       </Card>
       

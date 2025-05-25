@@ -52,6 +52,66 @@
     --sidebar-ring: 207 87% 68%;
   }
 
+  .theme-ocean {
+    --background: 200 100% 92%; /* Very light cyan-blue */
+    --foreground: 210 50% 15%; /* Dark desaturated blue */
+    --card: 200 80% 98%; /* Almost white with a hint of cyan */
+    --card-foreground: 210 50% 15%;
+    --popover: 200 80% 98%;
+    --popover-foreground: 210 50% 15%;
+    --primary: 190 70% 55%; /* Bright teal */
+    --primary-foreground: 0 0% 100%; /* White text on primary */
+    --secondary: 200 60% 90%; /* Light cyan */
+    --secondary-foreground: 210 50% 25%;
+    --muted: 200 60% 90%;
+    --muted-foreground: 200 30% 50%; /* Muted cyan-gray */
+    --accent: 170 60% 70%; /* Soft seafoam green */
+    --accent-foreground: 210 50% 15%;
+    --border: 200 50% 85%; /* Light cyan border */
+    --input: 200 50% 85%;
+    --ring: 190 70% 55%; /* Teal ring */
+    --chart-1: 190 70% 55%;
+    --chart-2: 170 60% 70%;
+    --chart-3: 210 60% 45%;
+    --sidebar-background: 200 80% 98%;
+    --sidebar-foreground: 210 50% 15%;
+    --sidebar-primary: 190 70% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 200 100% 92%;
+    --sidebar-accent-foreground: 190 70% 55%;
+    --sidebar-border: 200 50% 85%;
+  }
+
+  .theme-forest {
+    --background: 100 20% 95%; /* Very light, slightly green-ish beige */
+    --foreground: 120 60% 10%; /* Dark forest green */
+    --card: 90 30% 98%; /* Off-white with a hint of green */
+    --card-foreground: 120 60% 10%;
+    --popover: 90 30% 98%;
+    --popover-foreground: 120 60% 10%;
+    --primary: 130 45% 40%; /* Rich forest green */
+    --primary-foreground: 90 60% 95%; /* Light text on primary */
+    --secondary: 110 30% 90%; /* Light muted green */
+    --secondary-foreground: 120 50% 20%;
+    --muted: 110 30% 90%;
+    --muted-foreground: 110 20% 45%; /* Muted green-gray */
+    --accent: 40 50% 60%; /* Warm light brown/tan */
+    --accent-foreground: 120 60% 10%;
+    --border: 100 20% 88%; /* Light green-ish gray border */
+    --input: 100 20% 88%;
+    --ring: 130 45% 40%; /* Forest green ring */
+    --chart-1: 130 45% 40%;
+    --chart-2: 40 50% 60%;
+    --chart-3: 120 30% 30%;
+    --sidebar-background: 90 30% 98%;
+    --sidebar-foreground: 120 60% 10%;
+    --sidebar-primary: 130 45% 40%;
+    --sidebar-primary-foreground: 90 60% 95%;
+    --sidebar-accent: 100 20% 95%;
+    --sidebar-accent-foreground: 130 45% 40%;
+    --sidebar-border: 100 20% 88%;
+  }
+
   .dark {
     /* Define dark theme variables if needed, for now focusing on light theme */
     --background: 224 71.4% 4.1%;

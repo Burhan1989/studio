@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   email: string;
@@ -47,16 +46,25 @@ export interface Quiz {
 export interface UserProgress {
   userId: string;
   completedLessons: string[];
+  inProgressLessons?: string[]; // Added for more detailed progress
   quizScores: Array<{ quizId: string; score: number; totalQuestions: number }>;
   currentLearningPath?: CustomizedLearningPath;
 }
+
+// For Pie Chart on reports page
+export interface LessonStatusCounts {
+  name: 'Selesai' | 'Dikerjakan' | 'Belum Dimulai';
+  value: number;
+  fill: string;
+}
+
 
 // Detailed Student Data Structure
 export interface StudentData {
   ID_Siswa: string; // Primary Key (Integer / UUID)
   Nama_Lengkap: string; // Varchar(100)
   Nama_Panggilan?: string; // Varchar(50), opsional
-  Jenis_Kelamin: 'Laki-laki' | 'Perempuan'; // Varchar(10)
+  Jenis_Kelamin: 'Laki-laki' | 'Perempuan' | ''; // Varchar(10) or empty
   Tanggal_Lahir: string; // Date (string for simplicity in mock data, can be Date object)
   Alamat: string; // Varchar(200)
   Email: string; // Varchar(100)
@@ -76,7 +84,7 @@ export interface StudentData {
 export interface TeacherData {
   ID_Guru: string; // Primary Key (Integer / UUID)
   Nama_Lengkap: string; // Varchar(100)
-  Jenis_Kelamin: 'Laki-laki' | 'Perempuan'; // Varchar(10)
+  Jenis_Kelamin: 'Laki-laki' | 'Perempuan' | ''; // Varchar(10) or empty
   Tanggal_Lahir: string; // Date
   Alamat: string; // Varchar(200)
   Email: string; // Varchar(100)

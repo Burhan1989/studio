@@ -1,26 +1,53 @@
-
-"use client"; // Tambahkan use client untuk manajemen state jika diperlukan untuk pengaturan interaktif
+"use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings as SettingsIcon, Bell, Smartphone } from 'lucide-react'; // Ganti nama untuk menghindari konflik jika komponen Settings digunakan
+import { Settings as SettingsIcon, Bell, Smartphone, Palette } from 'lucide-react';
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from '@/components/ui/button';
 import { useToast } from "@/hooks/use-toast";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const THEME_STORAGE_KEY = "adeptlearn-theme";
+
+type Theme = "default" | "ocean" | "forest";
 
 export default function SettingsPage() {
   const { toast } = useToast();
   const [whatsappNotifications, setWhatsappNotifications] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [currentTheme, setCurrentTheme] = useState<Theme>("default");
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
+    if (storedTheme) {
+      applyTheme(storedTheme);
+    }
+  }, []);
+
+  const applyTheme = (themeName: Theme) => {
+    document.documentElement.classList.remove("theme-ocean", "theme-forest");
+    if (themeName !== "default") {
+      document.documentElement.classList.add(`theme-${themeName}`);
+    }
+    localStorage.setItem(THEME_STORAGE_KEY, themeName);
+    setCurrentTheme(themeName);
+  };
 
   const handleSaveNotificationPreferences = () => {
-    // Mensimulasikan penyimpanan preferensi
     console.log("Preferensi notifikasi disimpan:", { whatsappNotifications, phoneNumber });
     toast({
       title: "Preferensi Disimpan",
       description: "Pengaturan notifikasi Anda telah diperbarui.",
+    });
+  };
+  
+  const handleThemeChange = (themeName: Theme) => {
+    applyTheme(themeName);
+    toast({
+      title: "Tema Diubah",
+      description: `Tema aplikasi diubah menjadi ${themeName.charAt(0).toUpperCase() + themeName.slice(1)}.`,
     });
   };
 
@@ -31,18 +58,47 @@ export default function SettingsPage() {
         <div>
           <h1 className="text-3xl font-bold">Pengaturan Aplikasi</h1>
           <p className="text-muted-foreground">
-            Sesuaikan preferensi aplikasi dan notifikasi Anda di sini.
+            Sesuaikan preferensi aplikasi, notifikasi, dan tampilan Anda di sini.
           </p>
         </div>
       </div>
+
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Preferensi Umum</CardTitle>
-          <CardDescription>Atur preferensi umum aplikasi.</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="w-5 h-5" /> Preferensi Tampilan
+          </CardTitle>
+          <CardDescription>Pilih tema visual untuk aplikasi AdeptLearn.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Opsi pengaturan umum akan segera hadir...</p>
-          {/* Placeholder untuk pengaturan umum seperti bahasa, tema, dll. */}
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">Pilih tema favorit Anda:</p>
+          <div className="flex flex-wrap gap-3">
+            <Button 
+              variant={currentTheme === "default" ? "default" : "outline"} 
+              onClick={() => handleThemeChange("default")}
+            >
+              Bawaan (Biru Muda)
+            </Button>
+            <Button 
+              variant={currentTheme === "ocean" ? "default" : "outline"} 
+              onClick={() => handleThemeChange("ocean")}
+               className="bg-[hsl(190,70%,55%)] hover:bg-[hsl(190,70%,60%)] text-white"
+               style={currentTheme === "ocean" ? {} : {backgroundColor: 'hsl(200 100% 92%)', color: 'hsl(190 70% 55%)', borderColor: 'hsl(190 70% 55%)'} }
+            >
+              Samudra (Teal)
+            </Button>
+            <Button 
+              variant={currentTheme === "forest" ? "default" : "outline"} 
+              onClick={() => handleThemeChange("forest")}
+              className="bg-[hsl(130,45%,40%)] hover:bg-[hsl(130,45%,45%)] text-white"
+              style={currentTheme === "forest" ? {} : {backgroundColor: 'hsl(100 20% 95%)', color: 'hsl(130 45% 40%)', borderColor: 'hsl(130 45% 40%)'} }
+            >
+              Hutan (Hijau)
+            </Button>
+          </div>
+           <p className="text-xs text-muted-foreground mt-2">
+            Perubahan tema akan disimpan untuk sesi Anda berikutnya.
+          </p>
         </CardContent>
       </Card>
       
@@ -91,6 +147,16 @@ export default function SettingsPage() {
             <Button onClick={handleSaveNotificationPreferences}>Simpan Preferensi Notifikasi</Button>
           </div>
           <p className="text-sm text-muted-foreground">Pengaturan notifikasi lainnya akan segera hadir...</p>
+        </CardContent>
+      </Card>
+
+       <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle>Preferensi Umum Lainnya</CardTitle>
+          <CardDescription>Atur preferensi umum aplikasi lainnya.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground">Opsi pengaturan umum lainnya akan segera hadir...</p>
         </CardContent>
       </Card>
     </div>
