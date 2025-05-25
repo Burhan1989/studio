@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { FileQuestion, BookText, ArrowRight } from 'lucide-react';
 
+export const dynamic = 'force-dynamic'; // Menjadikan halaman ini sepenuhnya dinamis
+
 export default function QuizzesListPage() {
   return (
     <div className="space-y-8">
