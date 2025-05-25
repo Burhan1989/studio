@@ -6,9 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { mockStudents } from '@/lib/mockData'; // Using existing mockStudents
+import { mockStudents, mockUserProgress } from '@/lib/mockData'; // Corrected import for mockUserProgress
 import type { StudentData, ClassData } from '@/lib/types';
-import { mockUserProgress } from '@/app/(app)/reports/page'; // Import mockUserProgress
 import ProgressSummary from '@/components/reports/ProgressSummary';
 import ScoreChart from '@/components/reports/ScoreChart';
 import { Users, BookOpenCheck, Activity, Percent } from 'lucide-react';
@@ -42,13 +41,14 @@ export default function ParentDashboardPage() {
 
   const handleViewProgress = () => {
     const student = mockStudents.find(s => s.ID_Siswa === selectedStudentId);
-    if (student && student.Email === 'student@example.com') { // Simulate: only 'student@example.com' has progress data
+    if (student && student.ID_Siswa === 'student001') { // Simulate: only 'student001' has progress data
       setStudentProgress(mockUserProgress);
     } else if (student) {
       // Simulate finding some basic data for other students, or show "no detailed data"
       setStudentProgress({
         userId: student.ID_Siswa,
         completedLessons: [],
+        inProgressLessons: [],
         quizScores: [],
         currentLearningPath: {
           learningPathDescription: "Belum ada data progres detail untuk siswa ini.",

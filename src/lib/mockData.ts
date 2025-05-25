@@ -1,5 +1,6 @@
 
-import type { Lesson, Quiz, Question, StudentData, TeacherData, ParentData } from './types';
+import type { Lesson, Quiz, Question, StudentData, TeacherData, ParentData, UserProgress, LessonStatusCounts } from './types';
+import type { ChartConfig } from "@/components/ui/chart";
 
 export const mockLessons: Lesson[] = [
   {
@@ -133,7 +134,7 @@ export const mockStudents: StudentData[] = [
     Email: "student@example.com",
     NISN: "0098765432",
     Nomor_Induk: "S1004",
-    Kelas: "Kelas 10B",
+    Kelas: "Kelas 10A IPA", // Match one of the mockClassesForParent
     Jenis_Kelamin: "Perempuan",
     Tanggal_Lahir: "2008-01-15",
     Alamat: "Jl. Belajar No. 5, Kota Ilmu",
@@ -152,7 +153,7 @@ export const mockStudents: StudentData[] = [
     Email: "ahmad.z@example.com",
     NISN: "0012345678",
     Nomor_Induk: "S1001",
-    Kelas: "Kelas 10A",
+    Kelas: "Kelas 10A IPA", // Match one of the mockClassesForParent
     Jenis_Kelamin: "Laki-laki",
     Tanggal_Lahir: "2007-08-17",
     Alamat: "Jl. Pelajar No. 10, Jakarta",
@@ -171,7 +172,7 @@ export const mockStudents: StudentData[] = [
     Email: "rina.a@example.com",
     NISN: "0023456789",
     Nomor_Induk: "S1002",
-    Kelas: "Kelas 11B",
+    Kelas: "Kelas 11B IPS", // Match one of the mockClassesForParent
     Jenis_Kelamin: "Perempuan",
     Tanggal_Lahir: "2006-05-22",
     Alamat: "Jl. Siswa No. 20, Bandung",
@@ -190,7 +191,7 @@ export const mockStudents: StudentData[] = [
     Email: "kevin.s@example.com",
     NISN: "0034567890",
     Nomor_Induk: "S1003",
-    Kelas: "Kelas 12C",
+    Kelas: "Kelas 12C Bahasa", // Match one of the mockClassesForParent
     Jenis_Kelamin: "Laki-laki",
     Tanggal_Lahir: "2005-02-10",
     Alamat: "Jl. Prestasi No. 30, Surabaya",
@@ -316,6 +317,46 @@ export const mockParents: ParentData[] = [
     }
 ];
 
+// Mock user progress data
+export const mockUserProgress: UserProgress = {
+  userId: 'student001', // Corresponds to the mock logged-in student "Siswa Rajin"
+  completedLessons: ['1', '2'], // IDs of completed lessons from mockData.ts
+  inProgressLessons: ['3'], // Example of lessons started but not finished
+  quizScores: [
+    { quizId: 'quiz1', score: 2, totalQuestions: 3 },
+    { quizId: 'quiz2', score: 3, totalQuestions: 3 },
+  ],
+  currentLearningPath: {
+    learningPathDescription: "Jalur ramah pemula yang berfokus pada dasar-dasar JavaScript, diikuti oleh pengenalan React.",
+    customQuizzes: [
+      { resourceType: "Kuis Interaktif", resourceLink: "#", description: "Uji pengetahuan inti JS Anda." }
+    ],
+    customLearningResources: [
+      { resourceType: "Tutorial Video", resourceLink: "#", description: "Selami lebih dalam closure JS." },
+      { resourceType: "Artikel", resourceLink: "#", description: "Memahami fitur ES6." }
+    ]
+  }
+};
+
+// Calculate lesson status counts
+const totalMockLessons = mockLessons.length;
+// Ensure mockUserProgress is defined before accessing its properties
+const completedCount = mockUserProgress ? mockUserProgress.completedLessons.length : 0;
+const inProgressCount = mockUserProgress && mockUserProgress.inProgressLessons ? mockUserProgress.inProgressLessons.length : 0;
+const notStartedCount = totalMockLessons - completedCount - inProgressCount;
+
+export const lessonStatusData: LessonStatusCounts[] = [
+  { name: 'Selesai', value: completedCount, fill: 'hsl(var(--chart-1))' },
+  { name: 'Dikerjakan', value: inProgressCount, fill: 'hsl(var(--chart-2))' },
+  { name: 'Belum Dimulai', value: notStartedCount, fill: 'hsl(var(--chart-3))' },
+];
+
+export const lessonStatusChartConfig = {
+  Selesai: { label: 'Selesai', color: 'hsl(var(--chart-1))' },
+  Dikerjakan: { label: 'Dikerjakan', color: 'hsl(var(--chart-2))' },
+  'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
+} satisfies ChartConfig;
+
 
 export function getLessonById(id: string): Lesson | undefined {
   return mockLessons.find(lesson => lesson.id === id);
@@ -324,3 +365,5 @@ export function getLessonById(id: string): Lesson | undefined {
 export function getQuizById(id: string): Quiz | undefined {
   return mockQuizzes.find(quiz => quiz.id === id);
 }
+
+    
