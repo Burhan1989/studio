@@ -18,16 +18,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { FilePlus2, Save, Loader2, ArrowLeft, PlusCircle, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { FilePlus2, Save, Loader2, ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { addQuiz, mockClasses } from "@/lib/mockData"; // Simulasi addQuiz & import mockClasses
+import { addQuiz, mockClasses } from "@/lib/mockData";
 import type { Question, Quiz, ClassData } from "@/lib/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const questionSchema = z.object({
+  id: z.string().optional(), // To handle existing questions during edit, not used yet
   text: z.string().min(5, "Teks pertanyaan minimal 5 karakter."),
   type: z.enum(["multiple-choice", "true-false", "essay"], {
     required_error: "Tipe pertanyaan harus dipilih.",
@@ -41,19 +43,17 @@ const newQuizSchema = z.object({
   title: z.string().min(3, "Judul kuis minimal 3 karakter."),
   description: z.string().optional(),
   questions: z.array(questionSchema).min(1, "Kuis harus memiliki setidaknya satu pertanyaan."),
-  assignedClassId: z.string().optional(),
+  assignedClassIds: z.array(z.string()).optional(),
 });
 
 type NewQuizFormData = z.infer<typeof newQuizSchema>;
-
-const NO_CLASS_ASSIGNED_VALUE = "_no_class_assigned_";
 
 export default function TeacherNewQuizPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const availableClasses: ClassData[] = mockClasses; // Ambil data kelas
+  const availableClasses: ClassData[] = mockClasses; 
 
   const form = useForm<NewQuizFormData>({
     resolver: zodResolver(newQuizSchema),
@@ -61,7 +61,7 @@ export default function TeacherNewQuizPage() {
       title: "",
       description: "",
       questions: [{ text: "", type: "multiple-choice", options: ["", "", "", ""], correctAnswer: "", points: 1 }],
-      assignedClassId: "", // "" will show placeholder
+      assignedClassIds: [], 
     },
   });
 
@@ -77,15 +77,11 @@ export default function TeacherNewQuizPage() {
     }
     setIsLoading(true);
     
-    const finalAssignedClassId = values.assignedClassId === NO_CLASS_ASSIGNED_VALUE || values.assignedClassId === ""
-      ? undefined
-      : values.assignedClassId;
-
-    const quizDataForMock: Omit<Quiz, 'id'> & { teacherId: string } = {
+    const quizDataForMock: Omit<Quiz, 'id'> & { teacherId: string; assignedClassIds?: string[] } = {
         title: values.title,
         description: values.description,
         teacherId: user.id, 
-        assignedClassId: finalAssignedClassId,
+        assignedClassIds: values.assignedClassIds && values.assignedClassIds.length > 0 ? values.assignedClassIds : undefined,
         questions: values.questions.map(q => ({
             ...q,
             id: `q${Date.now()}${Math.random().toString(36).substring(2,7)}`,
@@ -129,7 +125,6 @@ export default function TeacherNewQuizPage() {
         toast({ title: "Minimal Opsi", description: "Minimal harus ada 2 opsi.", variant: "default" });
       }
   };
-
 
   return (
     <div className="space-y-8">
@@ -181,26 +176,35 @@ export default function TeacherNewQuizPage() {
               />
               <FormField
                 control={form.control}
-                name="assignedClassId"
+                name="assignedClassIds"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tugaskan ke Kelas (Opsional)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih kelas untuk kuis ini" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value={NO_CLASS_ASSIGNED_VALUE}>Tidak Ditugaskan</SelectItem>
-                        {availableClasses.map((cls) => (
-                          <SelectItem key={cls.ID_Kelas} value={cls.ID_Kelas}>
+                    <FormDescription>Pilih satu atau lebih kelas yang akan mengerjakan kuis ini.</FormDescription>
+                    <div className="grid grid-cols-1 gap-2 pt-2 md:grid-cols-2 lg:grid-cols-3">
+                      {availableClasses.map((cls) => (
+                        <FormItem 
+                          key={cls.ID_Kelas}
+                          className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3 shadow-sm"
+                        >
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value?.includes(cls.ID_Kelas)}
+                              onCheckedChange={(checked) => {
+                                const currentValues = field.value || [];
+                                const newValues = checked
+                                  ? [...currentValues, cls.ID_Kelas]
+                                  : currentValues.filter((id) => id !== cls.ID_Kelas);
+                                field.onChange(newValues);
+                              }}
+                            />
+                          </FormControl>
+                          <FormLabel className="font-normal">
                             {cls.Nama_Kelas} - {cls.jurusan}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>Pilih kelas yang akan mengerjakan kuis ini. Bisa dikosongkan.</FormDescription>
+                          </FormLabel>
+                        </FormItem>
+                      ))}
+                    </div>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -382,3 +386,4 @@ export default function TeacherNewQuizPage() {
     </div>
   );
 }
+
