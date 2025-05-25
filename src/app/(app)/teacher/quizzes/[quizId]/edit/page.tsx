@@ -23,7 +23,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { getQuizById, updateQuiz, mockClasses } from "@/lib/mockData";
+import { getQuizById, updateQuiz, getClasses } from "@/lib/mockData"; // Changed mockClasses to getClasses
 import type { Question, Quiz, ClassData } from "@/lib/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -57,7 +57,11 @@ export default function TeacherEditQuizPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [initialQuizData, setInitialQuizData] = useState<Quiz | null>(null);
-  const availableClasses: ClassData[] = mockClasses; 
+  const [availableClasses, setAvailableClasses] = useState<ClassData[]>([]);
+
+  useEffect(() => {
+    setAvailableClasses(getClasses()); // Use getClasses()
+  }, []);
 
   const form = useForm<EditQuizFormData>({
     resolver: zodResolver(editQuizSchema),
@@ -454,3 +458,5 @@ export default function TeacherEditQuizPage() {
     </div>
   );
 }
+
+    

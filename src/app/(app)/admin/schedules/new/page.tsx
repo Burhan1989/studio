@@ -24,8 +24,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ScheduleItem } from "@/lib/types";
-import { addSchedule, mockClasses, mockTeachers, mockLessons, mockQuizzes } from "@/lib/mockData";
+import { addSchedule, getClasses, getTeachers, mockLessons, mockQuizzes } from "@/lib/mockData";
 import { format, getDay, addDays, startOfWeek, nextMonday, nextTuesday, nextWednesday, nextThursday, nextFriday, nextSaturday, isPast, setDay } from "date-fns";
+import { id as LocaleID } from 'date-fns/locale';
 
 const scheduleCategories = ['Pelajaran', 'Kuis', 'Tugas', 'Diskusi', 'Lainnya'] as const;
 const daysOfWeek = [
@@ -61,7 +62,7 @@ export default function AdminNewSchedulePage() {
     resolver: zodResolver(newScheduleSchema),
     defaultValues: {
       title: "",
-      dayOfWeek: "", // Default to empty, user must select
+      dayOfWeek: "", 
       time: "",
       classId: "_NO_CLASS_",
       teacherId: "_NO_TEACHER_",
@@ -75,22 +76,28 @@ export default function AdminNewSchedulePage() {
   function calculateDateForSelectedDay(dayValue: string): string {
     const selectedDayNumber = parseInt(dayValue, 10); // 1 for Mon, ..., 6 for Sat
     let targetDate = new Date();
-    const currentDayNumber = getDay(targetDate) === 0 ? 7 : getDay(targetDate); // Adjust Sunday to 7 to align with 1-6 for Mon-Sat
+    const currentDayNumber = getDay(targetDate) === 0 ? 7 : getDay(targetDate); 
 
-    if (selectedDayNumber < currentDayNumber && !isPast(setDay(targetDate, selectedDayNumber, { weekStartsOn:1 }))) {
-        // If selected day is earlier in the current week and not past, use current week's day
-        targetDate = setDay(targetDate, selectedDayNumber, { weekStartsOn: 1});
-    } else {
-        // Otherwise, find the next occurrence of that day
-        switch (selectedDayNumber) {
-            case 1: targetDate = nextMonday(targetDate); break;
-            case 2: targetDate = nextTuesday(targetDate); break;
-            case 3: targetDate = nextWednesday(targetDate); break;
-            case 4: targetDate = nextThursday(targetDate); break;
-            case 5: targetDate = nextFriday(targetDate); break;
-            case 6: targetDate = nextSaturday(targetDate); break;
-            default: targetDate = new Date(); // Should not happen
-        }
+    // Determine the current week's Monday
+    const currentWeekMonday = startOfWeek(targetDate, { weekStartsOn: 1 });
+    
+    // Target day in the current week
+    let potentialTargetDate = setDay(currentWeekMonday, selectedDayNumber, { weekStartsOn: 1 });
+
+    // If the potential target date is in the past (relative to today, not just the start of the week),
+    // then move to the next week's occurrence of that day.
+    const today = new Date();
+    today.setHours(0,0,0,0); // Normalize today to the start of the day
+
+    if (potentialTargetDate < today && selectedDayNumber < currentDayNumber) {
+        // If the day in current week has passed and the selected day is earlier than current day of week
+        targetDate = setDay(addDays(currentWeekMonday, 7), selectedDayNumber, { weekStartsOn: 1 });
+    } else if (potentialTargetDate < today && selectedDayNumber >= currentDayNumber) {
+        // If the day in current week has passed but it's today or later in the week (e.g. it's Wed, selected Mon - use next Mon)
+         targetDate = setDay(addDays(currentWeekMonday, 7), selectedDayNumber, { weekStartsOn: 1 });
+    }
+    else {
+        targetDate = potentialTargetDate;
     }
     return format(targetDate, "yyyy-MM-dd");
   }
@@ -103,7 +110,7 @@ export default function AdminNewSchedulePage() {
     
     const newScheduleData: Omit<ScheduleItem, 'id' | 'className' | 'teacherName'> = {
       title: values.title,
-      date: calculatedDate, // Use calculated date
+      date: calculatedDate, 
       time: values.time,
       classId: values.classId === "_NO_CLASS_" ? undefined : values.classId,
       teacherId: values.teacherId === "_NO_TEACHER_" ? undefined : values.teacherId,
@@ -121,7 +128,7 @@ export default function AdminNewSchedulePage() {
     if (addedSchedule) {
       toast({
         title: "Jadwal Baru Ditambahkan",
-        description: `Jadwal "${values.title}" untuk ${format(new Date(calculatedDate), 'EEEE, dd MMMM yyyy')} telah berhasil ditambahkan.`,
+        description: `Jadwal "${values.title}" untuk ${format(parseISO(addedSchedule.date), 'EEEE, dd MMMM yyyy', { locale: LocaleID })} telah berhasil ditambahkan.`,
       });
       router.push("/admin"); 
       router.refresh(); 
@@ -242,7 +249,7 @@ export default function AdminNewSchedulePage() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="_NO_CLASS_">Umum (Semua Kelas)</SelectItem>
-                        {mockClasses.map((cls) => (
+                        {getClasses().map((cls) => (
                           <SelectItem key={cls.ID_Kelas} value={cls.ID_Kelas}>
                             {cls.Nama_Kelas} - {cls.jurusan}
                           </SelectItem>
@@ -267,7 +274,7 @@ export default function AdminNewSchedulePage() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="_NO_TEACHER_">Tidak Ditentukan</SelectItem>
-                        {mockTeachers.filter(t => !t.isAdmin).map((teacher) => (
+                        {getTeachers().filter(t => !t.isAdmin).map((teacher) => (
                           <SelectItem key={teacher.ID_Guru} value={teacher.ID_Guru}>
                             {teacher.Nama_Lengkap}
                           </SelectItem>
@@ -354,5 +361,3 @@ export default function AdminNewSchedulePage() {
     </div>
   );
 }
-
-    

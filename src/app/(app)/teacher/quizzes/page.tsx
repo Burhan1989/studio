@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FileQuestion, PlusCircle, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getQuizzesByTeacherId, mockQuizzes, mockClasses } from "@/lib/mockData"; 
+import { getQuizzesByTeacherId, mockQuizzes, getClasses } from "@/lib/mockData"; 
 import type { Quiz, ClassData } from "@/lib/types";
 
 export default function TeacherQuizzesPage() {
@@ -19,8 +19,9 @@ export default function TeacherQuizzesPage() {
   const [classesMap, setClassesMap] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    const classData = getClasses(); // Use getter function
     const classIdToNameMap: Record<string, string> = {};
-    mockClasses.forEach(cls => {
+    classData.forEach(cls => {
       classIdToNameMap[cls.ID_Kelas] = `${cls.Nama_Kelas} (${cls.jurusan})`;
     });
     setClassesMap(classIdToNameMap);

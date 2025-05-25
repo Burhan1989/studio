@@ -19,17 +19,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { FilePlus2, Save, Loader2, ArrowLeft, PlusCircle, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { addQuiz, mockClasses } from "@/lib/mockData";
+import { addQuiz, getClasses } from "@/lib/mockData"; // Changed import
 import type { Question, Quiz, ClassData } from "@/lib/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const questionSchema = z.object({
-  id: z.string().optional(), // To handle existing questions during edit, not used yet
+  id: z.string().optional(), 
   text: z.string().min(5, "Teks pertanyaan minimal 5 karakter."),
   type: z.enum(["multiple-choice", "true-false", "essay"], {
     required_error: "Tipe pertanyaan harus dipilih.",
@@ -53,7 +53,11 @@ export default function TeacherNewQuizPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
-  const availableClasses: ClassData[] = mockClasses; 
+  const [availableClasses, setAvailableClasses] = useState<ClassData[]>([]);
+
+  useEffect(() => {
+    setAvailableClasses(getClasses());
+  }, []);
 
   const form = useForm<NewQuizFormData>({
     resolver: zodResolver(newQuizSchema),
@@ -77,11 +81,11 @@ export default function TeacherNewQuizPage() {
     }
     setIsLoading(true);
     
-    const quizDataForMock: Omit<Quiz, 'id'> & { teacherId: string; assignedClassIds?: string[] } = {
+    const quizDataForMock: Omit<Quiz, 'id'> & { teacherId: string } = {
         title: values.title,
         description: values.description,
         teacherId: user.id, 
-        assignedClassIds: values.assignedClassIds && values.assignedClassIds.length > 0 ? values.assignedClassIds : undefined,
+        assignedClassIds: values.assignedClassIds && values.assignedClassIds.length > 0 ? values.assignedClassIds : [],
         questions: values.questions.map(q => ({
             ...q,
             id: `q${Date.now()}${Math.random().toString(36).substring(2,7)}`,
@@ -387,3 +391,5 @@ export default function TeacherNewQuizPage() {
   );
 }
 
+
+    

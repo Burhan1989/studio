@@ -24,8 +24,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import type { ScheduleItem, ClassData, TeacherData, Lesson, Quiz } from "@/lib/types";
-import { getScheduleById, updateSchedule, mockClasses, mockTeachers, mockLessons, mockQuizzes } from "@/lib/mockData";
+import { getScheduleById, updateSchedule, getClasses, getTeachers, mockLessons, mockQuizzes } from "@/lib/mockData";
 import { format, getDay, addDays, startOfWeek, setDay, parseISO } from "date-fns";
+import { id as LocaleID } from 'date-fns/locale';
 
 const scheduleCategories = ['Pelajaran', 'Kuis', 'Tugas', 'Diskusi', 'Lainnya'] as const;
 const daysOfWeek = [
@@ -66,10 +67,10 @@ export default function AdminEditSchedulePage() {
       title: "",
       dayOfWeek: "",
       time: "",
-      classId: undefined,
-      teacherId: undefined,
-      lessonId: undefined,
-      quizId: undefined,
+      classId: "_NO_CLASS_",
+      teacherId: "_NO_TEACHER_",
+      lessonId: "_NO_LESSON_",
+      quizId: "_NO_QUIZ_",
       description: "",
       category: "Pelajaran",
     },
@@ -81,12 +82,13 @@ export default function AdminEditSchedulePage() {
       if (scheduleData) {
         setInitialData(scheduleData);
         const scheduleDateObj = parseISO(scheduleData.date);
-        // getDay: Sunday is 0, Monday is 1, etc. Align with our 1-6 values.
-        const dayVal = getDay(scheduleDateObj) === 0 ? "7" : String(getDay(scheduleDateObj)); // Should not be 7, adjust if needed
+        
+        const dayVal = getDay(scheduleDateObj); 
+        const dayString = dayVal === 0 ? "7" : String(dayVal); // Convert Sunday (0) to "7" or align with your 1-6 system
 
         form.reset({
           title: scheduleData.title,
-          dayOfWeek: dayVal,
+          dayOfWeek: dayString,
           time: scheduleData.time,
           classId: scheduleData.classId || "_NO_CLASS_",
           teacherId: scheduleData.teacherId || "_NO_TEACHER_",
@@ -110,8 +112,7 @@ export default function AdminEditSchedulePage() {
     const selectedDayNumber = parseInt(dayValue, 10); // 1 for Mon, ..., 6 for Sat
     const originalDate = parseISO(originalDateStr);
     
-    // Set the day of the week within the same week as the original date
-    const targetDate = setDay(originalDate, selectedDayNumber, { weekStartsOn: 1 });
+    const targetDate = setDay(originalDate, selectedDayNumber, { weekStartsOn: 1 }); // weekStartsOn: 1 for Monday
     
     return format(targetDate, "yyyy-MM-dd");
   }
@@ -143,7 +144,7 @@ export default function AdminEditSchedulePage() {
     if (success) {
       toast({
         title: "Jadwal Diperbarui",
-        description: `Jadwal "${values.title}" untuk ${format(new Date(calculatedDate), 'EEEE, dd MMMM yyyy')} telah berhasil diperbarui.`,
+        description: `Jadwal "${values.title}" untuk ${format(parseISO(updatedScheduleData.date), 'EEEE, dd MMMM yyyy', { locale: LocaleID })} telah berhasil diperbarui.`,
       });
       router.push("/admin"); 
       router.refresh(); 
@@ -273,7 +274,7 @@ export default function AdminEditSchedulePage() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="_NO_CLASS_">Umum (Semua Kelas)</SelectItem>
-                        {mockClasses.map((cls) => (
+                        {getClasses().map((cls) => (
                           <SelectItem key={cls.ID_Kelas} value={cls.ID_Kelas}>
                             {cls.Nama_Kelas} - {cls.jurusan}
                           </SelectItem>
@@ -298,7 +299,7 @@ export default function AdminEditSchedulePage() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="_NO_TEACHER_">Tidak Ditentukan</SelectItem>
-                        {mockTeachers.filter(t => !t.isAdmin).map((teacher) => (
+                        {getTeachers().filter(t => !t.isAdmin).map((teacher) => (
                           <SelectItem key={teacher.ID_Guru} value={teacher.ID_Guru}>
                             {teacher.Nama_Lengkap}
                           </SelectItem>
@@ -385,5 +386,3 @@ export default function AdminEditSchedulePage() {
     </div>
   );
 }
-
-    
