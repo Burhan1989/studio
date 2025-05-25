@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, UserCog, KeyRound, Upload, Download } from "lucide-react"; 
 import type { TeacherData } from "@/lib/types"; 
+import Link from "next/link"; // Import Link
 
 // Mock Data Guru (Sementara) - Lebih Detail
 const mockTeachers: TeacherData[] = [
@@ -123,8 +124,10 @@ export default function AdminTeachersPage() {
             <div className="flex items-center gap-3">
               <CardTitle className="text-xl">Daftar Guru</CardTitle>
             </div>
-            <Button onClick={() => handleActionPlaceholder("Tambah", "Guru Baru")}>
-              <UserPlus className="w-4 h-4 mr-2" /> Tambah Guru Baru
+            <Button asChild>
+              <Link href="/admin/teachers/new">
+                <UserPlus className="w-4 h-4 mr-2" /> Tambah Guru Baru
+              </Link>
             </Button>
           </div>
           <CardDescription>Lihat, tambah, edit, atau hapus data guru dalam sistem.</CardDescription>
@@ -182,3 +185,5 @@ export default function AdminTeachersPage() {
     </div>
   );
 }
+
+    
