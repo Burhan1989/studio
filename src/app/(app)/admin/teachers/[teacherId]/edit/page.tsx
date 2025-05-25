@@ -39,6 +39,16 @@ const editTeacherSchema = z.object({
   Kelas_Ajar: z.string().min(1, "Kelas ajar harus diisi.").transform(val => val.split(',').map(s => s.trim())),
   Jabatan: z.string().optional().or(z.literal("")),
   Status_Aktif: z.boolean().default(true),
+  newPassword: z.string().min(6, "Password baru minimal 6 karakter.").optional().or(z.literal("")),
+  confirmNewPassword: z.string().optional().or(z.literal("")),
+}).refine(data => {
+  if (data.newPassword && data.newPassword !== data.confirmNewPassword) {
+    return false;
+  }
+  return true;
+}, {
+  message: "Konfirmasi password tidak cocok dengan password baru.",
+  path: ["confirmNewPassword"],
 });
 
 type EditTeacherFormData = z.infer<typeof editTeacherSchema>;
@@ -63,9 +73,11 @@ export default function AdminEditTeacherPage() {
       Alamat: "",
       Nomor_Telepon: "",
       Mata_Pelajaran: "",
-      Kelas_Ajar: [] as any, // Initial value for string input, will be transformed
+      Kelas_Ajar: [] as any, 
       Jabatan: "",
       Status_Aktif: true,
+      newPassword: "",
+      confirmNewPassword: "",
     },
   });
 
@@ -86,6 +98,8 @@ export default function AdminEditTeacherPage() {
           Kelas_Ajar: teacherData.Kelas_Ajar.join(", ") as any,
           Jabatan: teacherData.Jabatan || "",
           Status_Aktif: teacherData.Status_Aktif,
+          newPassword: "", // Password tidak di-prefill
+          confirmNewPassword: "", // Password tidak di-prefill
         });
       } else {
         toast({
@@ -103,18 +117,19 @@ export default function AdminEditTeacherPage() {
     setIsLoading(true);
     
     const updatedTeacherData: TeacherData = {
-      ...initialData, // Retain ID_Guru, Password_Hash, Profil_Foto, Tanggal_Pendaftaran
+      ...initialData, 
       Nama_Lengkap: values.Nama_Lengkap,
-      Username: values.Username, // Consider if username should be editable
-      Email: values.Email, // Consider if email should be editable, usually not after creation
+      // Username dan Email tidak diubah di sini
       Jenis_Kelamin: values.Jenis_Kelamin,
       Tanggal_Lahir: values.Tanggal_Lahir,
       Alamat: values.Alamat,
       Nomor_Telepon: values.Nomor_Telepon,
       Mata_Pelajaran: values.Mata_Pelajaran,
-      Kelas_Ajar: values.Kelas_Ajar, // Already an array due to transform
+      Kelas_Ajar: values.Kelas_Ajar, 
       Jabatan: values.Jabatan,
       Status_Aktif: values.Status_Aktif,
+      // Update password jika ada input baru
+      Password_Hash: values.newPassword ? values.newPassword : initialData.Password_Hash, // Di aplikasi nyata, ini akan di-hash
     };
 
     console.log("Data guru yang akan diperbarui (simulasi):", updatedTeacherData);
@@ -306,10 +321,36 @@ export default function AdminEditTeacherPage() {
                   <FormItem className="md:col-span-2">
                     <FormLabel>Kelas yang Diajar</FormLabel>
                     <FormControl>
-                       {/* Display as string, but it's managed as array in the form state due to transform */}
                       <Input placeholder="cth. Kelas 10A, Kelas 11B IPA" {...field} value={Array.isArray(field.value) ? field.value.join(", ") : field.value} />
                     </FormControl>
                     <FormDescription>Pisahkan dengan koma jika lebih dari satu kelas.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="newPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password Baru (Opsional)</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Masukkan password baru jika ingin mengubah" {...field} />
+                    </FormControl>
+                    <FormDescription>Biarkan kosong jika tidak ingin mengubah password.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="confirmNewPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Konfirmasi Password Baru</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Konfirmasi password baru" {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
