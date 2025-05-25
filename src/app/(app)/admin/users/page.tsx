@@ -6,10 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { UserPlus, Edit, Trash2, Users, UserCog } from "lucide-react";
-import type { TeacherData, StudentData } from "@/lib/types"; // Import new types
+import { UserPlus, Edit, Trash2, Users, UserCog, KeyRound } from "lucide-react"; // Tambahkan KeyRound
+import type { TeacherData, StudentData } from "@/lib/types"; 
 
-// Mock Data (Sementara)
+// Mock Data (Sementara) - Lebih Detail
 const mockTeachers: TeacherData[] = [
   { 
     ID_Guru: "guru1", 
@@ -23,7 +23,7 @@ const mockTeachers: TeacherData[] = [
     Alamat: "Jl. Pendidikan No. 1, Jakarta",
     Nomor_Telepon: "081234567890",
     Status_Aktif: true,
-    Password_Hash: "hashed_password_guru1", // Placeholder
+    Password_Hash: "hashed_password_guru1", 
     Tanggal_Pendaftaran: "2010-08-01",
     Jabatan: "Guru Senior",
     Profil_Foto: "https://placehold.co/100x100.png"
@@ -40,7 +40,7 @@ const mockTeachers: TeacherData[] = [
     Alamat: "Jl. Cendekia No. 5, Bandung",
     Nomor_Telepon: "081234567891",
     Status_Aktif: true,
-    Password_Hash: "hashed_password_guru2", // Placeholder
+    Password_Hash: "hashed_password_guru2", 
     Tanggal_Pendaftaran: "2012-07-15",
     Jabatan: "Guru Mata Pelajaran",
     Profil_Foto: "https://placehold.co/100x100.png"
@@ -56,8 +56,8 @@ const mockTeachers: TeacherData[] = [
     Tanggal_Lahir: "1975-03-10",
     Alamat: "Jl. Ilmuwan No. 12, Surabaya",
     Nomor_Telepon: "081234567892",
-    Status_Aktif: false, // Example of inactive teacher
-    Password_Hash: "hashed_password_guru3", // Placeholder
+    Status_Aktif: false, 
+    Password_Hash: "hashed_password_guru3", 
     Tanggal_Pendaftaran: "2005-01-20",
     Jabatan: "Kepala Jurusan IPA",
     Profil_Foto: "https://placehold.co/100x100.png"
@@ -78,10 +78,10 @@ const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2007-08-17",
     Alamat: "Jl. Pelajar No. 10, Jakarta",
     Nomor_Telepon: "085678901234",
-    Program_Studi: "IPA", // This will be displayed as "Jurusan"
+    Program_Studi: "IPA", 
     Tanggal_Daftar: "2023-07-01",
     Status_Aktif: true,
-    Password_Hash: "hashed_password_siswa1", // Placeholder
+    Password_Hash: "hashed_password_siswa1", 
     Profil_Foto: "https://placehold.co/100x100.png"
   },
   { 
@@ -97,10 +97,10 @@ const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2006-05-22",
     Alamat: "Jl. Siswa No. 20, Bandung",
     Nomor_Telepon: "085678901235",
-    Program_Studi: "IPS", // This will be displayed as "Jurusan"
+    Program_Studi: "IPS", 
     Tanggal_Daftar: "2022-07-01",
     Status_Aktif: true,
-    Password_Hash: "hashed_password_siswa2", // Placeholder
+    Password_Hash: "hashed_password_siswa2", 
     Profil_Foto: "https://placehold.co/100x100.png"
   },
   { 
@@ -116,10 +116,10 @@ const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2005-02-10",
     Alamat: "Jl. Prestasi No. 30, Surabaya",
     Nomor_Telepon: "085678901236",
-    Program_Studi: "Bahasa", // This will be displayed as "Jurusan"
+    Program_Studi: "Bahasa", 
     Tanggal_Daftar: "2021-07-01",
-    Status_Aktif: false, // Example of inactive student
-    Password_Hash: "hashed_password_siswa3", // Placeholder
+    Status_Aktif: false, 
+    Password_Hash: "hashed_password_siswa3", 
     Profil_Foto: "https://placehold.co/100x100.png"
   },
 ];
@@ -187,6 +187,9 @@ export default function AdminUsersPage() {
                     <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", `Guru ${teacher.Nama_Lengkap}`)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleActionPlaceholder("Reset Akun", `Guru ${teacher.Nama_Lengkap}`)}>
+                      <KeyRound className="w-4 h-4" />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
@@ -224,7 +227,7 @@ export default function AdminUsersPage() {
                 <TableHead>NISN</TableHead>
                 <TableHead>No. Induk</TableHead>
                 <TableHead>Kelas</TableHead>
-                <TableHead>Jurusan</TableHead> {/* Changed from Program Studi */}
+                <TableHead>Jurusan</TableHead> 
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
@@ -238,7 +241,7 @@ export default function AdminUsersPage() {
                   <TableCell>{student.NISN}</TableCell>
                   <TableCell>{student.Nomor_Induk}</TableCell>
                   <TableCell>{student.Kelas}</TableCell>
-                  <TableCell>{student.Program_Studi}</TableCell> {/* Displaying Program_Studi here */}
+                  <TableCell>{student.Program_Studi}</TableCell> 
                   <TableCell>
                     <Badge variant={student.Status_Aktif ? "default" : "destructive"}>
                       {student.Status_Aktif ? "Aktif" : "Tidak Aktif"}
@@ -250,6 +253,9 @@ export default function AdminUsersPage() {
                     </Button>
                     <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", `Siswa ${student.Nama_Lengkap}`)}>
                       <Trash2 className="w-4 h-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleActionPlaceholder("Reset Akun", `Siswa ${student.Nama_Lengkap}`)}>
+                      <KeyRound className="w-4 h-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -266,3 +272,4 @@ export default function AdminUsersPage() {
     </div>
   );
 }
+
