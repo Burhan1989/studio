@@ -1,5 +1,5 @@
 
-import type { Lesson, Quiz, Question, StudentData, TeacherData, ParentData, UserProgress, LessonStatusCounts, SchoolProfileData, ClassData } from './types';
+import type { Lesson, Quiz, Question, StudentData, TeacherData, ParentData, UserProgress, LessonStatusCounts, SchoolProfileData, ClassData, MajorData } from './types';
 import type { ChartConfig } from "@/components/ui/chart";
 
 export const mockLessons: Lesson[] = [
@@ -139,7 +139,7 @@ export const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2008-01-15",
     Alamat: "Jl. Belajar No. 5, Kota Ilmu",
     Nomor_Telepon: "081234567899",
-    Program_Studi: "IPA", // Pastikan ada nilai
+    Program_Studi: "IPA",
     Tanggal_Daftar: "2023-08-01",
     Status_Aktif: true,
     Password_Hash: "hashed_password_siswa_rajin",
@@ -158,7 +158,7 @@ export const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2007-08-17",
     Alamat: "Jl. Pelajar No. 10, Jakarta",
     Nomor_Telepon: "085678901234",
-    Program_Studi: "IPA", // Pastikan ada nilai
+    Program_Studi: "IPA",
     Tanggal_Daftar: "2023-07-01",
     Status_Aktif: true,
     Password_Hash: "hashed_password_siswa1",
@@ -177,7 +177,7 @@ export const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2006-05-22",
     Alamat: "Jl. Siswa No. 20, Bandung",
     Nomor_Telepon: "085678901235",
-    Program_Studi: "IPS", // Pastikan ada nilai
+    Program_Studi: "IPS",
     Tanggal_Daftar: "2022-07-01",
     Status_Aktif: true,
     Password_Hash: "hashed_password_siswa2",
@@ -196,7 +196,7 @@ export const mockStudents: StudentData[] = [
     Tanggal_Lahir: "2005-02-10",
     Alamat: "Jl. Prestasi No. 30, Surabaya",
     Nomor_Telepon: "085678901236",
-    Program_Studi: "Bahasa", // Pastikan ada nilai
+    Program_Studi: "Bahasa",
     Tanggal_Daftar: "2021-07-01",
     Status_Aktif: false,
     Password_Hash: "hashed_password_siswa3",
@@ -321,8 +321,8 @@ export let mockClasses: ClassData[] = [
   { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'guru1', jumlahSiswa: 30, jurusan: "IPA" },
   { ID_Kelas: 'kelasB', Nama_Kelas: 'Kelas 11B', ID_Guru: 'guru2', jumlahSiswa: 28, jurusan: "IPS" },
   { ID_Kelas: 'kelasC', Nama_Kelas: 'Kelas 12C', ID_Guru: 'guru3', jumlahSiswa: 32, jurusan: "Bahasa" },
-  { ID_Kelas: 'kelasD', Nama_Kelas: 'Kelas 10B', ID_Guru: 'guru1', jumlahSiswa: 29, jurusan: "IPA" }, // Tambahkan jurusan
-  { ID_Kelas: 'kelasE', Nama_Kelas: 'Kelas 11A', ID_Guru: 'guru2', jumlahSiswa: 31, jurusan: "IPS" }, // Tambahkan jurusan
+  { ID_Kelas: 'kelasD', Nama_Kelas: 'Kelas 10B', ID_Guru: 'guru1', jumlahSiswa: 29, jurusan: "IPA" },
+  { ID_Kelas: 'kelasE', Nama_Kelas: 'Kelas 11A', ID_Guru: 'guru2', jumlahSiswa: 31, jurusan: "IPS" },
 ];
 
 
@@ -385,6 +385,14 @@ export const lessonStatusChartConfig: ChartConfig = {
   Dikerjakan: { label: 'Dikerjakan', color: 'hsl(var(--chart-2))' },
   'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
 };
+
+export const mockMajors: MajorData[] = [
+  { ID_Jurusan: "major001", Nama_Jurusan: "Ilmu Pengetahuan Alam (IPA)", Deskripsi_Jurusan: "Fokus pada studi sains seperti Fisika, Kimia, Biologi." },
+  { ID_Jurusan: "major002", Nama_Jurusan: "Ilmu Pengetahuan Sosial (IPS)", Deskripsi_Jurusan: "Fokus pada studi sosial seperti Sejarah, Ekonomi, Geografi." },
+  { ID_Jurusan: "major003", Nama_Jurusan: "Bahasa dan Budaya", Deskripsi_Jurusan: "Fokus pada studi bahasa, sastra, dan budaya." },
+  { ID_Jurusan: "major004", Nama_Jurusan: "Teknik Komputer dan Jaringan (TKJ)", Deskripsi_Jurusan: "Untuk SMK, fokus pada teknologi informasi dan jaringan." },
+  { ID_Jurusan: "major005", Nama_Jurusan: "Akuntansi dan Keuangan Lembaga (AKL)", Deskripsi_Jurusan: "Untuk SMK, fokus pada akuntansi dan keuangan." },
+];
 
 
 export function getLessonById(id: string): Lesson | undefined {

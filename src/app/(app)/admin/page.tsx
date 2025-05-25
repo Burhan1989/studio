@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Users, BookCopy, FileQuestion, LineChart, Shield, MessageSquare, School, UserCog, Users2 as ParentIcon, Building } from 'lucide-react';
+import { Users, BookCopy, FileQuestion, LineChart, Shield, MessageSquare, School, UserCog, Users2 as ParentIcon, Building, Network } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -147,6 +147,11 @@ export default function AdminPage() {
             <Button asChild variant="outline">
                 <Link href="/admin/classes" className="flex items-center justify-center gap-2">
                     <School className="w-5 h-5" /> Kelola Kelas
+                </Link>
+            </Button>
+             <Button asChild variant="outline">
+                <Link href="/admin/majors" className="flex items-center justify-center gap-2">
+                    <Network className="w-5 h-5" /> Manajemen Jurusan
                 </Link>
             </Button>
             <Button asChild variant="outline">

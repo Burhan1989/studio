@@ -149,3 +149,9 @@ export interface SchoolProfileData {
   misi?: string;
   logo?: File | string; // File for upload, string for URL if already uploaded
 }
+
+export interface MajorData {
+  ID_Jurusan: string;
+  Nama_Jurusan: string;
+  Deskripsi_Jurusan?: string;
+}

@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud, Network } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { UserRole } from '@/lib/types';
 import { mockSchoolProfile } from '@/lib/mockData';
@@ -51,6 +51,7 @@ const baseNavItems: NavItem[] = [
   { href: '/admin/students', label: 'Kelola Siswa', icon: Users, adminOnly: true },
   { href: '/admin/parents', label: 'Kelola Orang Tua', icon: ParentIcon, adminOnly: true },
   { href: '/admin/classes', label: 'Manajemen Kelas', icon: School, adminOnly: true },
+  { href: '/admin/majors', label: 'Manajemen Jurusan', icon: Network, adminOnly: true },
   { href: '/admin/courses', label: 'Kelola Pelajaran', icon: BookCopy, adminOnly: true },
   { href: '/admin/quizzes', label: 'Kelola Kuis', icon: FileQuestion, adminOnly: true },
   { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart, adminOnly: true },
@@ -86,14 +87,17 @@ export default function AppShell({ children }: { children: ReactNode }) {
      filteredNavItems = baseNavItems.filter(item => {
       if (item.adminOnly || item.parentOnly || item.studentOnly) return false; 
       if (item.teacherOnly) return true; 
+      // Show general items if not specific to any other role
       return !item.adminOnly && !item.parentOnly && !item.studentOnly && !item.teacherOnly;
     });
   } else if (userRole === 'student') {
      filteredNavItems = baseNavItems.filter(item => {
       if (item.adminOnly || item.parentOnly || item.teacherOnly) return false; 
+      // Show student specific items or general items
       return item.studentOnly || (!item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly);
     });
   } else {
+    // Default for users without specific roles (if any, or if role is undefined)
     filteredNavItems = baseNavItems.filter(item => 
         !item.adminOnly && 
         !item.parentOnly && 
@@ -114,13 +118,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <Image
                 src={schoolLogoUrl}
                 alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
-                width={120} // Aspect ratio base
-                height={30}  // Aspect ratio base
-                className="h-8 w-auto object-contain group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:w-7"
+                width={48} 
+                height={48} 
+                className="h-10 w-10 object-contain group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:w-7"
                 data-ai-hint="school logo"
               />
             ) : (
-              <GraduationCap className="w-8 h-8 text-primary group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7" />
+              <GraduationCap className="w-10 h-10 text-primary group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7" />
             )}
             <span className="text-xs font-medium text-center text-foreground px-1 group-data-[collapsible=icon]:hidden w-full truncate">
               {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
