@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { mockSchedules, mockClasses, getTeachers } from "@/lib/mockData"; // Import getTeachers instead of mockTeachers
+import { getSchedules, getClasses, getTeachers } from "@/lib/mockData"; // Import getter functions
 import type { ScheduleItem } from "@/lib/types";
 import { format, parseISO } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
@@ -36,18 +36,20 @@ export default function AdminPage() {
   }, [user, authIsLoading, router]);
 
   useEffect(() => {
-    const teachers = getTeachers(); // Call getTeachers to fetch teacher data
-    // Enrich schedules with class names and teacher names for display
-    const enrichedSchedules = mockSchedules.map(schedule => {
-      const classInfo = schedule.classId ? mockClasses.find(c => c.ID_Kelas === schedule.classId) : null;
+    const teachers = getTeachers(); 
+    const schedules = getSchedules();
+    const classes = getClasses();
+    
+    const enrichedSchedules = schedules.map(schedule => {
+      const classInfo = schedule.classId ? classes.find(c => c.ID_Kelas === schedule.classId) : null;
       const teacherInfo = schedule.teacherId ? teachers.find(t => t.ID_Guru === schedule.teacherId) : null;
       return {
         ...schedule,
         className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (schedule.classId ? schedule.className : 'Umum (Semua Kelas)'),
         teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (schedule.teacherId ? schedule.teacherName : 'Tidak Ditentukan'),
       };
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) // Sort by most recent
-      .slice(0, 5); // Display latest 5 schedules
+    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) 
+      .slice(0, 5); 
     setRecentSchedules(enrichedSchedules);
   }, []);
 
@@ -197,7 +199,7 @@ export default function AdminPage() {
           )}
            <div className="mt-4 text-right">
              <Button variant="outline" asChild>
-                <Link href="/schedule"> {/* Assuming /schedule shows all schedules */}
+                <Link href="/schedule"> 
                     Lihat Semua Jadwal
                 </Link>
             </Button>

@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { mockSchedules, mockClasses, mockTeachers, mockStudents } from '@/lib/mockData';
+import { getSchedules, getClasses, getTeachers, getStudents, mockLessons, mockQuizzes } from '@/lib/mockData';
 import type { ScheduleItem, ClassData, StudentData } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ import {
   addWeeks,
   subWeeks,
   getDay,
-  eachDayOfInterval // Added import
+  eachDayOfInterval
 } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
 import Link from 'next/link';
@@ -48,8 +48,6 @@ function getLessonById(id: string) {
 function getQuizById(id: string) {
   return mockQuizzes.find(quiz => quiz.id === id);
 }
-// Import mockLessons and mockQuizzes for helper functions
-import { mockLessons, mockQuizzes } from '@/lib/mockData';
 
 
 export default function SchedulePage() {
@@ -67,9 +65,13 @@ export default function SchedulePage() {
   const [weeklyViewData, setWeeklyViewData] = useState<DayWithSchedules[]>([]);
 
   useEffect(() => {
-    const enrichedSchedules = mockSchedules.map(schedule => {
-      const classInfo = mockClasses.find(c => c.ID_Kelas === schedule.classId);
-      const teacherInfo = mockTeachers.find(t => t.ID_Guru === schedule.teacherId);
+    const schedules = getSchedules();
+    const classes = getClasses();
+    const teachers = getTeachers();
+
+    const enrichedSchedules = schedules.map(schedule => {
+      const classInfo = classes.find(c => c.ID_Kelas === schedule.classId);
+      const teacherInfo = teachers.find(t => t.ID_Guru === schedule.teacherId);
       return {
         ...schedule,
         className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : 'Umum (Semua Kelas)',
@@ -81,9 +83,11 @@ export default function SchedulePage() {
 
   useEffect(() => {
     if (user?.role === 'student' && user.email) {
-        const studentData = mockStudents.find(s => s.Email === user.email);
+        const students = getStudents();
+        const classes = getClasses();
+        const studentData = students.find(s => s.Email === user.email);
         if (studentData) {
-            const classData = mockClasses.find(c => c.Nama_Kelas === studentData.Kelas && c.jurusan === studentData.Program_Studi);
+            const classData = classes.find(c => c.Nama_Kelas === studentData.Kelas && c.jurusan === studentData.Program_Studi);
             setStudentClassInfo(classData || null);
         } else {
             setStudentClassInfo(null);
@@ -149,9 +153,9 @@ export default function SchedulePage() {
 
   const ScheduleCard = ({ item }: { item: ScheduleItem }) => {
     const scheduleDate = parseISO(item.date);
-    const isPast = scheduleDate < today && !isSameDay(scheduleDate, today);
+    const isPastDate = scheduleDate < today && !isSameDay(scheduleDate, today);
     return (
-        <Card className={`shadow-md overflow-hidden transition-all hover:shadow-lg ${isPast ? 'opacity-70 bg-muted/30' : 'bg-card'}`}>
+        <Card className={`shadow-md overflow-hidden transition-all hover:shadow-lg ${isPastDate ? 'opacity-70 bg-muted/30' : 'bg-card'}`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between mb-2">
             <CardTitle className="text-lg">{item.title}</CardTitle>
@@ -253,7 +257,7 @@ export default function SchedulePage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Semua Kelas</SelectItem>
-                  {mockClasses.map(cls => (
+                  {getClasses().map(cls => (
                     <SelectItem key={cls.ID_Kelas} value={cls.ID_Kelas}>
                       {cls.Nama_Kelas} - {cls.jurusan}
                     </SelectItem>

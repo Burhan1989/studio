@@ -141,10 +141,10 @@ export let mockQuizzes: Quiz[] = [
 const STUDENTS_STORAGE_KEY = 'adeptlearn-students';
 const TEACHERS_STORAGE_KEY = 'adeptlearn-teachers';
 const MAJORS_STORAGE_KEY = 'adeptlearn-majors';
+const CLASSES_STORAGE_KEY = 'adeptlearn-classes';
+const SCHEDULES_STORAGE_KEY = 'adeptlearn-schedules';
 // Add other keys as needed:
-// const CLASSES_STORAGE_KEY = 'adeptlearn-classes';
 // const QUIZZES_STORAGE_KEY = 'adeptlearn-quizzes';
-// const SCHEDULES_STORAGE_KEY = 'adeptlearn-schedules';
 
 
 // --- Initial Mock Data (Defaults if localStorage is empty) ---
@@ -328,11 +328,77 @@ const initialMockMajors: MajorData[] = [
   { ID_Jurusan: "major005", Nama_Jurusan: "Akuntansi dan Keuangan Lembaga (AKL)", Deskripsi_Jurusan: "Untuk SMK, fokus pada akuntansi dan keuangan.", Nama_Kepala_Program: "Sri Mulyani, S.E., Ak." },
 ];
 
-// --- Active Data Arrays (Loaded from localStorage or initialized) ---
-let mockStudents: StudentData[] = [];
-let mockTeachers: TeacherData[] = [];
-let mockMajors: MajorData[] = [];
+const initialMockClasses: ClassData[] = [
+  { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'guru1', jumlahSiswa: 30, jurusan: "IPA" },
+  { ID_Kelas: 'kelasB', Nama_Kelas: 'Kelas 11B', ID_Guru: 'guru2', jumlahSiswa: 28, jurusan: "IPS" },
+  { ID_Kelas: 'kelasC', Nama_Kelas: 'Kelas 12C', ID_Guru: 'guru3', jumlahSiswa: 32, jurusan: "Bahasa" },
+  { ID_Kelas: 'kelasD', Nama_Kelas: 'Kelas 10B', ID_Guru: 'guru1', jumlahSiswa: 29, jurusan: "IPA" },
+  { ID_Kelas: 'kelasE', Nama_Kelas: 'Kelas 11A', ID_Guru: 'guru2', jumlahSiswa: 31, jurusan: "IPS" },
+];
 
+const initialMockSchedules: ScheduleItem[] = [
+  {
+    id: 'schedule1',
+    title: 'Pelajaran Matematika: Aljabar Dasar',
+    date: '2024-08-15',
+    time: '08:00 - 09:30',
+    classId: 'kelasA',
+    className: 'Kelas 10A IPA',
+    lessonId: '1',
+    teacherId: 'teacher001',
+    teacherName: 'Guru Inovatif, M.Pd.',
+    description: 'Pembahasan Bab 1 dan latihan soal.',
+    category: 'Pelajaran',
+  },
+  {
+    id: 'schedule2',
+    title: 'Kuis Fisika: Mekanika Fluida',
+    date: '2024-08-16',
+    time: '10:00 - 10:45',
+    classId: 'kelasB',
+    className: 'Kelas 11B IPS',
+    quizId: 'quiz2',
+    teacherId: 'guru3',
+    teacherName: 'Prof. Dr. Agus Salim, M.Sc.',
+    description: 'Kuis mencakup materi mekanika fluida statis dan dinamis.',
+    category: 'Kuis',
+  },
+  {
+    id: 'schedule3',
+    title: 'Diskusi Kelompok: Analisis Puisi Chairil Anwar',
+    date: '2024-08-17',
+    time: '13:00 - 14:00',
+    classId: 'kelasC',
+    className: 'Kelas 12C Bahasa',
+    teacherId: 'guru2',
+    teacherName: 'Siti Nurhaliza, M.Pd.',
+    description: 'Setiap kelompok mempresentasikan hasil analisisnya.',
+    category: 'Diskusi',
+  },
+  {
+    id: 'schedule4',
+    title: 'Pengumpulan Tugas Sejarah Kontemporer',
+    date: '2024-08-18',
+    time: 'Batas Akhir 23:59',
+    classId: 'kelasB',
+    className: 'Kelas 11B IPS',
+    teacherId: 'guru1',
+    teacherName: 'Dr. Budi Darmawan, S.Kom., M.Cs.',
+    category: 'Tugas',
+  },
+   {
+    id: 'schedule5',
+    title: 'Pelajaran Kimia: Stoikiometri Lanjutan',
+    date: '2024-08-19',
+    time: '09:00 - 10:30',
+    classId: 'kelasA',
+    className: 'Kelas 10A IPA',
+    teacherId: 'teacher001',
+    teacherName: 'Guru Inovatif, M.Pd.',
+    description: 'Membahas konsep mol dan perhitungan reaksi kimia kompleks.',
+    category: 'Pelajaran',
+  }
+];
 
 // --- localStorage Helper Functions ---
 function loadDataFromStorage<T>(key: string, initialData: T[]): T[] {
@@ -360,10 +426,12 @@ function saveDataToStorage<T>(key: string, data: T[]) {
   }
 }
 
-// --- Initialize Data ---
-mockStudents = loadDataFromStorage<StudentData>(STUDENTS_STORAGE_KEY, initialMockStudents);
-mockTeachers = loadDataFromStorage<TeacherData>(TEACHERS_STORAGE_KEY, initialMockTeachers);
-mockMajors = loadDataFromStorage<MajorData>(MAJORS_STORAGE_KEY, initialMockMajors);
+// --- Active Data Arrays (Loaded from localStorage or initialized) ---
+let mockStudents: StudentData[] = loadDataFromStorage<StudentData>(STUDENTS_STORAGE_KEY, initialMockStudents);
+let mockTeachers: TeacherData[] = loadDataFromStorage<TeacherData>(TEACHERS_STORAGE_KEY, initialMockTeachers);
+let mockMajors: MajorData[] = loadDataFromStorage<MajorData>(MAJORS_STORAGE_KEY, initialMockMajors);
+let mockClasses: ClassData[] = loadDataFromStorage<ClassData>(CLASSES_STORAGE_KEY, initialMockClasses);
+let mockSchedules: ScheduleItem[] = loadDataFromStorage<ScheduleItem>(SCHEDULES_STORAGE_KEY, initialMockSchedules);
 
 
 // --- Student Data Functions ---
@@ -526,7 +594,7 @@ export function deleteMajorById(majorId: string): boolean {
   return false;
 }
 
-// --- Other Data (Classes, Parents, Schedules, etc. - still in-memory for now) ---
+// --- Other Data (Parents, SchoolProfile - still in-memory for now) ---
 export let mockParents: ParentData[] = [
     {
         ID_OrangTua: "parent001",
@@ -568,15 +636,6 @@ export let mockParents: ParentData[] = [
         ]
     }
 ];
-
-export let mockClasses: ClassData[] = [
-  { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'guru1', jumlahSiswa: 30, jurusan: "IPA" },
-  { ID_Kelas: 'kelasB', Nama_Kelas: 'Kelas 11B', ID_Guru: 'guru2', jumlahSiswa: 28, jurusan: "IPS" },
-  { ID_Kelas: 'kelasC', Nama_Kelas: 'Kelas 12C', ID_Guru: 'guru3', jumlahSiswa: 32, jurusan: "Bahasa" },
-  { ID_Kelas: 'kelasD', Nama_Kelas: 'Kelas 10B', ID_Guru: 'guru1', jumlahSiswa: 29, jurusan: "IPA" },
-  { ID_Kelas: 'kelasE', Nama_Kelas: 'Kelas 11A', ID_Guru: 'guru2', jumlahSiswa: 31, jurusan: "IPS" },
-];
-
 
 export const mockSchoolProfile: SchoolProfileData = {
   namaSekolah: "SMA Negeri 1 Teladan Bangsa",
@@ -635,71 +694,85 @@ export const lessonStatusChartConfig: ChartConfig = {
   'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
 };
 
-export let mockSchedules: ScheduleItem[] = [
-  {
-    id: 'schedule1',
-    title: 'Pelajaran Matematika: Aljabar Dasar',
-    date: '2024-08-15',
-    time: '08:00 - 09:30',
-    classId: 'kelasA',
-    className: 'Kelas 10A IPA',
-    lessonId: '1',
-    teacherId: 'teacher001',
-    teacherName: 'Guru Inovatif, M.Pd.',
-    description: 'Pembahasan Bab 1 dan latihan soal.',
-    category: 'Pelajaran',
-  },
-  {
-    id: 'schedule2',
-    title: 'Kuis Fisika: Mekanika Fluida',
-    date: '2024-08-16',
-    time: '10:00 - 10:45',
-    classId: 'kelasB',
-    className: 'Kelas 11B IPS',
-    quizId: 'quiz2',
-    teacherId: 'guru3',
-    teacherName: 'Prof. Dr. Agus Salim, M.Sc.',
-    description: 'Kuis mencakup materi mekanika fluida statis dan dinamis.',
-    category: 'Kuis',
-  },
-  {
-    id: 'schedule3',
-    title: 'Diskusi Kelompok: Analisis Puisi Chairil Anwar',
-    date: '2024-08-17',
-    time: '13:00 - 14:00',
-    classId: 'kelasC',
-    className: 'Kelas 12C Bahasa',
-    teacherId: 'guru2',
-    teacherName: 'Siti Nurhaliza, M.Pd.',
-    description: 'Setiap kelompok mempresentasikan hasil analisisnya.',
-    category: 'Diskusi',
-  },
-  {
-    id: 'schedule4',
-    title: 'Pengumpulan Tugas Sejarah Kontemporer',
-    date: '2024-08-18',
-    time: 'Batas Akhir 23:59',
-    classId: 'kelasB',
-    className: 'Kelas 11B IPS',
-    teacherId: 'guru1',
-    teacherName: 'Dr. Budi Darmawan, S.Kom., M.Cs.',
-    category: 'Tugas',
-  },
-   {
-    id: 'schedule5',
-    title: 'Pelajaran Kimia: Stoikiometri Lanjutan',
-    date: '2024-08-19',
-    time: '09:00 - 10:30',
-    classId: 'kelasA',
-    className: 'Kelas 10A IPA',
-    teacherId: 'teacher001',
-    teacherName: 'Guru Inovatif, M.Pd.',
-    description: 'Membahas konsep mol dan perhitungan reaksi kimia kompleks.',
-    category: 'Pelajaran',
+
+// --- Class Data Functions (with localStorage) ---
+export function getClasses(): ClassData[] {
+  if (typeof window !== 'undefined' && mockClasses.length === 0 && localStorage.getItem(CLASSES_STORAGE_KEY)) {
+    mockClasses = loadDataFromStorage<ClassData>(CLASSES_STORAGE_KEY, initialMockClasses);
   }
-];
+  return [...mockClasses];
+}
 
+export function getClassById(id: string): ClassData | undefined {
+  const classes = getClasses(); // Ensure data is loaded
+  return classes.find(kelas => kelas.ID_Kelas === id);
+}
 
+export function updateClass(updatedClass: ClassData): boolean {
+  const index = mockClasses.findIndex(kelas => kelas.ID_Kelas === updatedClass.ID_Kelas);
+  if (index !== -1) {
+    mockClasses[index] = updatedClass;
+    saveDataToStorage(CLASSES_STORAGE_KEY, mockClasses);
+    return true;
+  }
+  return false;
+}
+
+// --- Schedule Data Functions (with localStorage) ---
+export function getSchedules(): ScheduleItem[] {
+  if (typeof window !== 'undefined' && mockSchedules.length === 0 && localStorage.getItem(SCHEDULES_STORAGE_KEY)) {
+    mockSchedules = loadDataFromStorage<ScheduleItem>(SCHEDULES_STORAGE_KEY, initialMockSchedules);
+  }
+  return [...mockSchedules];
+}
+
+export function getScheduleById(id: string): ScheduleItem | undefined {
+  const schedules = getSchedules(); // Ensure data is loaded
+  return schedules.find(schedule => schedule.id === id);
+}
+
+export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
+  const index = mockSchedules.findIndex(schedule => schedule.id === updatedSchedule.id);
+  if (index !== -1) {
+    const allTeachers = getTeachers(); // Load teachers for name lookup
+    const allClasses = getClasses();   // Load classes for name lookup
+
+    const classInfo = updatedSchedule.classId ? allClasses.find(c => c.ID_Kelas === updatedSchedule.classId) : null;
+    const teacherInfo = updatedSchedule.teacherId ? allTeachers.find(t => t.ID_Guru === updatedSchedule.teacherId) : null;
+
+    mockSchedules[index] = {
+      ...updatedSchedule,
+      className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (updatedSchedule.classId ? updatedSchedule.className : 'Umum (Semua Kelas)'),
+      teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (updatedSchedule.teacherId ? updatedSchedule.teacherName : 'Tidak Ditentukan'),
+    };
+    saveDataToStorage(SCHEDULES_STORAGE_KEY, mockSchedules);
+    console.log("Jadwal diperbarui (simulasi):", mockSchedules[index]);
+    return true;
+  }
+  console.warn(`Gagal memperbarui jadwal: Jadwal dengan ID ${updatedSchedule.id} tidak ditemukan.`);
+  return false;
+}
+
+export function addSchedule(newScheduleData: Omit<ScheduleItem, 'id' | 'className' | 'teacherName'>): ScheduleItem {
+  const allTeachers = getTeachers();
+  const allClasses = getClasses();
+
+  const classInfo = newScheduleData.classId ? allClasses.find(c => c.ID_Kelas === newScheduleData.classId) : null;
+  const teacherInfo = newScheduleData.teacherId ? allTeachers.find(t => t.ID_Guru === newScheduleData.teacherId) : null;
+
+  const newSchedule: ScheduleItem = {
+    id: `schedule${mockSchedules.length + 1 + Date.now()}`,
+    ...newScheduleData,
+    className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (newScheduleData.classId ? 'Kelas tidak ditemukan' : 'Umum (Semua Kelas)'),
+    teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (newScheduleData.teacherId ? 'Guru tidak ditemukan' : 'Tidak Ditentukan'),
+  };
+  mockSchedules.push(newSchedule);
+  saveDataToStorage(SCHEDULES_STORAGE_KEY, mockSchedules);
+  console.log("Jadwal baru ditambahkan (simulasi):", newSchedule);
+  return newSchedule;
+}
+
+// --- Lesson & Quiz Functions (still in-memory, but with clear getters) ---
 export function getLessonById(id: string): Lesson | undefined {
   return mockLessons.find(lesson => lesson.id === id);
 }
@@ -746,57 +819,4 @@ export function updateQuiz(updatedQuiz: Quiz): boolean {
   }
   console.warn(`Gagal memperbarui kuis: Kuis dengan ID ${updatedQuiz.id} tidak ditemukan.`);
   return false;
-}
-
-export function getClassById(id: string): ClassData | undefined {
-  return mockClasses.find(kelas => kelas.ID_Kelas === id);
-}
-
-export function updateClass(updatedClass: ClassData): boolean {
-  const index = mockClasses.findIndex(kelas => kelas.ID_Kelas === updatedClass.ID_Kelas);
-  if (index !== -1) {
-    mockClasses[index] = updatedClass;
-    // Di masa depan, jika kelas disimpan di localStorage, panggil saveDataToStorage di sini
-    return true;
-  }
-  return false;
-}
-
-export function getScheduleById(id: string): ScheduleItem | undefined {
-  return mockSchedules.find(schedule => schedule.id === id);
-}
-
-export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
-  const index = mockSchedules.findIndex(schedule => schedule.id === updatedSchedule.id);
-  if (index !== -1) {
-    const classInfo = updatedSchedule.classId ? mockClasses.find(c => c.ID_Kelas === updatedSchedule.classId) : null;
-    const teacherInfo = updatedSchedule.teacherId ? mockTeachers.find(t => t.ID_Guru === updatedSchedule.teacherId) : null;
-
-    mockSchedules[index] = {
-      ...updatedSchedule,
-      className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (updatedSchedule.classId ? updatedSchedule.className : 'Umum (Semua Kelas)'),
-      teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (updatedSchedule.teacherId ? updatedSchedule.teacherName : 'Tidak Ditentukan'),
-    };
-    // Di masa depan, jika jadwal disimpan di localStorage, panggil saveDataToStorage di sini
-    console.log("Jadwal diperbarui (simulasi):", mockSchedules[index]);
-    return true;
-  }
-  console.warn(`Gagal memperbarui jadwal: Jadwal dengan ID ${updatedSchedule.id} tidak ditemukan.`);
-  return false;
-}
-
-export function addSchedule(newScheduleData: Omit<ScheduleItem, 'id' | 'className' | 'teacherName'>): ScheduleItem {
-  const classInfo = newScheduleData.classId ? mockClasses.find(c => c.ID_Kelas === newScheduleData.classId) : null;
-  const teacherInfo = newScheduleData.teacherId ? mockTeachers.find(t => t.ID_Guru === newScheduleData.teacherId) : null;
-
-  const newSchedule: ScheduleItem = {
-    id: `schedule${mockSchedules.length + 1 + Date.now()}`,
-    ...newScheduleData,
-    className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (newScheduleData.classId ? 'Kelas tidak ditemukan' : 'Umum (Semua Kelas)'),
-    teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (newScheduleData.teacherId ? 'Guru tidak ditemukan' : 'Tidak Ditentukan'),
-  };
-  mockSchedules.push(newSchedule);
-  // Di masa depan, jika jadwal disimpan di localStorage, panggil saveDataToStorage di sini
-  console.log("Jadwal baru ditambahkan (simulasi):", newSchedule);
-  return newSchedule;
 }

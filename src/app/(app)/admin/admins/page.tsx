@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { mockTeachers } from "@/lib/mockData"; // Menggunakan mockTeachers untuk data admin
+import { getTeachers } from "@/lib/mockData"; // Menggunakan getTeachers untuk data admin
 import type { TeacherData } from "@/lib/types";
 
 export default function AdminManageAdminsPage() {
@@ -19,7 +19,8 @@ export default function AdminManageAdminsPage() {
 
   useEffect(() => {
     // Filter mockTeachers untuk mendapatkan pengguna yang juga admin
-    setAdminUsers(mockTeachers.filter(teacher => teacher.isAdmin));
+    const teachers = getTeachers();
+    setAdminUsers(teachers.filter(teacher => teacher.isAdmin));
   }, []);
 
   const handleActionPlaceholder = (action: string, itemName: string) => {

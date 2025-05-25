@@ -7,23 +7,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { School, Edit, PlusCircle } from "lucide-react"; 
 import Link from "next/link";
-import { mockClasses } from "@/lib/mockData"; // Import mockClasses
+import { getClasses } from "@/lib/mockData"; // Import getClasses
 import type { ClassData } from '@/lib/types';
 import { useEffect, useState } from "react";
 
 export default function AdminClassesPage() {
   const { toast } = useToast();
-  // Use a state to hold classes if you plan to update them client-side and re-render.
-  // For now, directly using imported mockClasses for simplicity in display.
-  // If mockClasses is mutated by the edit page, this page won't re-render automatically
-  // without further state management or a re-fetch mechanism.
   const [classes, setClasses] = useState<ClassData[]>([]);
 
   useEffect(() => {
-    // Simulate fetching or initializing classes.
-    // This ensures that if mockClasses is mutated elsewhere (like in edit page),
-    // this component uses a fresh (or rather, the current state of the mutated) version on mount/navigation.
-    setClasses([...mockClasses]); // Create a shallow copy to trigger re-render if needed in future
+    // Load classes using the getter function
+    setClasses(getClasses()); 
   }, []);
 
 
@@ -86,3 +80,4 @@ export default function AdminClassesPage() {
     </div>
   );
 }
+
