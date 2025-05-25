@@ -23,6 +23,8 @@ import { UserPlus, Save, Loader2, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { addTeacher } from "@/lib/mockData"; // Import addTeacher from mockData
+import type { TeacherData } from "@/lib/types";
 
 const newTeacherSchema = z.object({
   Nama_Lengkap: z.string().min(3, "Nama lengkap minimal 3 karakter."),
@@ -58,7 +60,7 @@ export default function AdminAddTeacherPage() {
       Alamat: "",
       Nomor_Telepon: "",
       Mata_Pelajaran: "",
-      Kelas_Ajar: [] as any, // Initial value for string input, will be transformed
+      Kelas_Ajar: [] as any, 
       Jabatan: "",
       Status_Aktif: true,
     },
@@ -66,22 +68,30 @@ export default function AdminAddTeacherPage() {
 
   async function onSubmit(values: NewTeacherFormData) {
     setIsLoading(true);
-    console.log("Data guru baru yang akan disimpan (simulasi):", values);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // In a real app, you would add the new teacher to your data source (e.g., mockTeachers array or database)
-    // For now, we just show a toast and redirect.
-    // Example of adding to mock data (requires mockTeachers to be adaptable, e.g., a state or global store):
-    // mockTeachers.push({ ID_Guru: `guru${mockTeachers.length + 1}`, ...values, Profil_Foto: "https://placehold.co/100x100.png", Tanggal_Pendaftaran: new Date().toISOString().split('T')[0] });
+    // Prepare data for addTeacher function
+    const teacherDataToAdd: Omit<TeacherData, 'ID_Guru' | 'Tanggal_Pendaftaran' | 'Profil_Foto' | 'isAdmin'> = {
+        ...values,
+        // Kelas_Ajar is already transformed by Zod
+    };
 
-    toast({
-      title: "Guru Baru Ditambahkan (Simulasi)",
-      description: `Guru "${values.Nama_Lengkap}" telah berhasil ditambahkan (simulasi).`,
-    });
+    const addedTeacher = addTeacher(teacherDataToAdd);
+
+    if (addedTeacher) {
+        toast({
+            title: "Guru Baru Ditambahkan",
+            description: `Guru "${addedTeacher.Nama_Lengkap}" telah berhasil ditambahkan.`,
+        });
+        router.push("/admin/teachers");
+        router.refresh(); 
+    } else {
+        toast({
+            title: "Gagal Menambahkan Guru",
+            description: "Terjadi kesalahan atau data mungkin duplikat. Periksa konsol untuk detail.",
+            variant: "destructive",
+        });
+    }
     setIsLoading(false);
-    router.push("/admin/teachers"); // Redirect to the list of teachers
   }
 
   return (
@@ -273,5 +283,3 @@ export default function AdminAddTeacherPage() {
     </div>
   );
 }
-
-    

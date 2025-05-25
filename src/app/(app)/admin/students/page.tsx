@@ -8,19 +8,55 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, Users, KeyRound, Upload, Download, RefreshCw } from "lucide-react";
 import type { StudentData } from "@/lib/types";
-import { mockStudents } from "@/lib/mockData";
+import { getStudents, deleteStudentById } from "@/lib/mockData"; // Updated imports
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 
 export default function AdminStudentsPage() {
   const { toast } = useToast();
   const [students, setStudents] = useState<StudentData[]>([]);
+  const [studentToDelete, setStudentToDelete] = useState<StudentData | null>(null);
+
+  const fetchStudents = () => {
+    setStudents(getStudents());
+  };
 
   useEffect(() => {
-    setStudents([...mockStudents]);
+    fetchStudents();
   }, []);
+
+  const handleDeleteStudent = () => {
+    if (studentToDelete) {
+      const success = deleteStudentById(studentToDelete.ID_Siswa);
+      if (success) {
+        toast({
+          title: "Siswa Dihapus",
+          description: `Siswa "${studentToDelete.Nama_Lengkap}" telah berhasil dihapus.`,
+        });
+        fetchStudents(); // Refresh the list
+      } else {
+        toast({
+          title: "Gagal Menghapus",
+          description: `Siswa "${studentToDelete.Nama_Lengkap}" tidak ditemukan atau gagal dihapus.`,
+          variant: "destructive",
+        });
+      }
+      setStudentToDelete(null); // Close dialog
+    }
+  };
 
   const handleActionPlaceholder = (action: string, item: string) => {
     toast({
@@ -95,7 +131,7 @@ export default function AdminStudentsPage() {
               <Button onClick={handleMassPasswordGenerate} variant="outline">
                 <RefreshCw className="w-4 h-4 mr-2" /> Generate Password Massal (Tgl. Lahir)
               </Button>
-              <Button onClick={() => handleActionPlaceholder("Tambah", "Siswa Baru")}>
+              <Button onClick={() => handleActionPlaceholder("Tambah", "Siswa Baru (Form belum dibuat)")}>
                 <UserPlus className="w-4 h-4 mr-2" /> Tambah Siswa Baru
               </Button>
             </div>
@@ -145,9 +181,25 @@ export default function AdminStudentsPage() {
                         <Edit className="w-4 h-4" /> Edit
                       </Link>
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", `Siswa ${student.Nama_Lengkap}`)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                     <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" onClick={() => setStudentToDelete(student)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Apakah Anda yakin ingin menghapus siswa "{studentToDelete?.Nama_Lengkap}"? Tindakan ini tidak dapat diurungkan.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel onClick={() => setStudentToDelete(null)}>Batal</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteStudent}>Hapus</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                     <Button variant="outline" size="sm" onClick={() => handleResetPassword(student)}>
                       <KeyRound className="w-4 h-4" />
                     </Button>

@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
-import { mockStudents, mockTeachers } from '@/lib/mockData';
+import { getStudents, getTeachers } from '@/lib/mockData'; // Changed import
 import type { StudentData, TeacherData, User } from '@/lib/types';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -19,7 +19,7 @@ import { UserCircle, Save, Loader2, Image as ImageIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Image from "next/image";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"; // Added this line
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const profileFormSchema = z.object({
   Nama_Lengkap: z.string().min(2, "Nama lengkap minimal 2 karakter."),
@@ -71,7 +71,8 @@ export default function ProfilePage() {
         setPhotoPreview(user.Profil_Foto);
       }
 
-      const studentMatch = mockStudents.find(s => s.Email === user.email);
+      const students = getStudents(); // Call getter function
+      const studentMatch = students.find(s => s.Email === user.email);
       if (studentMatch) {
         setIsStudent(true);
         setIsTeacher(false);
@@ -91,7 +92,8 @@ export default function ProfilePage() {
         };
         if (studentMatch.Profil_Foto) setPhotoPreview(studentMatch.Profil_Foto);
       } else {
-        const teacherMatch = mockTeachers.find(t => t.Email === user.email);
+        const teachers = getTeachers(); // Call getter function
+        const teacherMatch = teachers.find(t => t.Email === user.email);
         if (teacherMatch) {
           setIsTeacher(true);
           setIsStudent(false);
@@ -200,7 +202,7 @@ export default function ProfilePage() {
               <FormField
                 control={form.control}
                 name="Profil_Foto_File"
-                render={({ field }) => ( // field for react-hook-form to track, not directly used by Input type="file"
+                render={({ field }) => ( 
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
                       <ImageIcon className="w-5 h-5" /> Ganti Foto Profil (Opsional)
@@ -220,7 +222,7 @@ export default function ProfilePage() {
                {photoPreview && !form.getValues("Profil_Foto_File") && form.getValues("Profil_Foto_Url") && (
                 <div className="mt-2">
                   <p className="text-xs text-muted-foreground mb-1">Foto saat ini:</p>
-                  <Image src={form.getValues("Profil_Foto_Url")!} alt="Pratinjau Foto Profil" width={100} height={100} className="rounded-md border object-cover" />
+                  <Image src={form.getValues("Profil_Foto_Url")!} alt="Pratinjau Foto Profil" width={100} height={100} className="rounded-md border object-cover" data-ai-hint="profile picture" />
                 </div>
               )}
 
@@ -342,7 +344,7 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>NISN</FormLabel>
                         <FormControl>
-                          <Input placeholder="NISN Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""} />
+                          <Input placeholder="NISN Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""}/>
                         </FormControl>
                         <FormDescription>NISN diatur oleh admin.</FormDescription>
                         <FormMessage />
@@ -356,7 +358,7 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Nomor Induk Siswa</FormLabel>
                         <FormControl>
-                          <Input placeholder="Nomor induk Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""} />
+                          <Input placeholder="Nomor induk Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""}/>
                         </FormControl>
                         <FormDescription>Nomor Induk diatur oleh admin.</FormDescription>
                         <FormMessage />
@@ -370,7 +372,7 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Kelas</FormLabel>
                         <FormControl>
-                          <Input placeholder="Kelas Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""} />
+                          <Input placeholder="Kelas Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""}/>
                         </FormControl>
                         <FormDescription>Kelas diatur oleh admin.</FormDescription>
                         <FormMessage />
@@ -384,7 +386,7 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Jurusan (Program Studi)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Jurusan Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""} />
+                          <Input placeholder="Jurusan Anda" {...field} readOnly className="bg-muted/50 cursor-not-allowed" value={field.value || ""}/>
                         </FormControl>
                         <FormDescription>Jurusan diatur oleh admin.</FormDescription>
                         <FormMessage />
@@ -467,3 +469,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+

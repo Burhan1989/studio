@@ -9,26 +9,55 @@ import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, UserCog, KeyRound, Upload, Download, RefreshCw } from "lucide-react";
 import type { TeacherData } from "@/lib/types";
 import Link from "next/link";
-import { mockTeachers } from "@/lib/mockData";
+import { getTeachers, deleteTeacherById } from "@/lib/mockData"; // Updated imports
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 
 export default function AdminTeachersPage() {
   const { toast } = useToast();
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
+  const [teacherToDelete, setTeacherToDelete] = useState<TeacherData | null>(null);
+
+  const fetchTeachers = () => {
+    setTeachers(getTeachers());
+  };
 
   useEffect(() => {
-    setTeachers([...mockTeachers]);
+    fetchTeachers();
   }, []);
 
-
-  const handleActionPlaceholder = (action: string, item: string) => {
-    toast({
-      title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas "${action} ${item}" akan segera hadir.`,
-    });
+  const handleDeleteTeacher = () => {
+    if (teacherToDelete) {
+      const success = deleteTeacherById(teacherToDelete.ID_Guru);
+      if (success) {
+        toast({
+          title: "Guru Dihapus",
+          description: `Guru "${teacherToDelete.Nama_Lengkap}" telah berhasil dihapus.`,
+        });
+        fetchTeachers(); // Refresh the list
+      } else {
+        toast({
+          title: "Gagal Menghapus",
+          description: `Guru "${teacherToDelete.Nama_Lengkap}" tidak ditemukan atau gagal dihapus.`,
+          variant: "destructive",
+        });
+      }
+      setTeacherToDelete(null); // Close dialog
+    }
   };
+
 
   const handleResetPassword = (teacher: TeacherData) => {
     console.log(`Simulasi reset password untuk ${teacher.Nama_Lengkap} menjadi tanggal lahir: ${teacher.Tanggal_Lahir}`);
@@ -134,7 +163,7 @@ export default function AdminTeachersPage() {
                   <TableCell>{teacher.Email}</TableCell>
                   <TableCell>{teacher.Jabatan || '-'}</TableCell>
                   <TableCell>{teacher.Mata_Pelajaran}</TableCell>
-                  <TableCell>{teacher.Kelas_Ajar.join(", ")}</TableCell>
+                  <TableCell>{Array.isArray(teacher.Kelas_Ajar) ? teacher.Kelas_Ajar.join(", ") : teacher.Kelas_Ajar}</TableCell>
                   <TableCell>
                     <Badge variant={teacher.Status_Aktif ? "default" : "destructive"}>
                       {teacher.Status_Aktif ? "Aktif" : "Tidak Aktif"}
@@ -146,9 +175,25 @@ export default function AdminTeachersPage() {
                         <Edit className="w-4 h-4" /> Edit
                       </Link>
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", `Guru ${teacher.Nama_Lengkap}`)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" onClick={() => setTeacherToDelete(teacher)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Apakah Anda yakin ingin menghapus guru "{teacherToDelete?.Nama_Lengkap}"? Tindakan ini tidak dapat diurungkan.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel onClick={() => setTeacherToDelete(null)}>Batal</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteTeacher}>Hapus</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                     <Button variant="outline" size="sm" onClick={() => handleResetPassword(teacher)}>
                       <KeyRound className="w-4 h-4" />
                     </Button>

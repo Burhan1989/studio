@@ -137,7 +137,18 @@ export let mockQuizzes: Quiz[] = [
   },
 ];
 
-export let mockStudents: StudentData[] = [
+// --- Data Storage Keys for localStorage ---
+const STUDENTS_STORAGE_KEY = 'adeptlearn-students';
+const TEACHERS_STORAGE_KEY = 'adeptlearn-teachers';
+const MAJORS_STORAGE_KEY = 'adeptlearn-majors';
+// Add other keys as needed:
+// const CLASSES_STORAGE_KEY = 'adeptlearn-classes';
+// const QUIZZES_STORAGE_KEY = 'adeptlearn-quizzes';
+// const SCHEDULES_STORAGE_KEY = 'adeptlearn-schedules';
+
+
+// --- Initial Mock Data (Defaults if localStorage is empty) ---
+const initialMockStudents: StudentData[] = [
   {
     ID_Siswa: "student001",
     Nama_Lengkap: "Siswa Rajin",
@@ -216,7 +227,7 @@ export let mockStudents: StudentData[] = [
   },
 ];
 
-export let mockTeachers: TeacherData[] = [
+const initialMockTeachers: TeacherData[] = [
   {
     ID_Guru: "admin001",
     Nama_Lengkap: "Admin AdeptLearn",
@@ -309,6 +320,213 @@ export let mockTeachers: TeacherData[] = [
   },
 ];
 
+const initialMockMajors: MajorData[] = [
+  { ID_Jurusan: "major001", Nama_Jurusan: "Ilmu Pengetahuan Alam (IPA)", Deskripsi_Jurusan: "Fokus pada studi sains seperti Fisika, Kimia, Biologi.", Nama_Kepala_Program: "Dr. Annisa Fitri, M.Si." },
+  { ID_Jurusan: "major002", Nama_Jurusan: "Ilmu Pengetahuan Sosial (IPS)", Deskripsi_Jurusan: "Fokus pada studi sosial seperti Sejarah, Ekonomi, Geografi.", Nama_Kepala_Program: "Prof. Bambang W., S.Sos." },
+  { ID_Jurusan: "major003", Nama_Jurusan: "Bahasa dan Budaya", Deskripsi_Jurusan: "Fokus pada studi bahasa, sastra, dan budaya.", Nama_Kepala_Program: "Dra. Endang S., M.Hum." },
+  { ID_Jurusan: "major004", Nama_Jurusan: "Teknik Komputer dan Jaringan (TKJ)", Deskripsi_Jurusan: "Untuk SMK, fokus pada teknologi informasi dan jaringan.", Nama_Kepala_Program: "Rahmat Hidayat, S.Kom." },
+  { ID_Jurusan: "major005", Nama_Jurusan: "Akuntansi dan Keuangan Lembaga (AKL)", Deskripsi_Jurusan: "Untuk SMK, fokus pada akuntansi dan keuangan.", Nama_Kepala_Program: "Sri Mulyani, S.E., Ak." },
+];
+
+// --- Active Data Arrays (Loaded from localStorage or initialized) ---
+let mockStudents: StudentData[] = [];
+let mockTeachers: TeacherData[] = [];
+let mockMajors: MajorData[] = [];
+
+
+// --- localStorage Helper Functions ---
+function loadDataFromStorage<T>(key: string, initialData: T[]): T[] {
+  if (typeof window !== 'undefined') {
+    const storedData = localStorage.getItem(key);
+    if (storedData) {
+      try {
+        return JSON.parse(storedData);
+      } catch (e) {
+        console.error(`Gagal memparsing data dari localStorage (key: ${key}):`, e);
+        localStorage.setItem(key, JSON.stringify(initialData)); // Reset with initial data
+        return [...initialData];
+      }
+    } else {
+      localStorage.setItem(key, JSON.stringify(initialData));
+      return [...initialData];
+    }
+  }
+  return [...initialData]; // For SSR or if window is not available
+}
+
+function saveDataToStorage<T>(key: string, data: T[]) {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(key, JSON.stringify(data));
+  }
+}
+
+// --- Initialize Data ---
+mockStudents = loadDataFromStorage<StudentData>(STUDENTS_STORAGE_KEY, initialMockStudents);
+mockTeachers = loadDataFromStorage<TeacherData>(TEACHERS_STORAGE_KEY, initialMockTeachers);
+mockMajors = loadDataFromStorage<MajorData>(MAJORS_STORAGE_KEY, initialMockMajors);
+
+
+// --- Student Data Functions ---
+export function getStudents(): StudentData[] {
+  // Ensure data is loaded on client-side if somehow bypassed initial load
+  if (typeof window !== 'undefined' && mockStudents.length === 0 && localStorage.getItem(STUDENTS_STORAGE_KEY)) {
+    mockStudents = loadDataFromStorage<StudentData>(STUDENTS_STORAGE_KEY, initialMockStudents);
+  }
+  return [...mockStudents];
+}
+
+export function getStudentById(id: string): StudentData | undefined {
+  return mockStudents.find(student => student.ID_Siswa === id);
+}
+
+export function addStudent(studentData: Omit<StudentData, 'ID_Siswa' | 'Tanggal_Daftar' | 'Profil_Foto'>): StudentData {
+  const newStudent: StudentData = {
+    ID_Siswa: `siswa${Date.now()}${Math.floor(Math.random() * 100)}`,
+    ...studentData,
+    Profil_Foto: `https://placehold.co/100x100.png?text=${studentData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
+    Tanggal_Daftar: new Date().toISOString().split('T')[0],
+  };
+  mockStudents.push(newStudent);
+  saveDataToStorage(STUDENTS_STORAGE_KEY, mockStudents);
+  return newStudent;
+}
+
+export function updateStudent(updatedStudent: StudentData): boolean {
+  const index = mockStudents.findIndex(student => student.ID_Siswa === updatedStudent.ID_Siswa);
+  if (index !== -1) {
+    mockStudents[index] = updatedStudent;
+    saveDataToStorage(STUDENTS_STORAGE_KEY, mockStudents);
+    return true;
+  }
+  return false;
+}
+
+export function deleteStudentById(studentId: string): boolean {
+  const initialLength = mockStudents.length;
+  mockStudents = mockStudents.filter(student => student.ID_Siswa !== studentId);
+  if (mockStudents.length < initialLength) {
+    saveDataToStorage(STUDENTS_STORAGE_KEY, mockStudents);
+    return true;
+  }
+  return false;
+}
+
+// --- Teacher Data Functions ---
+export function getTeachers(): TeacherData[] {
+  if (typeof window !== 'undefined' && mockTeachers.length === 0 && localStorage.getItem(TEACHERS_STORAGE_KEY)) {
+     mockTeachers = loadDataFromStorage<TeacherData>(TEACHERS_STORAGE_KEY, initialMockTeachers);
+  }
+  return [...mockTeachers];
+}
+
+export function getTeacherById(id: string): TeacherData | undefined {
+  return mockTeachers.find(teacher => teacher.ID_Guru === id);
+}
+
+export function addTeacher(teacherData: Omit<TeacherData, 'ID_Guru' | 'Tanggal_Pendaftaran' | 'Profil_Foto' | 'isAdmin'>): TeacherData {
+  const newTeacher: TeacherData = {
+    ID_Guru: `guru${Date.now()}${Math.floor(Math.random() * 100)}`,
+    ...teacherData,
+    isAdmin: false, // Default for new teachers added via this function
+    Profil_Foto: `https://placehold.co/100x100.png?text=${teacherData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
+    Tanggal_Pendaftaran: new Date().toISOString().split('T')[0],
+  };
+  mockTeachers.push(newTeacher);
+  saveDataToStorage(TEACHERS_STORAGE_KEY, mockTeachers);
+  return newTeacher;
+}
+
+export function updateTeacher(updatedTeacher: TeacherData): boolean {
+  const index = mockTeachers.findIndex(teacher => teacher.ID_Guru === updatedTeacher.ID_Guru);
+  if (index !== -1) {
+    mockTeachers[index] = updatedTeacher;
+    saveDataToStorage(TEACHERS_STORAGE_KEY, mockTeachers);
+    return true;
+  }
+  return false;
+}
+
+export function deleteTeacherById(teacherId: string): boolean {
+  const initialLength = mockTeachers.length;
+  mockTeachers = mockTeachers.filter(teacher => teacher.ID_Guru !== teacherId);
+  if (mockTeachers.length < initialLength) {
+    saveDataToStorage(TEACHERS_STORAGE_KEY, mockTeachers);
+    return true;
+  }
+  return false;
+}
+
+export function addAdminUser(newAdminData: Omit<TeacherData, 'ID_Guru' | 'Tanggal_Pendaftaran' | 'Profil_Foto'>): TeacherData | null {
+    const emailExists = mockTeachers.some(teacher => teacher.Email === newAdminData.Email);
+    const usernameExists = mockTeachers.some(teacher => teacher.Username === newAdminData.Username);
+
+    if (emailExists) {
+        console.warn(`Gagal menambahkan admin: Email ${newAdminData.Email} sudah digunakan.`);
+        return null;
+    }
+    if (usernameExists) {
+        console.warn(`Gagal menambahkan admin: Username ${newAdminData.Username} sudah digunakan.`);
+        return null;
+    }
+    
+    const newAdmin: TeacherData = {
+      ID_Guru: `admin${Date.now()}${Math.floor(Math.random() * 100)}`,
+      ...newAdminData,
+      isAdmin: true,
+      Profil_Foto: `https://placehold.co/100x100.png?text=${newAdminData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
+      Tanggal_Pendaftaran: new Date().toISOString().split('T')[0],
+    };
+
+    mockTeachers.push(newAdmin);
+    saveDataToStorage(TEACHERS_STORAGE_KEY, mockTeachers);
+    console.log("Admin baru ditambahkan (simulasi):", newAdmin);
+    return newAdmin;
+}
+
+
+// --- Major Data Functions (already implemented with localStorage) ---
+export function getMajors(): MajorData[] {
+  if (typeof window !== 'undefined' && mockMajors.length === 0 && localStorage.getItem(MAJORS_STORAGE_KEY)) {
+    mockMajors = loadDataFromStorage<MajorData>(MAJORS_STORAGE_KEY, initialMockMajors);
+  }
+  return [...mockMajors];
+}
+
+export function addMajor(newMajorData: Omit<MajorData, 'ID_Jurusan'>): MajorData {
+  const newMajor: MajorData = {
+    ID_Jurusan: `major${Date.now()}${Math.floor(Math.random() * 100)}`,
+    ...newMajorData,
+  };
+  mockMajors.push(newMajor);
+  saveDataToStorage(MAJORS_STORAGE_KEY, mockMajors);
+  return newMajor;
+}
+
+export function getMajorById(id: string): MajorData | undefined {
+  return mockMajors.find(major => major.ID_Jurusan === id);
+}
+
+export function updateMajor(updatedMajor: MajorData): boolean {
+  const index = mockMajors.findIndex(major => major.ID_Jurusan === updatedMajor.ID_Jurusan);
+  if (index !== -1) {
+    mockMajors[index] = updatedMajor;
+    saveDataToStorage(MAJORS_STORAGE_KEY, mockMajors);
+    return true;
+  }
+  return false;
+}
+
+export function deleteMajorById(majorId: string): boolean {
+  const initialLength = mockMajors.length;
+  mockMajors = mockMajors.filter(major => major.ID_Jurusan !== majorId);
+  if (mockMajors.length < initialLength) {
+    saveDataToStorage(MAJORS_STORAGE_KEY, mockMajors);
+    return true;
+  }
+  return false;
+}
+
+// --- Other Data (Classes, Parents, Schedules, etc. - still in-memory for now) ---
 export let mockParents: ParentData[] = [
     {
         ID_OrangTua: "parent001",
@@ -417,98 +635,6 @@ export const lessonStatusChartConfig: ChartConfig = {
   'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
 };
 
-const MAJORS_STORAGE_KEY = 'adeptlearn-majors';
-
-const initialMockMajors: MajorData[] = [
-  { ID_Jurusan: "major001", Nama_Jurusan: "Ilmu Pengetahuan Alam (IPA)", Deskripsi_Jurusan: "Fokus pada studi sains seperti Fisika, Kimia, Biologi.", Nama_Kepala_Program: "Dr. Annisa Fitri, M.Si." },
-  { ID_Jurusan: "major002", Nama_Jurusan: "Ilmu Pengetahuan Sosial (IPS)", Deskripsi_Jurusan: "Fokus pada studi sosial seperti Sejarah, Ekonomi, Geografi.", Nama_Kepala_Program: "Prof. Bambang W., S.Sos." },
-  { ID_Jurusan: "major003", Nama_Jurusan: "Bahasa dan Budaya", Deskripsi_Jurusan: "Fokus pada studi bahasa, sastra, dan budaya.", Nama_Kepala_Program: "Dra. Endang S., M.Hum." },
-  { ID_Jurusan: "major004", Nama_Jurusan: "Teknik Komputer dan Jaringan (TKJ)", Deskripsi_Jurusan: "Untuk SMK, fokus pada teknologi informasi dan jaringan.", Nama_Kepala_Program: "Rahmat Hidayat, S.Kom." },
-  { ID_Jurusan: "major005", Nama_Jurusan: "Akuntansi dan Keuangan Lembaga (AKL)", Deskripsi_Jurusan: "Untuk SMK, fokus pada akuntansi dan keuangan.", Nama_Kepala_Program: "Sri Mulyani, S.E., Ak." },
-];
-
-let mockMajors: MajorData[] = [];
-
-function loadMajorsFromStorage(): MajorData[] {
-  if (typeof window !== 'undefined') {
-    const storedMajors = localStorage.getItem(MAJORS_STORAGE_KEY);
-    if (storedMajors) {
-      try {
-        return JSON.parse(storedMajors);
-      } catch (e) {
-        console.error("Gagal memparsing jurusan dari localStorage:", e);
-        // Jika parsing gagal, kembali ke data awal dan simpan
-        localStorage.setItem(MAJORS_STORAGE_KEY, JSON.stringify(initialMockMajors));
-        return initialMockMajors;
-      }
-    } else {
-      // Jika tidak ada di localStorage, gunakan data awal dan simpan
-      localStorage.setItem(MAJORS_STORAGE_KEY, JSON.stringify(initialMockMajors));
-      return initialMockMajors;
-    }
-  }
-  return [...initialMockMajors]; // Kembalikan salinan untuk sisi server atau jika window tidak tersedia
-}
-
-function saveMajorsToStorage(majors: MajorData[]) {
-  if (typeof window !== 'undefined') {
-    localStorage.setItem(MAJORS_STORAGE_KEY, JSON.stringify(majors));
-  }
-}
-
-// Inisialisasi mockMajors saat modul dimuat
-mockMajors = loadMajorsFromStorage();
-
-export function getMajors(): MajorData[] {
-  // Pastikan data terbaru dari localStorage dimuat jika ini dipanggil di client-side setelah inisialisasi modul
-  if (typeof window !== 'undefined') {
-    const storedMajors = localStorage.getItem(MAJORS_STORAGE_KEY);
-    if (storedMajors) {
-      try {
-        mockMajors = JSON.parse(storedMajors);
-      } catch (e) {
-        console.error("Gagal memparsing jurusan dari localStorage di getMajors:", e);
-      }
-    }
-  }
-  return [...mockMajors]; // Selalu kembalikan salinan agar array asli tidak termutasi secara tidak sengaja
-}
-
-export function addMajor(newMajorData: Omit<MajorData, 'ID_Jurusan'>): MajorData {
-  const newMajor: MajorData = {
-    ID_Jurusan: `major${Date.now()}${Math.floor(Math.random() * 100)}`,
-    ...newMajorData,
-  };
-  mockMajors.push(newMajor);
-  saveMajorsToStorage(mockMajors);
-  return newMajor;
-}
-
-export function getMajorById(id: string): MajorData | undefined {
-  return mockMajors.find(major => major.ID_Jurusan === id);
-}
-
-export function updateMajor(updatedMajor: MajorData): boolean {
-  const index = mockMajors.findIndex(major => major.ID_Jurusan === updatedMajor.ID_Jurusan);
-  if (index !== -1) {
-    mockMajors[index] = updatedMajor;
-    saveMajorsToStorage(mockMajors);
-    return true;
-  }
-  return false;
-}
-
-export function deleteMajorById(majorId: string): boolean {
-  const initialLength = mockMajors.length;
-  mockMajors = mockMajors.filter(major => major.ID_Jurusan !== majorId);
-  if (mockMajors.length < initialLength) {
-    saveMajorsToStorage(mockMajors);
-    return true;
-  }
-  return false;
-}
-
-
 export let mockSchedules: ScheduleItem[] = [
   {
     id: 'schedule1',
@@ -517,7 +643,7 @@ export let mockSchedules: ScheduleItem[] = [
     time: '08:00 - 09:30',
     classId: 'kelasA',
     className: 'Kelas 10A IPA',
-    lessonId: '1', 
+    lessonId: '1',
     teacherId: 'teacher001',
     teacherName: 'Guru Inovatif, M.Pd.',
     description: 'Pembahasan Bab 1 dan latihan soal.',
@@ -529,8 +655,8 @@ export let mockSchedules: ScheduleItem[] = [
     date: '2024-08-16',
     time: '10:00 - 10:45',
     classId: 'kelasB',
-    className: 'Kelas 11B IPS', 
-    quizId: 'quiz2', 
+    className: 'Kelas 11B IPS',
+    quizId: 'quiz2',
     teacherId: 'guru3',
     teacherName: 'Prof. Dr. Agus Salim, M.Sc.',
     description: 'Kuis mencakup materi mekanika fluida statis dan dinamis.',
@@ -555,7 +681,7 @@ export let mockSchedules: ScheduleItem[] = [
     time: 'Batas Akhir 23:59',
     classId: 'kelasB',
     className: 'Kelas 11B IPS',
-    teacherId: 'guru1', 
+    teacherId: 'guru1',
     teacherName: 'Dr. Budi Darmawan, S.Kom., M.Cs.',
     category: 'Tugas',
   },
@@ -598,6 +724,7 @@ export function addQuiz(quizData: Omit<Quiz, 'id'> & { teacherId: string }): Qui
     assignedClassIds: quizData.assignedClassIds || [],
   };
   mockQuizzes.push(newQuiz);
+  // Di masa depan, jika kuis disimpan di localStorage, panggil saveDataToStorage di sini
   console.log("Kuis baru ditambahkan (simulasi):", newQuiz);
   return newQuiz;
 }
@@ -608,11 +735,12 @@ export function updateQuiz(updatedQuiz: Quiz): boolean {
     mockQuizzes[index] = {
       ...mockQuizzes[index],
       ...updatedQuiz,
-      questions: updatedQuiz.questions.map(q => ({ 
+      questions: updatedQuiz.questions.map(q => ({
         ...q,
         id: q.id || `q_updated_${Date.now()}${Math.random().toString(36).substring(2,7)}`,
       })),
     };
+    // Di masa depan, jika kuis disimpan di localStorage, panggil saveDataToStorage di sini
     console.log("Kuis diperbarui (simulasi):", mockQuizzes[index]);
     return true;
   }
@@ -628,52 +756,7 @@ export function updateClass(updatedClass: ClassData): boolean {
   const index = mockClasses.findIndex(kelas => kelas.ID_Kelas === updatedClass.ID_Kelas);
   if (index !== -1) {
     mockClasses[index] = updatedClass;
-    return true;
-  }
-  return false;
-}
-
-
-export function getTeacherById(id: string): TeacherData | undefined {
-  return mockTeachers.find(teacher => teacher.ID_Guru === id);
-}
-
-export function updateTeacher(updatedTeacher: TeacherData): boolean {
-  const index = mockTeachers.findIndex(teacher => teacher.ID_Guru === updatedTeacher.ID_Guru);
-  if (index !== -1) {
-    mockTeachers[index] = updatedTeacher;
-    return true;
-  }
-  return false;
-}
-
-export function addAdminUser(newAdmin: TeacherData): boolean {
-    const emailExists = mockTeachers.some(teacher => teacher.Email === newAdmin.Email);
-    const usernameExists = mockTeachers.some(teacher => teacher.Username === newAdmin.Username);
-
-    if (emailExists) {
-        console.warn(`Gagal menambahkan admin: Email ${newAdmin.Email} sudah digunakan.`);
-        return false;
-    }
-    if (usernameExists) {
-        console.warn(`Gagal menambahkan admin: Username ${newAdmin.Username} sudah digunakan.`);
-        return false;
-    }
-
-    mockTeachers.push(newAdmin);
-    console.log("Admin baru ditambahkan (simulasi):", newAdmin);
-    return true;
-}
-
-
-export function getStudentById(id: string): StudentData | undefined {
-  return mockStudents.find(student => student.ID_Siswa === id);
-}
-
-export function updateStudent(updatedStudent: StudentData): boolean {
-  const index = mockStudents.findIndex(student => student.ID_Siswa === updatedStudent.ID_Siswa);
-  if (index !== -1) {
-    mockStudents[index] = updatedStudent;
+    // Di masa depan, jika kelas disimpan di localStorage, panggil saveDataToStorage di sini
     return true;
   }
   return false;
@@ -688,12 +771,13 @@ export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
   if (index !== -1) {
     const classInfo = updatedSchedule.classId ? mockClasses.find(c => c.ID_Kelas === updatedSchedule.classId) : null;
     const teacherInfo = updatedSchedule.teacherId ? mockTeachers.find(t => t.ID_Guru === updatedSchedule.teacherId) : null;
-    
+
     mockSchedules[index] = {
       ...updatedSchedule,
       className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (updatedSchedule.classId ? updatedSchedule.className : 'Umum (Semua Kelas)'),
       teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (updatedSchedule.teacherId ? updatedSchedule.teacherName : 'Tidak Ditentukan'),
     };
+    // Di masa depan, jika jadwal disimpan di localStorage, panggil saveDataToStorage di sini
     console.log("Jadwal diperbarui (simulasi):", mockSchedules[index]);
     return true;
   }
@@ -712,6 +796,7 @@ export function addSchedule(newScheduleData: Omit<ScheduleItem, 'id' | 'classNam
     teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (newScheduleData.teacherId ? 'Guru tidak ditemukan' : 'Tidak Ditentukan'),
   };
   mockSchedules.push(newSchedule);
+  // Di masa depan, jika jadwal disimpan di localStorage, panggil saveDataToStorage di sini
   console.log("Jadwal baru ditambahkan (simulasi):", newSchedule);
   return newSchedule;
 }

@@ -1,7 +1,7 @@
 
 "use client";
 
-import * as React from 'react'; // Added this line
+import * as React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -17,18 +17,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
-import { LogIn, Loader2, ShieldCheck, User as UserIconLucide, Eye, EyeOff, Users as UsersIcon, UserCog } from "lucide-react"; // Renamed User to UserIconLucide
+import { LogIn, Loader2, ShieldCheck, User as UserIconLucide, Eye, EyeOff, Users as UsersIcon, UserCog } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { UserRole } from "@/lib/types";
-import { mockTeachers, mockStudents, mockParents } from '@/lib/mockData'; // Import mock data
+import { getTeachers, getStudents, mockParents } from '@/lib/mockData'; // Import mock data correctly
 
 const roles: { value: UserRole; label: string; icon?: React.ElementType }[] = [
   { value: "admin", label: "Admin", icon: ShieldCheck },
   { value: "teacher", label: "Guru", icon: UserCog },
-  { value: "student", label: "Siswa", icon: UserIconLucide }, // Use renamed UserIconLucide
+  { value: "student", label: "Siswa", icon: UserIconLucide },
   { value: "parent", label: "Orang Tua Murid", icon: UsersIcon },
 ];
 
@@ -61,8 +61,12 @@ export default function LoginForm() {
     let loginSuccess = false;
     let loggedInUser: import('@/lib/types').User | null = null;
 
+    const teachers = getTeachers();
+    const students = getStudents();
+    // mockParents is already imported directly
+
     if (selectedRole === "admin") {
-      const adminUser = mockTeachers.find(
+      const adminUser = teachers.find(
         (teacher) => teacher.Email === values.email && teacher.Password_Hash === values.password && teacher.isAdmin
       );
       if (adminUser) {
@@ -78,7 +82,7 @@ export default function LoginForm() {
         };
       }
     } else if (selectedRole === "teacher") {
-       const teacherUser = mockTeachers.find(
+       const teacherUser = teachers.find(
         (teacher) => teacher.Email === values.email && teacher.Password_Hash === values.password && !teacher.isAdmin
       );
       if (teacherUser) {
@@ -94,7 +98,7 @@ export default function LoginForm() {
         };
       }
     } else if (selectedRole === "student") {
-      const studentUser = mockStudents.find(
+      const studentUser = students.find(
         (student) => student.Email === values.email && student.Password_Hash === values.password
       );
       if (studentUser) {
