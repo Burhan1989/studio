@@ -2,7 +2,7 @@
 "use client";
 
 import type { ReactNode } from 'react';
-import React, { useMemo } from 'react'; // Ditambahkan useMemo
+import React, { useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -45,15 +45,23 @@ interface NavItem {
 }
 
 const baseNavItems: NavItem[] = [
+  // General items (visible to Student, Teacher, Admin unless explicitly filtered out by role logic)
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard },
-  { href: '/lessons', label: 'Pelajaran', icon: BookOpen, studentOnly: true, teacherOnly: true },
-  { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck, studentOnly: true, teacherOnly: true },
-  { href: '/reports', label: 'Laporan', icon: BarChart3, studentOnly: true, teacherOnly: true },
-  { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit, studentOnly: true },
-  { href: '/teacher/materials', label: 'Materi Saya', icon: UploadCloud, teacherOnly: true },
+  { href: '/lessons', label: 'Pelajaran', icon: BookOpen },
+  { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck },
+  { href: '/reports', label: 'Laporan', icon: BarChart3 },
   { href: '/profile', label: 'Profil', icon: UserCircle },
   { href: '/settings', label: 'Pengaturan', icon: Settings },
+
+  // Student Specific
+  { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit, studentOnly: true },
+
+  // Teacher Specific
+  { href: '/teacher/materials', label: 'Materi Saya', icon: UploadCloud, teacherOnly: true },
+  
+  // Parent Specific
   { href: '/parent/dashboard', label: 'Dasbor Anak', icon: ParentIcon, parentOnly: true },
+
   // Admin Menu
   { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
   { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building, adminOnly: true },
@@ -75,66 +83,82 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const schoolLogoUrl = (typeof mockSchoolProfile.logo === 'string' && mockSchoolProfile.logo.trim() !== '') ? mockSchoolProfile.logo : null;
 
   const filteredNavItems = useMemo(() => {
-    if (!user) return []; 
+    if (!user) return [];
+    const userRole = user.role;
 
-    let items: NavItem[];
-    const userRole = user?.role;
+    let items = baseNavItems.filter(item => {
+      const isGeneralItem = !item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly;
 
-    if (user?.isAdmin) {
-      items = baseNavItems.filter(item =>
-        item.adminOnly ||
-        (!item.parentOnly && !item.teacherOnly && !item.studentOnly &&
-          (item.href === '/profile' || item.href === '/settings' || item.href === '/lessons' || item.href === '/quizzes' || item.href === '/reports'))
-      );
-      const adminDashboard = items.find(item => item.href === '/admin');
-      const commonDashboard = baseNavItems.find(item => item.href === '/dashboard'); // Dasbor umum
-      const adminSpecificItems = items.filter(item => item.adminOnly && item.href !== '/admin');
-      const commonItems = items.filter(item => 
-        !item.adminOnly && 
-        (item.href === '/profile' || item.href === '/settings' || item.href === '/lessons' || item.href === '/quizzes' || item.href === '/reports')
-      );
-      
-      items = [
-          ...(commonDashboard ? [commonDashboard] : []), 
-          ...(adminDashboard ? [adminDashboard] : []), 
-          ...adminSpecificItems.sort((a, b) => a.label.localeCompare(b.label)), 
-          ...commonItems.sort((a,b) => (a.href === '/profile' || a.href === '/settings') ? 1 : (b.href === '/profile' || b.href === '/settings') ? -1 : a.label.localeCompare(b.label)), 
-      ];
-    } else if (userRole === 'parent') {
-      items = baseNavItems.filter(item =>
-        item.parentOnly ||
-        item.href === '/profile' ||
-        item.href === '/settings' 
-      );
-     if (!items.find(i => i.href === '/parent/dashboard')) {
-        const parentDashboardItem = baseNavItems.find(i => i.href === '/parent/dashboard');
-        if(parentDashboardItem) items.unshift(parentDashboardItem);
-     }
+      if (user.isAdmin) {
+        // Admin sees admin-specific items and general items.
+        // Admin should not see items that are exclusively for other roles (parentOnly, studentOnly, teacherOnly).
+        if (item.parentOnly || item.studentOnly || item.teacherOnly) return false; // Exclude other role specific items
+        return item.adminOnly || isGeneralItem;
+      }
+      if (userRole === 'teacher') {
+        // Teacher sees teacher-specific items and general items.
+        // Exclude adminOnly, parentOnly, studentOnly items.
+        if (item.adminOnly || item.parentOnly || item.studentOnly) return false;
+        return item.teacherOnly || isGeneralItem;
+      }
+      if (userRole === 'student') {
+        // Student sees student-specific items and general items.
+        // Exclude adminOnly, parentOnly, teacherOnly items.
+        if (item.adminOnly || item.parentOnly || item.teacherOnly) return false;
+        return item.studentOnly || isGeneralItem;
+      }
+      if (userRole === 'parent') {
+        // Parent sees parent-specific items and specific general items (Profil, Pengaturan).
+        // Exclude adminOnly, teacherOnly, studentOnly items.
+        if (item.adminOnly || item.teacherOnly || item.studentOnly) return false;
+        if (item.parentOnly) return true; // Dasbor Anak
+        // For parents, only Profile and Settings are general items they see
+        return isGeneralItem && (item.href === '/profile' || item.href === '/settings');
+      }
+      // Fallback for unknown roles (should not happen ideally)
+      return isGeneralItem; 
+    });
+
+    // Sorting logic
+    if (user.isAdmin) {
       items.sort((a, b) => {
-        if (a.href === '/parent/dashboard') return -1;
-        if (b.href === '/parent/dashboard') return 1;
-        if (a.href === '/profile' || a.href === '/settings') return 1;
-        if (b.href === '/profile' || b.href === '/settings') return -1;
-        return 0;
+        if (a.href === '/dashboard') return -1; if (b.href === '/dashboard') return 1;
+        if (a.href === '/admin') return -1; if (b.href === '/admin') return 1;
+        
+        const aIsAdminSpecific = a.adminOnly && a.href !== '/admin' && a.href !== '/dashboard';
+        const bIsAdminSpecific = b.adminOnly && b.href !== '/admin' && b.href !== '/dashboard';
+
+        if (aIsAdminSpecific && !bIsAdminSpecific) return -1;
+        if (!aIsAdminSpecific && bIsAdminSpecific) return 1;
+        if (aIsAdminSpecific && bIsAdminSpecific) return a.label.localeCompare(b.label);
+        
+        const isAGeneralSetting = a.href === '/profile' || a.href === '/settings';
+        const isBGeneralSetting = b.href === '/profile' || b.href === '/settings';
+        if (isAGeneralSetting && !isBGeneralSetting) return 1;
+        if (!isAGeneralSetting && isBGeneralSetting) return -1;
+        return a.label.localeCompare(b.label);
       });
-    } else if (userRole === 'teacher') {
-     items = baseNavItems.filter(item => {
-      if (item.adminOnly || item.parentOnly || item.studentOnly) return false;
-      return item.teacherOnly || (!item.adminOnly && !item.parentOnly && !item.studentOnly && !item.teacherOnly);
-    });
-    } else if (userRole === 'student') {
-     items = baseNavItems.filter(item => {
-      if (item.adminOnly || item.parentOnly || item.teacherOnly) return false;
-      return item.studentOnly || (!item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly);
-    });
-    } else { 
-      items = baseNavItems.filter(item =>
-          !item.adminOnly &&
-          !item.parentOnly &&
-          !item.teacherOnly &&
-          !item.studentOnly &&
-          (item.href === '/dashboard' || item.href === '/profile' || item.href === '/settings' || item.href === '/lessons' || item.href === '/quizzes' || item.href === '/reports')
-          );
+    } else if (userRole === 'parent') {
+        items.sort((a, b) => {
+            if (a.href === '/parent/dashboard') return -1; if (b.href === '/parent/dashboard') return 1;
+            const isAGeneralSetting = a.href === '/profile' || a.href === '/settings';
+            const isBGeneralSetting = b.href === '/profile' || b.href === '/settings';
+            if (isAGeneralSetting && !isBGeneralSetting) return 1;
+            if (!isAGeneralSetting && isBGeneralSetting) return -1;
+            return a.label.localeCompare(b.label); // Fallback to alphabetical for other parent items if any
+        });
+    } else { // Basic alphabetical sort for Student and Teacher
+        items.sort((a, b) => {
+            // Put Dashboard first for students and teachers
+            if (a.href === '/dashboard') return -1;
+            if (b.href === '/dashboard') return 1;
+            // Put Profile and Settings last
+            const isAGeneralSetting = a.href === '/profile' || a.href === '/settings';
+            const isBGeneralSetting = b.href === '/profile' || b.href === '/settings';
+            if (isAGeneralSetting && !isBGeneralSetting) return 1;
+            if (!isAGeneralSetting && isBGeneralSetting) return -1;
+            return a.label.localeCompare(b.label);
+        });
     }
     return items;
   }, [user]);
@@ -156,8 +180,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <Image
                 src={schoolLogoUrl}
                 alt={`${mockSchoolProfile.namaSekolah || 'AdeptLearn'} Logo`}
-                width={100} // Lebar untuk rasio aspek
-                height={25}  // Tinggi untuk rasio aspek
+                width={100} 
+                height={25}  
                 className="h-8 w-auto object-contain mb-1 group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:mb-0" 
                 data-ai-hint="school logo"
               />
@@ -198,7 +222,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         </SidebarContent>
       </Sidebar>
       <SidebarInset className="bg-background">
-        <header className="sticky top-0 z-40 flex items-center justify-between h-16 gap-4 px-4 border-b bg-background/80 backdrop-blur md:px-6">
+         <header className="sticky top-0 z-40 flex items-center justify-between h-16 gap-4 px-4 border-b bg-background/80 backdrop-blur md:px-6">
             <div className="flex items-center"> 
                 <SidebarTrigger className="md:hidden" /> 
             </div>
