@@ -36,7 +36,7 @@ export default function QuizView({ quiz }: QuizViewProps) {
 
   const handlePrevQuestion = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
+      setCurrentQuestionIndex(prev => prev + 1);
     }
   };
   
@@ -99,16 +99,17 @@ export default function QuizView({ quiz }: QuizViewProps) {
                 value={selectedAnswers[currentQuestion.id] as string | undefined}
                 className="space-y-2"
               >
-                {currentQuestion.options.map((option, index) => (
-                  <FormItem key={index} className="flex items-center p-3 space-x-3 transition-colors border rounded-md hover:bg-muted/50 has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-                    <FormControl>
-                      <RadioGroupItem value={option} id={`${currentQuestion.id}-option-${index}`} />
-                    </FormControl>
-                    <Label htmlFor={`${currentQuestion.id}-option-${index}`} className="font-normal cursor-pointer">
-                      {option}
-                    </Label>
-                  </FormItem>
-                ))}
+                {currentQuestion.options.map((option, index) => {
+                  const itemId = `${currentQuestion.id}-option-${index}`;
+                  return (
+                    <div key={index} className="flex items-center p-3 space-x-3 transition-colors border rounded-md hover:bg-muted/50 has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+                      <RadioGroupItem value={option} id={itemId} />
+                      <Label htmlFor={itemId} className="font-normal cursor-pointer">
+                        {option}
+                      </Label>
+                    </div>
+                  );
+                })}
               </RadioGroup>
             )}
             {currentQuestion.type === 'true-false' && (
@@ -117,18 +118,14 @@ export default function QuizView({ quiz }: QuizViewProps) {
                 value={selectedAnswers[currentQuestion.id] !== undefined ? String(selectedAnswers[currentQuestion.id]) : undefined}
                 className="space-y-2"
               >
-                <FormItem className="flex items-center p-3 space-x-3 transition-colors border rounded-md hover:bg-muted/50 has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-                  <FormControl>
-                    <RadioGroupItem value="true" id={`${currentQuestion.id}-true`} />
-                  </FormControl>
+                <div className="flex items-center p-3 space-x-3 transition-colors border rounded-md hover:bg-muted/50 has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+                  <RadioGroupItem value="true" id={`${currentQuestion.id}-true`} />
                   <Label htmlFor={`${currentQuestion.id}-true`} className="font-normal cursor-pointer">Benar</Label>
-                </FormItem>
-                <FormItem className="flex items-center p-3 space-x-3 transition-colors border rounded-md hover:bg-muted/50 has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-                  <FormControl>
-                    <RadioGroupItem value="false" id={`${currentQuestion.id}-false`} />
-                  </FormControl>
+                </div>
+                <div className="flex items-center p-3 space-x-3 transition-colors border rounded-md hover:bg-muted/50 has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
+                  <RadioGroupItem value="false" id={`${currentQuestion.id}-false`} />
                   <Label htmlFor={`${currentQuestion.id}-false`} className="font-normal cursor-pointer">Salah</Label>
-                </FormItem>
+                </div>
               </RadioGroup>
             )}
           </div>
@@ -161,7 +158,3 @@ export default function QuizView({ quiz }: QuizViewProps) {
     </Card>
   );
 }
-
-// Need to include FormItem and FormControl for RadioGroup structure
-import { FormItem, FormControl } from "@/components/ui/form";
-
