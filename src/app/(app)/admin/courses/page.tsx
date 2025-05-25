@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { BookCopy, PlusCircle, Edit, Trash2, Eye, Upload, Download } from "lucide-react";
+import { BookCopy, PlusCircle, Edit, Trash2, Eye, Upload, Download, Link2, FileUp, Film } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 // Mock Data (Sementara)
 const mockCourses = [
@@ -42,6 +44,13 @@ export default function AdminCoursesPage() {
     });
   };
 
+  const handleSaveMaterials = () => {
+    toast({
+        title: "Simulasi Penyimpanan Materi",
+        description: "Perubahan materi pelajaran (contoh) telah 'disimpan'. Implementasi backend diperlukan.",
+    });
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -74,7 +83,7 @@ export default function AdminCoursesPage() {
           <p className="text-xs text-muted-foreground">Catatan: Fitur import/export Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
         </CardContent>
       </Card>
-      
+
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Daftar Pelajaran Tersedia</CardTitle>
@@ -124,6 +133,44 @@ export default function AdminCoursesPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+                <Upload className="w-6 h-6 text-primary" /> Pengelolaan Materi untuk Pelajaran (Contoh)
+            </CardTitle>
+            <CardDescription>
+                Ini adalah placeholder UI untuk menunjukkan bagaimana materi pelajaran dapat dikelola. 
+                Pilih pelajaran dari tabel di atas untuk "mengedit" materinya di sini (simulasi).
+            </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+            <div className="space-y-2">
+                <Label htmlFor="videoUrl" className="flex items-center gap-1">
+                    <Film className="w-4 h-4" /> URL Video Eksternal (Misalnya Vimeo, Google Drive)
+                </Label>
+                <Input id="videoUrl" placeholder="https://contoh.com/video-pelajaran.mp4" />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="youtubeLink" className="flex items-center gap-1">
+                    <Link2 className="w-4 h-4" /> Link Video YouTube
+                </Label>
+                <Input id="youtubeLink" placeholder="https://www.youtube.com/watch?v=kodeVideoAnda" />
+                <p className="text-xs text-muted-foreground">Sistem dapat menyematkan video YouTube dari link ini.</p>
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="materialFile" className="flex items-center gap-1">
+                    <FileUp className="w-4 h-4" /> Unggah File Materi (PDF, DOCX, PPTX, dll.)
+                </Label>
+                <Input id="materialFile" type="file" />
+                <p className="text-xs text-muted-foreground">Maksimal ukuran file: 5MB (Contoh). Implementasi backend diperlukan.</p>
+            </div>
+            <Button onClick={handleSaveMaterials}>
+                Simpan Perubahan Materi
+            </Button>
+        </CardContent>
+      </Card>
+
     </div>
   );
 }
