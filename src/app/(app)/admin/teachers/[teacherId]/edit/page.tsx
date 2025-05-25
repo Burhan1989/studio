@@ -34,10 +34,10 @@ const editTeacherSchema = z.object({
   Jenis_Kelamin: z.enum(["Laki-laki", "Perempuan", ""], { required_error: "Jenis kelamin harus dipilih." }).refine(val => val !== "", { message: "Jenis kelamin harus dipilih." }),
   Tanggal_Lahir: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Tanggal lahir tidak valid." }),
   Alamat: z.string().min(5, "Alamat minimal 5 karakter.").optional().or(z.literal("")),
-  Nomor_Telepon: z.string().regex(/^[0-9\-\+\(\)\s]+$/, "Format nomor telepon tidak valid.").optional().or(z.literal("")),
+  Nomor_Telepon: z.string().regex(/^[0-9\\-\\+\\(\\)\\s]+$/, "Format nomor telepon tidak valid.").optional().or(z.literal("")),
   Mata_Pelajaran: z.string().min(3, "Mata pelajaran minimal 3 karakter."),
   Kelas_Ajar: z.string().min(1, "Kelas ajar harus diisi.").transform(val => val.split(',').map(s => s.trim())),
-  Jabatan: z.string().optional().or(z.literal("")), // Tetap ada di schema untuk form handling
+  Jabatan: z.string().optional().or(z.literal("")), // Admin can edit this
   Status_Aktif: z.boolean().default(true),
   newPassword: z.string().min(6, "Password baru minimal 6 karakter.").optional().or(z.literal("")),
   confirmNewPassword: z.string().optional().or(z.literal("")),
@@ -104,7 +104,7 @@ export default function AdminEditTeacherPage() {
       } else {
         toast({
           title: "Guru Tidak Ditemukan",
-          description: `Guru dengan ID ${teacherId} tidak ditemukan.`,
+          description: \`Guru dengan ID \${teacherId} tidak ditemukan.\`,
           variant: "destructive",
         });
         router.push("/admin/teachers");
@@ -126,7 +126,7 @@ export default function AdminEditTeacherPage() {
       Nomor_Telepon: values.Nomor_Telepon,
       Mata_Pelajaran: values.Mata_Pelajaran,
       Kelas_Ajar: values.Kelas_Ajar, 
-      Jabatan: initialData.Jabatan, // Jabatan diambil dari initialData, bukan dari form values
+      Jabatan: values.Jabatan, // Jabatan can be updated by admin from form values
       Status_Aktif: values.Status_Aktif,
       Password_Hash: values.newPassword ? values.newPassword : initialData.Password_Hash, 
     };
@@ -140,7 +140,7 @@ export default function AdminEditTeacherPage() {
     if (success) {
       toast({
         title: "Data Guru Diperbarui",
-        description: `Informasi guru "${values.Nama_Lengkap}" telah berhasil diperbarui.`,
+        description: \`Informasi guru "\${values.Nama_Lengkap}" telah berhasil diperbarui.\`,
       });
       router.push("/admin/teachers");
       router.refresh(); 
@@ -183,7 +183,7 @@ export default function AdminEditTeacherPage() {
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-xl">Informasi Data Guru</CardTitle>
-              <CardDescription>Perbarui detail guru di bawah ini. Username, Email, dan Jabatan tidak dapat diubah di sini.</CardDescription>
+              <CardDescription>Perbarui detail guru di bawah ini. Username dan Email tidak dapat diubah di sini.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6 md:grid-cols-2">
               <FormField
@@ -284,11 +284,10 @@ export default function AdminEditTeacherPage() {
                       <Input 
                         placeholder="cth. Guru Senior Matematika" 
                         {...field} 
-                        readOnly // Memastikan atribut readOnly diterapkan
-                        className="bg-muted/50 cursor-not-allowed" // Styling untuk field read-only
+                        // Jabatan can be edited by admin, so no readOnly here
                       />
                     </FormControl>
-                    <FormDescription>Jabatan tidak dapat diubah melalui formulir ini.</FormDescription>
+                    <FormDescription>Admin dapat mengubah jabatan guru.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -393,3 +392,5 @@ export default function AdminEditTeacherPage() {
     </div>
   );
 }
+
+    
