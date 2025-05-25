@@ -206,6 +206,24 @@ export let mockStudents: StudentData[] = [
 
 export let mockTeachers: TeacherData[] = [
   {
+    ID_Guru: "admin001", // ID unik untuk admin
+    Nama_Lengkap: "Admin AdeptLearn",
+    Username: "adminutama",
+    Email: "admin@example.com",
+    Mata_Pelajaran: "Administrasi Sistem",
+    Kelas_Ajar: ["Semua Kelas"],
+    Jenis_Kelamin: "Laki-laki",
+    Tanggal_Lahir: "1990-01-01",
+    Alamat: "Jl. Kantor Pusat No. 1",
+    Nomor_Telepon: "081200000001",
+    Status_Aktif: true,
+    Password_Hash: "adminpassword", // Pastikan ini cocok dengan yang diharapkanLoginForm
+    Tanggal_Pendaftaran: "2020-01-01",
+    Jabatan: "Administrator Utama",
+    Profil_Foto: "https://placehold.co/100x100.png?text=AD",
+    isAdmin: true, // Flag admin
+  },
+  {
     ID_Guru: "teacher001",
     Nama_Lengkap: "Guru Inovatif, M.Pd.",
     Username: "guruinovatif",
@@ -220,7 +238,8 @@ export let mockTeachers: TeacherData[] = [
     Password_Hash: "password",
     Tanggal_Pendaftaran: "2015-06-01",
     Jabatan: "Guru Senior Kimia",
-    Profil_Foto: "https://placehold.co/100x100.png?text=GI"
+    Profil_Foto: "https://placehold.co/100x100.png?text=GI",
+    isAdmin: false,
   },
   {
     ID_Guru: "guru1",
@@ -237,7 +256,8 @@ export let mockTeachers: TeacherData[] = [
     Password_Hash: "hashed_password_guru1",
     Tanggal_Pendaftaran: "2010-08-01",
     Jabatan: "Guru Senior Matematika",
-    Profil_Foto: "https://placehold.co/100x100.png?text=BD"
+    Profil_Foto: "https://placehold.co/100x100.png?text=BD",
+    isAdmin: false,
   },
   {
     ID_Guru: "guru2",
@@ -254,7 +274,8 @@ export let mockTeachers: TeacherData[] = [
     Password_Hash: "hashed_password_guru2",
     Tanggal_Pendaftaran: "2012-07-15",
     Jabatan: "Guru Bahasa Indonesia",
-    Profil_Foto: "https://placehold.co/100x100.png?text=SN"
+    Profil_Foto: "https://placehold.co/100x100.png?text=SN",
+    isAdmin: false,
   },
   {
     ID_Guru: "guru3",
@@ -271,7 +292,8 @@ export let mockTeachers: TeacherData[] = [
     Password_Hash: "hashed_password_guru3",
     Tanggal_Pendaftaran: "2005-01-20",
     Jabatan: "Kepala Jurusan IPA",
-    Profil_Foto: "https://placehold.co/100x100.png?text=AS"
+    Profil_Foto: "https://placehold.co/100x100.png?text=AS",
+    isAdmin: false,
   },
 ];
 
@@ -440,6 +462,27 @@ export function updateTeacher(updatedTeacher: TeacherData): boolean {
   return false;
 }
 
+export function addAdminUser(newAdmin: TeacherData): boolean {
+    // Check if email or username already exists to prevent duplicates
+    const emailExists = mockTeachers.some(teacher => teacher.Email === newAdmin.Email);
+    const usernameExists = mockTeachers.some(teacher => teacher.Username === newAdmin.Username);
+
+    if (emailExists) {
+        console.warn(`Gagal menambahkan admin: Email ${newAdmin.Email} sudah digunakan.`);
+        // Di aplikasi nyata, Anda akan melempar error atau mengembalikan false dengan pesan
+        return false; 
+    }
+    if (usernameExists) {
+        console.warn(`Gagal menambahkan admin: Username ${newAdmin.Username} sudah digunakan.`);
+        return false;
+    }
+
+    mockTeachers.push(newAdmin);
+    console.log("Admin baru ditambahkan (simulasi):", newAdmin);
+    return true;
+}
+
+
 export function getStudentById(id: string): StudentData | undefined {
   return mockStudents.find(student => student.ID_Siswa === id);
 }
@@ -452,3 +495,4 @@ export function updateStudent(updatedStudent: StudentData): boolean {
   }
   return false;
 }
+

@@ -6,7 +6,7 @@ export interface User {
   isAdmin?: boolean;
   username?: string;
   role?: UserRole;
-  Profil_Foto?: string; // Added profile photo
+  Profil_Foto?: string;
 }
 
 export type UserRole = 'admin' | 'teacher' | 'student' | 'parent';
@@ -71,7 +71,7 @@ export interface StudentData {
   Alamat: string;
   Email: string;
   Nomor_Telepon: string;
-  Program_Studi: string;
+  Program_Studi: string; // Ini akan menjadi Jurusan
   Kelas: string;
   Tanggal_Daftar: string;
   Status_Aktif: boolean;
@@ -98,6 +98,7 @@ export interface TeacherData {
   Password_Hash: string;
   Tanggal_Pendaftaran: string;
   Jabatan?: string;
+  isAdmin?: boolean; // Flag untuk menandakan apakah guru ini juga admin
 }
 
 export interface ParentData {
@@ -119,7 +120,7 @@ export interface ClassData {
   ID_Guru: string;
   Deskripsi_Kelas?: string;
   Waktu_Kelas?: string;
-  jurusan: string;
+  jurusan: string; // Diubah menjadi wajib
   jumlahSiswa?: number;
 }
 
