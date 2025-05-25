@@ -15,10 +15,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { UserCircle, Save, Loader2, Image as ImageIcon } from 'lucide-react'; // Added ImageIcon
+import { UserCircle, Save, Loader2, Image as ImageIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import Image from "next/image"; // Import next/image
+import Image from "next/image";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"; // Added this line
 
 const profileFormSchema = z.object({
   Nama_Lengkap: z.string().min(2, "Nama lengkap minimal 2 karakter."),
@@ -151,7 +152,7 @@ export default function ProfilePage() {
 
     if (user && (data.Nama_Lengkap !== user.name || newPhotoUrl !== user.Profil_Foto)) {
       const updatedUser: User = { ...user, name: data.Nama_Lengkap, Profil_Foto: newPhotoUrl };
-      login(updatedUser);
+      login(updatedUser); // This updates AuthContext and localStorage
     }
     
     toast({
