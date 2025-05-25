@@ -21,6 +21,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger, // Added AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { format, parseISO } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
@@ -107,7 +108,7 @@ export default function AdminStudentsPage() {
         student.Kelas,
         student.Tanggal_Daftar ? format(parseISO(student.Tanggal_Daftar), 'yyyy-MM-dd') : '',
         student.Status_Aktif
-      ].join("\t")
+      ].map(value => `"${String(value || '').replace(/"/g, '""')}"`).join("\t") // Handle quotes and ensure string conversion
     ).join("\n");
     const tsvString = header + tsvRows;
 
@@ -139,6 +140,7 @@ export default function AdminStudentsPage() {
         title: "File Dipilih",
         description: `File "${file.name}" dipilih untuk impor data siswa. Memproses (simulasi)...`,
       });
+      // Simulate file processing
       setTimeout(() => {
         toast({
           title: "Impor Selesai (Simulasi)",
@@ -146,6 +148,7 @@ export default function AdminStudentsPage() {
         });
       }, 2000);
     }
+    // Reset file input to allow selecting the same file again
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
     }
@@ -167,7 +170,7 @@ export default function AdminStudentsPage() {
         ref={fileInputRef} 
         style={{ display: 'none' }} 
         onChange={handleFileSelected}
-        accept=".xlsx,.xls,.tsv,.csv"
+        accept=".xlsx,.xls,.tsv,.csv" // Updated to accept more Excel related formats
       />
        <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Siswa</h1>
