@@ -74,8 +74,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
 
   if (!user) {
-    return <div className="flex items-center justify-center h-screen">Mengarahkan ke halaman masuk...</div>;
+    // This should ideally be handled by AuthProvider redirecting,
+    // but as a fallback, prevent rendering AppShell without a user.
+    console.log("AppShell: No user, rendering null (AuthProvider should have redirected).");
+    return null; 
   }
+  console.log("AppShell: Rendering for user:", user.email);
 
   let filteredNavItems: NavItem[];
   const userRole = user?.role;
@@ -90,20 +94,33 @@ export default function AppShell({ children }: { children: ReactNode }) {
     filteredNavItems = baseNavItems.filter(item =>
       item.parentOnly ||
       item.href === '/profile' ||
-      item.href === '/settings'
+      item.href === '/settings' ||
+      item.href === '/dashboard' // Parent should also see a generic dashboard
     );
+     if (item.href === '/dashboard' && !filteredNavItems.find(i => i.href === '/parent/dashboard')) {
+        // if dashboard is shown, ensure parent dashboard is also primary link
+         const parentDashboardIndex = filteredNavItems.findIndex(i => i.href === '/parent/dashboard');
+         if (parentDashboardIndex > 0) { // if parent dashboard exists and not first
+            const parentDash = filteredNavItems.splice(parentDashboardIndex, 1)[0];
+            filteredNavItems.unshift(parentDash);
+         }
+    }
+
+
   } else if (userRole === 'teacher') {
      filteredNavItems = baseNavItems.filter(item => {
       if (item.adminOnly || item.parentOnly || item.studentOnly) return false;
       if (item.teacherOnly) return true;
+      // Ensure common items are not filtered out if not explicitly role-only
       return !item.adminOnly && !item.parentOnly && !item.studentOnly && !item.teacherOnly;
     });
   } else if (userRole === 'student') {
      filteredNavItems = baseNavItems.filter(item => {
       if (item.adminOnly || item.parentOnly || item.teacherOnly) return false;
+      // Ensure common items are not filtered out if not explicitly role-only
       return item.studentOnly || (!item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly);
     });
-  } else {
+  } else { // Fallback for users without a specific role, or general users
     filteredNavItems = baseNavItems.filter(item =>
         !item.adminOnly &&
         !item.parentOnly &&
@@ -136,20 +153,61 @@ export default function AppShell({ children }: { children: ReactNode }) {
               {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
             </span>
           </Link>
-          <DropdownMenu>
+          {/* User DropdownMenu moved from here */}
+        </SidebarHeader>
+        <SidebarSeparator className="group-data-[collapsible=icon]:hidden" />
+        <SidebarContent className="p-2">
+          <SidebarMenu>
+            {filteredNavItems.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <Link href={item.href} legacyBehavior passHref>
+                  <SidebarMenuButton
+                    isActive={pathname === item.href ||
+                                (item.href !== '/dashboard' &&
+                                 item.href !== '/parent/dashboard' &&
+                                 item.href !== '/admin' &&
+                                 pathname.startsWith(item.href) && item.href.length > 1 && !item.href.startsWith('/admin/')) ||
+                                 (item.href.startsWith('/admin/') && pathname.startsWith(item.href)) ||
+                                 (item.href === '/admin' && pathname === '/admin') ||
+                                 (item.href === '/parent/dashboard' && pathname === '/parent/dashboard')
+                              }
+                    tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
+                    className="justify-start"
+                  >
+                    <item.icon className="w-5 h-5" />
+                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarContent>
+      </Sidebar>
+      <SidebarInset className="bg-background">
+        <header className="sticky top-0 z-40 flex items-center justify-between h-16 gap-4 px-4 border-b bg-background/80 backdrop-blur md:px-6">
+            <div className="md:hidden">
+                 <SidebarTrigger />
+            </div>
+            <div className="flex-1 md:hidden">
+                {/* Mobile page title or breadcrumbs can go here if needed */}
+            </div>
+             <div className="hidden md:flex flex-1">
+                {/* Desktop page title or breadcrumbs can go here */}
+            </div>
+            <DropdownMenu>
             <DropdownMenuTrigger asChild>
-               <Button variant="ghost" className="flex items-center justify-start w-full gap-2 group-data-[collapsible=icon]:justify-center p-1.5 h-auto group-data-[collapsible=icon]:p-1">
-                <Avatar className="w-8 h-8 group-data-[collapsible=icon]:w-7 group-data-[collapsible=icon]:h-7">
+               <Button variant="ghost" className="flex items-center justify-start gap-2 p-1.5 h-auto rounded-full">
+                <Avatar className="w-8 h-8">
                   <AvatarImage src={user.Profil_Foto || `https://avatar.vercel.sh/${user.name || user.email}.png`} alt={user.name || "Pengguna"} />
                   <AvatarFallback>{user.email?.[0]?.toUpperCase()}</AvatarFallback>
                 </Avatar>
-                <div className="flex-col items-start hidden group-data-[collapsible=icon]:hidden">
+                <div className="flex-col items-start hidden sm:flex"> {/* Show name/email on sm screens and up */}
                     <span className="text-sm font-medium truncate max-w-[120px]">{user.name || "Pengguna"}</span>
                     <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
                 </div>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" align="start" className="w-56 mb-2">
+            <DropdownMenuContent side="bottom" align="end" className="w-56 mt-2">
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">{user.name || "Pengguna"}</p>
@@ -174,43 +232,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-        </SidebarHeader>
-        <SidebarSeparator className="group-data-[collapsible=icon]:hidden" />
-        <SidebarContent className="p-2">
-          <SidebarMenu>
-            {filteredNavItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
-                <Link href={item.href} legacyBehavior passHref>
-                  <SidebarMenuButton
-                    isActive={pathname === item.href ||
-                                (item.href !== '/dashboard' &&
-                                 item.href !== '/parent/dashboard' &&
-                                 item.href !== '/admin' &&
-                                 pathname.startsWith(item.href) && item.href.length > 1 && !item.href.startsWith('/admin/')) ||
-                                 (item.href.startsWith('/admin/') && pathname.startsWith(item.href)) ||
-                                 (item.href === '/admin' && pathname === '/admin')
-                              }
-                    tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
-                    className="justify-start"
-                  >
-                    <item.icon className="w-5 h-5" />
-                    <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
-        </SidebarContent>
-        {/* SidebarFooter is removed as its content is moved to SidebarHeader */}
-      </Sidebar>
-      <SidebarInset className="bg-background">
-        <header className="sticky top-0 z-40 flex items-center h-16 gap-4 px-4 bg-background/80 backdrop-blur md:px-6">
-            <div className="md:hidden">
-                 <SidebarTrigger />
-            </div>
-            <div className="flex-1">
-                {/* Can add breadcrumbs or page title here */}
-            </div>
         </header>
         <main className="flex-1 p-4 overflow-auto md:p-6">
           {children}
