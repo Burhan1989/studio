@@ -26,6 +26,13 @@ export default function AdminCoursesPage() {
     });
   };
 
+  const handleEditAction = (itemName: string) => {
+    toast({
+      title: `Edit ${itemName}`,
+      description: `Membuka form edit untuk ${itemName}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
+    });
+  };
+
   const handleExcelAction = (actionType: string) => {
     console.log(`Aksi Excel: ${actionType}`);
     toast({
@@ -99,7 +106,7 @@ export default function AdminCoursesPage() {
                     <Button variant="outline" size="sm" onClick={() => handleActionPlaceholder("Lihat Modul", course.title)}>
                       <Eye className="w-4 h-4" />
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleActionPlaceholder("Edit", course.title)}>
+                    <Button variant="outline" size="sm" onClick={() => handleEditAction(`Pelajaran ${course.title}`)}>
                       <Edit className="w-4 h-4" />
                     </Button>
                     <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", course.title)}>

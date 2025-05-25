@@ -1,5 +1,5 @@
 
-"use client"; // Jadikan ini komponen klien
+"use client"; 
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,15 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Users, BookCopy, FileQuestion, LineChart, Shield, ArrowRight, Loader2, Upload, Download, MessageSquare, UsersRound, School } from 'lucide-react';
+import { Users, BookCopy, FileQuestion, LineChart, Shield, ArrowRight, Loader2, MessageSquare, School } from 'lucide-react';
 import Link from 'next/link';
-import { useAuth } from '@/contexts/AuthContext'; // Impor useAuth
-import { useRouter } from 'next/navigation'; // Impor useRouter
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import type { ClassData } from '@/lib/types'; // Import ClassData
+import type { ClassData } from '@/lib/types';
 
-// Mock data untuk tabel kelas & wali kelas
 const mockClasses: ClassData[] = [
   { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'Budi Santoso', jumlahSiswa: 30, jurusan: "IPA" },
   { ID_Kelas: 'kelasB', Nama_Kelas: 'Kelas 11B', ID_Guru: 'Siti Aminah', jumlahSiswa: 28, jurusan: "IPS" },
@@ -31,41 +30,7 @@ export default function AdminPage() {
   const [notificationMessage, setNotificationMessage] = useState('');
 
   const adminSections = [
-    {
-      title: "Kelola Guru",
-      description: "Lihat, edit, atau hapus data guru.",
-      icon: <Users className="w-8 h-8 text-primary" />,
-      href: "/admin/teachers",
-      cta: "Buka Manajemen Guru"
-    },
-    {
-      title: "Kelola Siswa",
-      description: "Lihat, edit, atau hapus data siswa.",
-      icon: <UsersRound className="w-8 h-8 text-primary" />,
-      href: "/admin/students",
-      cta: "Buka Manajemen Siswa"
-    },
-    {
-      title: "Kelola Pelajaran",
-      description: "Tambah, edit, atau hapus pelajaran.",
-      icon: <BookCopy className="w-8 h-8 text-primary" />,
-      href: "/admin/courses",
-      cta: "Buka Manajemen Pelajaran"
-    },
-    {
-      title: "Kelola Kuis",
-      description: "Buat, edit, atau tinjau kuis dan pertanyaan.",
-      icon: <FileQuestion className="w-8 h-8 text-primary" />,
-      href: "/admin/quizzes",
-      cta: "Buka Manajemen Kuis"
-    },
-    {
-      title: "Statistik Situs",
-      description: "Lihat analitik dan laporan penggunaan situs.",
-      icon: <LineChart className="w-8 h-8 text-primary" />,
-      href: "/admin/stats",
-      cta: "Lihat Statistik"
-    },
+    // Sections removed as navigation is now primarily in AppShell
   ];
 
   useEffect(() => {
@@ -83,15 +48,18 @@ export default function AdminPage() {
       });
       return;
     }
-    // Placeholder: Logika pengiriman notifikasi WhatsApp akan ada di sini
     console.log("Mengirim notifikasi:", { whatsappApiKey, teacherPhoneNumber, notificationMessage });
     toast({
       title: "Notifikasi Terkirim (Simulasi)",
       description: `Pesan ke ${teacherPhoneNumber}: ${notificationMessage}`,
     });
-    // Kosongkan field setelah "terkirim"
-    // setTeacherPhoneNumber('');
-    // setNotificationMessage('');
+  };
+  
+  const handleEditClassAction = (className: string) => {
+    toast({
+      title: `Edit Kelas ${className}`,
+      description: `Membuka form edit untuk ${className}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
+    });
   };
 
   if (authIsLoading || !user || !user.isAdmin) {
@@ -116,31 +84,31 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {adminSections.map((section) => (
-          <Card key={section.title} className="flex flex-col shadow-lg">
-            <CardHeader>
-              <div className="flex items-center gap-3 mb-2">
-                {section.icon}
-                <CardTitle className="text-xl">{section.title}</CardTitle>
-              </div>
-              <CardDescription>{section.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="flex-grow">
-              {/* Placeholder content if needed */}
-            </CardContent>
-            <CardFooter>
-              <Button asChild className="w-full">
-                <Link href={section.href}>
-                  {section.cta} <ArrowRight className="w-4 h-4 ml-2" />
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-
-      {/* Notifikasi Guru via WhatsApp */}
+      {adminSections.length > 0 && (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {adminSections.map((section) => (
+            <Card key={section.title} className="flex flex-col shadow-lg">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  {section.icon}
+                  <CardTitle className="text-xl">{section.title}</CardTitle>
+                </div>
+                <CardDescription>{section.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-grow">
+              </CardContent>
+              <CardFooter>
+                <Button asChild className="w-full">
+                  <Link href={section.href}>
+                    {section.cta} <ArrowRight className="w-4 h-4 ml-2" />
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
+      
       <Card className="shadow-lg">
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
@@ -189,7 +157,6 @@ export default function AdminPage() {
         </CardFooter>
       </Card>
 
-      {/* Manajemen Kelas & Wali Kelas */}
       <Card className="shadow-lg">
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
@@ -220,9 +187,9 @@ export default function AdminPage() {
                   <TableCell key={`nama-${kelas.ID_Kelas}`}>{kelas.Nama_Kelas}</TableCell>,
                   <TableCell key={`jurusan-${kelas.ID_Kelas}`}>{kelas.jurusan || '-'}</TableCell>,
                   <TableCell key={`guru-${kelas.ID_Kelas}`}>{kelas.ID_Guru}</TableCell>,
-                  <TableCell key={`jumlah-${kelas.ID_Kelas}`}>{(kelas as any).jumlahSiswa || 0}</TableCell>,
+                  <TableCell key={`jumlah-${kelas.ID_Kelas}`}>{kelas.jumlahSiswa || 0}</TableCell>,
                   <TableCell key={`aksi-${kelas.ID_Kelas}`}>
-                    <Button variant="outline" size="sm" onClick={() => toast({ title: "Fitur Dalam Pengembangan", description: `Opsi edit/hapus untuk ${kelas.Nama_Kelas} akan segera hadir.`})}>
+                    <Button variant="outline" size="sm" onClick={() => handleEditClassAction(kelas.Nama_Kelas)}>
                       Edit
                     </Button>
                   </TableCell>

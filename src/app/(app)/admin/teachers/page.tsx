@@ -25,7 +25,7 @@ const mockTeachers: TeacherData[] = [
     Status_Aktif: true,
     Password_Hash: "hashed_password_guru1", 
     Tanggal_Pendaftaran: "2010-08-01",
-    Jabatan: "Guru Senior",
+    Jabatan: "Guru Senior Matematika",
     Profil_Foto: "https://placehold.co/100x100.png"
   },
   { 
@@ -42,7 +42,7 @@ const mockTeachers: TeacherData[] = [
     Status_Aktif: true,
     Password_Hash: "hashed_password_guru2", 
     Tanggal_Pendaftaran: "2012-07-15",
-    Jabatan: "Guru Mata Pelajaran",
+    Jabatan: "Guru Bahasa Indonesia",
     Profil_Foto: "https://placehold.co/100x100.png"
   },
   { 
@@ -71,6 +71,13 @@ export default function AdminTeachersPage() {
     toast({
       title: "Fitur Dalam Pengembangan",
       description: `Fungsionalitas "${action} ${item}" akan segera hadir.`,
+    });
+  };
+
+  const handleEditAction = (itemName: string) => {
+    toast({
+      title: `Edit ${itemName}`,
+      description: `Membuka form edit untuk ${itemName}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
     });
   };
 
@@ -114,7 +121,6 @@ export default function AdminTeachersPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {/* Icon can be UserCog or similar, already used above, maybe no icon here or a different one like List */}
               <CardTitle className="text-xl">Daftar Guru</CardTitle>
             </div>
             <Button onClick={() => handleActionPlaceholder("Tambah", "Guru Baru")}>
@@ -130,6 +136,7 @@ export default function AdminTeachersPage() {
                 <TableHead>Nama Guru</TableHead>
                 <TableHead>Username</TableHead>
                 <TableHead>Email</TableHead>
+                <TableHead>Jabatan</TableHead>
                 <TableHead>Mata Pelajaran</TableHead>
                 <TableHead>Kelas Diajar</TableHead>
                 <TableHead>Status</TableHead>
@@ -142,6 +149,7 @@ export default function AdminTeachersPage() {
                   <TableCell className="font-medium">{teacher.Nama_Lengkap}</TableCell>
                   <TableCell>{teacher.Username}</TableCell>
                   <TableCell>{teacher.Email}</TableCell>
+                  <TableCell>{teacher.Jabatan || '-'}</TableCell>
                   <TableCell>{teacher.Mata_Pelajaran}</TableCell>
                   <TableCell>{teacher.Kelas_Ajar.join(", ")}</TableCell>
                   <TableCell>
@@ -150,7 +158,7 @@ export default function AdminTeachersPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => handleActionPlaceholder("Edit", `Guru ${teacher.Nama_Lengkap}`)}>
+                    <Button variant="outline" size="sm" onClick={() => handleEditAction(`Guru ${teacher.Nama_Lengkap}`)}>
                       <Edit className="w-4 h-4" />
                     </Button>
                     <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", `Guru ${teacher.Nama_Lengkap}`)}>
@@ -164,7 +172,7 @@ export default function AdminTeachersPage() {
               ))}
               {mockTeachers.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground">Belum ada data guru.</TableCell>
+                  <TableCell colSpan={8} className="text-center text-muted-foreground">Belum ada data guru.</TableCell>
                 </TableRow>
               )}
             </TableBody>

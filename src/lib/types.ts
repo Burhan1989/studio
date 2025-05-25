@@ -99,6 +99,7 @@ export interface ClassData {
   Deskripsi_Kelas?: string;
   Waktu_Kelas?: string;
   jurusan?: string; // Added Jurusan to ClassData
+  jumlahSiswa?: number; // Added for mock data consistency
 }
 
 // Example for Grades Table (Relational Data)
@@ -110,4 +111,3 @@ export interface GradeData {
   Nilai_Ujian?: number;
   Nilai_Akhir?: number;
 }
-

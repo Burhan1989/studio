@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,13 @@ export default function AdminQuizzesPage() {
     toast({
       title: "Fitur Dalam Pengembangan",
       description: `Fungsionalitas "${action} ${item}" akan segera hadir.`,
+    });
+  };
+
+  const handleEditAction = (itemName: string) => {
+    toast({
+      title: `Edit ${itemName}`,
+      description: `Membuka form edit untuk ${itemName}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
     });
   };
 
@@ -64,7 +72,7 @@ export default function AdminQuizzesPage() {
                     <Button variant="outline" size="sm" onClick={() => handleActionPlaceholder("Lihat Pertanyaan", quiz.title)}>
                       <ListChecks className="w-4 h-4" />
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleActionPlaceholder("Edit", quiz.title)}>
+                    <Button variant="outline" size="sm" onClick={() => handleEditAction(`Kuis ${quiz.title}`)}>
                       <Edit className="w-4 h-4" />
                     </Button>
                     <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", quiz.title)}>

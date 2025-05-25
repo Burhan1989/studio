@@ -80,6 +80,13 @@ export default function AdminStudentsPage() {
     });
   };
 
+  const handleEditAction = (itemName: string) => {
+    toast({
+      title: `Edit ${itemName}`,
+      description: `Membuka form edit untuk ${itemName}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
+    });
+  };
+
   const handleExcelAction = (actionType: string) => {
     console.log(`Aksi Excel: ${actionType}`);
     toast({
@@ -120,7 +127,6 @@ export default function AdminStudentsPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              {/* Icon can be Users or similar, already used above, maybe no icon here or a different one like List */}
               <CardTitle className="text-xl">Daftar Siswa</CardTitle>
             </div>
             <Button onClick={() => handleActionPlaceholder("Tambah", "Siswa Baru")}>
@@ -160,7 +166,7 @@ export default function AdminStudentsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => handleActionPlaceholder("Edit", `Siswa ${student.Nama_Lengkap}`)}>
+                    <Button variant="outline" size="sm" onClick={() => handleEditAction(`Siswa ${student.Nama_Lengkap}`)}>
                       <Edit className="w-4 h-4" />
                     </Button>
                     <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", `Siswa ${student.Nama_Lengkap}`)}>
