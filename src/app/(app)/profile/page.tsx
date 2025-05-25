@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { UserCircle, Save, Loader2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
@@ -279,8 +279,9 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>NISN</FormLabel>
                         <FormControl>
-                          <Input placeholder="NISN Anda" {...field} />
+                          <Input placeholder="NISN Anda" {...field} readOnly={isStudent} className={isStudent ? "bg-muted/50 cursor-not-allowed" : ""} />
                         </FormControl>
+                        {isStudent && <FormDescription>NISN diatur oleh admin.</FormDescription>}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -292,8 +293,9 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Nomor Induk Siswa</FormLabel>
                         <FormControl>
-                          <Input placeholder="Nomor induk Anda" {...field} />
+                          <Input placeholder="Nomor induk Anda" {...field} readOnly={isStudent} className={isStudent ? "bg-muted/50 cursor-not-allowed" : ""} />
                         </FormControl>
+                        {isStudent && <FormDescription>Nomor Induk diatur oleh admin.</FormDescription>}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -305,8 +307,9 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Kelas</FormLabel>
                         <FormControl>
-                          <Input placeholder="Kelas Anda" {...field} />
+                          <Input placeholder="Kelas Anda" {...field} readOnly={isStudent} className={isStudent ? "bg-muted/50 cursor-not-allowed" : ""} />
                         </FormControl>
+                        {isStudent && <FormDescription>Kelas diatur oleh admin.</FormDescription>}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -318,8 +321,9 @@ export default function ProfilePage() {
                       <FormItem>
                         <FormLabel>Jurusan (Program Studi)</FormLabel>
                         <FormControl>
-                          <Input placeholder="Jurusan Anda" {...field} />
+                          <Input placeholder="Jurusan Anda" {...field} readOnly={isStudent} className={isStudent ? "bg-muted/50 cursor-not-allowed" : ""} />
                         </FormControl>
+                        {isStudent && <FormDescription>Jurusan diatur oleh admin.</FormDescription>}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -386,3 +390,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+
