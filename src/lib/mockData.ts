@@ -374,9 +374,9 @@ export const mockSchoolProfile: SchoolProfileData = {
   nomorTelepon: "021-1234567",
   emailSekolah: "info@sman1teladan.sch.id",
   websiteSekolah: "https://sman1teladan.sch.id",
+  logo: "https://placehold.co/160x40.png?text=Logo+Sekolah",
   visi: "Menjadi sekolah unggul yang berkarakter, berprestasi, dan berwawasan global.",
   misi: "1. Melaksanakan pembelajaran yang inovatif dan kreatif.\n2. Mengembangkan potensi siswa secara optimal.\n3. Membangun karakter siswa yang berakhlak mulia.",
-  logo: "https://placehold.co/160x40.png?text=Logo+Sekolah"
 };
 
 
@@ -630,4 +630,19 @@ export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
   }
   console.warn(`Gagal memperbarui jadwal: Jadwal dengan ID ${updatedSchedule.id} tidak ditemukan.`);
   return false;
+}
+
+export function addSchedule(newScheduleData: Omit<ScheduleItem, 'id' | 'className' | 'teacherName'>): ScheduleItem {
+  const classInfo = newScheduleData.classId ? mockClasses.find(c => c.ID_Kelas === newScheduleData.classId) : null;
+  const teacherInfo = newScheduleData.teacherId ? mockTeachers.find(t => t.ID_Guru === newScheduleData.teacherId) : null;
+
+  const newSchedule: ScheduleItem = {
+    id: `schedule${mockSchedules.length + 1 + Date.now()}`,
+    ...newScheduleData,
+    className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (newScheduleData.classId ? 'Kelas tidak ditemukan' : 'Umum (Semua Kelas)'),
+    teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (newScheduleData.teacherId ? 'Guru tidak ditemukan' : 'Tidak Ditentukan'),
+  };
+  mockSchedules.push(newSchedule);
+  console.log("Jadwal baru ditambahkan (simulasi):", newSchedule);
+  return newSchedule;
 }

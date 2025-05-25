@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Users, BookCopy, FileQuestion, LineChart, Shield, MessageSquare, School, UserCog, Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, Edit } from 'lucide-react';
+import { Users, BookCopy, FileQuestion, LineChart, Shield, MessageSquare, School, UserCog, Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, Edit, PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -141,10 +141,18 @@ export default function AdminPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CalendarDays className="w-6 h-6 text-primary" />
-            Jadwal Pembelajaran Terbaru
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+                <CalendarDays className="w-6 h-6 text-primary" />
+                Jadwal Pembelajaran Terbaru
+            </CardTitle>
+            <Button asChild size="sm">
+                <Link href="/admin/schedules/new">
+                    <PlusCircle className="w-4 h-4 mr-2" />
+                    Tambah Jadwal Baru
+                </Link>
+            </Button>
+          </div>
           <CardDescription>Lihat dan kelola jadwal pembelajaran. Klik "Edit" untuk mengubah detail.</CardDescription>
         </CardHeader>
         <CardContent>

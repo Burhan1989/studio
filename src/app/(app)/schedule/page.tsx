@@ -2,11 +2,11 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { mockSchedules, mockClasses, mockTeachers, mockStudents, mockLessons, mockQuizzes } from '@/lib/mockData';
+import { mockSchedules, mockClasses, mockTeachers, mockStudents, mockLessons, mockQuizzes, getLessonById, getQuizById } from '@/lib/mockData';
 import type { ScheduleItem, ClassData, StudentData } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CalendarDays, Clock, Tag, Info, User, Link as LinkIcon, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, Clock, Tag, Info, User, Link as LinkIcon, AlertTriangle, ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
 import { 
   format, 
   parseISO, 
@@ -212,12 +212,20 @@ export default function SchedulePage() {
         <div className="flex flex-col gap-2 sm:flex-row">
           <Button variant={viewMode === 'daily' ? 'default' : 'outline'} onClick={() => setViewMode('daily')}>Tampilan Harian</Button>
           <Button variant={viewMode === 'weekly' ? 'default' : 'outline'} onClick={() => setViewMode('weekly')}>Tampilan Mingguan</Button>
+           {(user?.isAdmin || user?.role === 'teacher') && (
+            <Button asChild>
+                <Link href="/admin/schedules/new">
+                    <PlusCircle className="w-4 h-4 mr-2" />
+                    Tambah Jadwal
+                </Link>
+            </Button>
+          )}
         </div>
       </div>
       
       <CardDescription>
         Lihat jadwal pelajaran, kuis, tugas, dan kegiatan lainnya.
-        {user?.role === 'teacher' && " Anda dapat mengelola jadwal ini (fitur akan datang)."}
+        {user?.role === 'teacher' && " Anda dapat mengelola jadwal ini."}
         {user?.role === 'student' && studentClassInfo && ` Ini adalah jadwal untuk kelas Anda (${studentClassInfo.Nama_Kelas} - ${studentClassInfo.jurusan}) dan kegiatan umum.`}
         {user?.role === 'student' && !studentClassInfo && " Ini adalah jadwal kegiatan umum. Data kelas Anda tidak ditemukan."}
       </CardDescription>
@@ -304,19 +312,6 @@ export default function SchedulePage() {
         </CardContent>
       </Card>
 
-      {(user?.role === 'teacher' || user?.isAdmin) && (
-        <p className="mt-6 text-sm text-center text-muted-foreground">
-          Fitur untuk menambah, mengedit, dan menghapus jadwal akan ditambahkan pada iterasi berikutnya.
-        </p>
-      )}
     </div>
   );
-}
-
-// Helper functions (assuming they are correctly defined elsewhere or here)
-function getLessonById(id: string) {
-  return mockLessons.find(lesson => lesson.id === id);
-}
-function getQuizById(id: string) {
-  return mockQuizzes.find(quiz => quiz.id === id);
 }
