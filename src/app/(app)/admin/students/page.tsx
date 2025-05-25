@@ -8,11 +8,18 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, Users, KeyRound, Upload, Download, RefreshCw } from "lucide-react";
 import type { StudentData } from "@/lib/types"; 
-import { mockStudents } from "@/lib/mockData"; // Import mockStudents
+import { mockStudents } from "@/lib/mockData"; 
+import Link from "next/link";
+import { useState, useEffect } from "react";
 
 
 export default function AdminStudentsPage() {
   const { toast } = useToast();
+  const [students, setStudents] = useState<StudentData[]>([]);
+
+  useEffect(() => {
+    setStudents([...mockStudents]);
+  }, []);
 
   const handleActionPlaceholder = (action: string, item: string) => {
     toast({
@@ -21,12 +28,16 @@ export default function AdminStudentsPage() {
     });
   };
 
-  const handleEditAction = (itemName: string) => {
+  const handleResetPassword = (student: StudentData) => {
+    console.log(`Simulasi reset password untuk ${student.Nama_Lengkap} menjadi tanggal lahir: ${student.Tanggal_Lahir}`);
     toast({
-      title: `Edit ${itemName}`,
-      description: `Membuka form edit untuk ${itemName}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
+      title: "Password Direset (Simulasi)",
+      description: `Password untuk siswa "${student.Nama_Lengkap}" telah direset menjadi tanggal lahirnya (simulasi). Pastikan siswa diberitahu.`,
+      variant: "default",
+      duration: 5000,
     });
   };
+
 
   const handleExcelAction = (actionType: "Import" | "Export", dataType: string) => {
     let actionDescription = actionType === "Import" ? "Impor" : "Ekspor";
@@ -58,7 +69,7 @@ export default function AdminStudentsPage() {
             <Users className="w-8 h-8 text-primary" />
             <CardTitle className="text-xl">Manajemen Data Siswa (Excel)</CardTitle>
           </div>
-          <CardDescription>Import dan export data siswa menggunakan file Excel.</CardDescription>
+          <CardDescription>Impor dan ekspor data siswa menggunakan file Excel.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -69,7 +80,7 @@ export default function AdminStudentsPage() {
               <Download className="w-4 h-4 mr-2" /> Export Siswa
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur import/export Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor/ekspor Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
         </CardContent>
       </Card>
 
@@ -106,7 +117,7 @@ export default function AdminStudentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockStudents.map((student) => (
+              {students.map((student) => (
                 <TableRow key={student.ID_Siswa}>
                   <TableCell className="font-medium">{student.Nama_Lengkap}</TableCell>
                   <TableCell>{student.Username}</TableCell>
@@ -121,19 +132,21 @@ export default function AdminStudentsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => handleEditAction(`Siswa ${student.Nama_Lengkap}`)}>
-                      <Edit className="w-4 h-4" />
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/admin/students/${student.ID_Siswa}/edit`}>
+                        <Edit className="w-4 h-4" /> Edit
+                      </Link>
                     </Button>
                     <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", `Siswa ${student.Nama_Lengkap}`)}>
                       <Trash2 className="w-4 h-4" />
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleActionPlaceholder("Reset Akun", `Siswa ${student.Nama_Lengkap}`)}>
+                    <Button variant="outline" size="sm" onClick={() => handleResetPassword(student)}>
                       <KeyRound className="w-4 h-4" />
                     </Button>
                   </TableCell>
                 </TableRow>
               ))}
-              {mockStudents.length === 0 && (
+              {students.length === 0 && (
                  <TableRow>
                   <TableCell colSpan={9} className="text-center text-muted-foreground">Belum ada data siswa.</TableCell>
                 </TableRow>

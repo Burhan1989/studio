@@ -125,7 +125,7 @@ export const mockQuizzes: Quiz[] = [
   },
 ];
 
-export const mockStudents: StudentData[] = [
+export let mockStudents: StudentData[] = [
   {
     ID_Siswa: "student001",
     Nama_Lengkap: "Siswa Rajin",
@@ -134,7 +134,7 @@ export const mockStudents: StudentData[] = [
     Email: "student@example.com",
     NISN: "0098765432",
     Nomor_Induk: "S1004",
-    Kelas: "Kelas 10A IPA", // Match one of the mockClassesForParent
+    Kelas: "Kelas 10A IPA", 
     Jenis_Kelamin: "Perempuan",
     Tanggal_Lahir: "2008-01-15",
     Alamat: "Jl. Belajar No. 5, Kota Ilmu",
@@ -142,7 +142,7 @@ export const mockStudents: StudentData[] = [
     Program_Studi: "IPA",
     Tanggal_Daftar: "2023-08-01",
     Status_Aktif: true,
-    Password_Hash: "password", // Keep as plain text for mock
+    Password_Hash: "password", 
     Profil_Foto: "https://placehold.co/100x100.png"
   },
   {
@@ -153,7 +153,7 @@ export const mockStudents: StudentData[] = [
     Email: "ahmad.z@example.com",
     NISN: "0012345678",
     Nomor_Induk: "S1001",
-    Kelas: "Kelas 10A IPA", // Match one of the mockClassesForParent
+    Kelas: "Kelas 10A IPA", 
     Jenis_Kelamin: "Laki-laki",
     Tanggal_Lahir: "2007-08-17",
     Alamat: "Jl. Pelajar No. 10, Jakarta",
@@ -172,7 +172,7 @@ export const mockStudents: StudentData[] = [
     Email: "rina.a@example.com",
     NISN: "0023456789",
     Nomor_Induk: "S1002",
-    Kelas: "Kelas 11B IPS", // Match one of the mockClassesForParent
+    Kelas: "Kelas 11B IPS", 
     Jenis_Kelamin: "Perempuan",
     Tanggal_Lahir: "2006-05-22",
     Alamat: "Jl. Siswa No. 20, Bandung",
@@ -191,7 +191,7 @@ export const mockStudents: StudentData[] = [
     Email: "kevin.s@example.com",
     NISN: "0034567890",
     Nomor_Induk: "S1003",
-    Kelas: "Kelas 12C Bahasa", // Match one of the mockClassesForParent
+    Kelas: "Kelas 12C Bahasa", 
     Jenis_Kelamin: "Laki-laki",
     Tanggal_Lahir: "2005-02-10",
     Alamat: "Jl. Prestasi No. 30, Surabaya",
@@ -217,7 +217,7 @@ export let mockTeachers: TeacherData[] = [
     Alamat: "Jl. Mengajar No. 10, Kota Edukasi",
     Nomor_Telepon: "089876543210",
     Status_Aktif: true,
-    Password_Hash: "password", // Keep as plain text for mock
+    Password_Hash: "password", 
     Tanggal_Pendaftaran: "2015-06-01",
     Jabatan: "Guru Senior Kimia",
     Profil_Foto: "https://placehold.co/100x100.png"
@@ -283,7 +283,7 @@ export const mockParents: ParentData[] = [
         Email: "parent@example.com",
         Nomor_Telepon: "081122334455",
         Status_Aktif: true,
-        Password_Hash: "password", // Keep as plain text for mock
+        Password_Hash: "password", 
         Profil_Foto: "https://placehold.co/100x100.png",
         Anak_Terkait: [
             { ID_Siswa: "student001", Nama_Siswa: "Siswa Rajin" },
@@ -346,11 +346,10 @@ export const mockSchoolProfile: SchoolProfileData = {
 };
 
 
-// Mock user progress data
 export const mockUserProgress: UserProgress = {
-  userId: 'student001', // Corresponds to the mock logged-in student "Siswa Rajin"
-  completedLessons: ['1', '2'], // IDs of completed lessons from mockData.ts
-  inProgressLessons: ['3'], // Example of lessons started but not finished
+  userId: 'student001', 
+  completedLessons: ['1', '2'], 
+  inProgressLessons: ['3'], 
   quizScores: [
     { quizId: 'quiz1', score: 2, totalQuestions: 3 },
     { quizId: 'quiz2', score: 3, totalQuestions: 3 },
@@ -367,9 +366,7 @@ export const mockUserProgress: UserProgress = {
   }
 };
 
-// Calculate lesson status counts
 const totalMockLessons = mockLessons.length;
-// Ensure mockUserProgress is defined before accessing its properties
 const completedCount = mockUserProgress ? mockUserProgress.completedLessons.length : 0;
 const inProgressCount = mockUserProgress && mockUserProgress.inProgressLessons ? mockUserProgress.inProgressLessons.length : 0;
 const notStartedCount = totalMockLessons - completedCount - inProgressCount;
@@ -438,6 +435,19 @@ export function updateTeacher(updatedTeacher: TeacherData): boolean {
   const index = mockTeachers.findIndex(teacher => teacher.ID_Guru === updatedTeacher.ID_Guru);
   if (index !== -1) {
     mockTeachers[index] = updatedTeacher;
+    return true;
+  }
+  return false;
+}
+
+export function getStudentById(id: string): StudentData | undefined {
+  return mockStudents.find(student => student.ID_Siswa === id);
+}
+
+export function updateStudent(updatedStudent: StudentData): boolean {
+  const index = mockStudents.findIndex(student => student.ID_Siswa === updatedStudent.ID_Siswa);
+  if (index !== -1) {
+    mockStudents[index] = updatedStudent;
     return true;
   }
   return false;
