@@ -372,8 +372,8 @@ export const mockSchoolProfile: SchoolProfileData = {
   emailSekolah: "info@sman1teladan.sch.id",
   websiteSekolah: "https://sman1teladan.sch.id",
   visi: "Menjadi sekolah unggul yang berkarakter, berprestasi, dan berwawasan global.",
-  misi: "1. Melaksanakan pembelajaran yang inovatif dan kreatif.\n2. Mengembangkan potensi siswa secara optimal.\n3. Membangun karakter siswa yang berakhlak mulia."
-  // logo tidak disertakan di sini karena merupakan File atau string, lebih cocok di state komponen
+  misi: "1. Melaksanakan pembelajaran yang inovatif dan kreatif.\n2. Mengembangkan potensi siswa secara optimal.\n3. Membangun karakter siswa yang berakhlak mulia.",
+  logo: "https://placehold.co/160x40.png?text=Logo+Sekolah" // Placeholder URL for the logo
 };
 
 

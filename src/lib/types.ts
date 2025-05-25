@@ -149,3 +149,4 @@ export interface SchoolProfileData {
   misi?: string;
   logo?: File | string; // File for upload, string for URL if already uploaded
 }
+

@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { GraduationCap, LogIn, UserPlus, LogOut, UserCircle } from 'lucide-react';
+import { GraduationCap, LogIn, UserPlus, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -15,16 +15,22 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { mockSchoolProfile } from '@/lib/mockData'; // Import data sekolah
+import Image from 'next/image'; // Import Image
 
 export default function Header() {
   const { user, logout } = useAuth();
+  const schoolLogo = typeof mockSchoolProfile.logo === 'string' ? mockSchoolProfile.logo : null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex items-center h-16 max-w-screen-2xl">
         <Link href="/" className="flex items-center gap-2 mr-6">
-          <GraduationCap className="w-8 h-8 text-primary" />
-          <span className="text-xl font-bold text-foreground">
+          {schoolLogo ? (
+            <Image src={schoolLogo} alt={`${mockSchoolProfile.namaSekolah} Logo`} width={120} height={30} className="h-8 w-auto object-contain" data-ai-hint="school logo" />
+          ) : (
+            <GraduationCap className="w-8 h-8 text-primary" />
+          )}
+          <span className="text-xl font-bold text-foreground hidden sm:inline-block">
             {mockSchoolProfile.namaSekolah || 'AdeptLearn'}
           </span>
         </Link>
@@ -38,6 +44,11 @@ export default function Header() {
               {user.role === 'student' && (
                  <Link href="/learning-path" className="transition-colors text-foreground/60 hover:text-foreground/80">
                     Sesuaikan Jalur
+                  </Link>
+              )}
+               {user.role === 'teacher' && (
+                 <Link href="/teacher/materials" className="transition-colors text-foreground/60 hover:text-foreground/80">
+                    Materi Saya
                   </Link>
               )}
               <Link href="/lessons" className="transition-colors text-foreground/60 hover:text-foreground/80">
@@ -98,3 +109,4 @@ export default function Header() {
     </header>
   );
 }
+

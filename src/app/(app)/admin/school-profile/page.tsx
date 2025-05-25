@@ -20,8 +20,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Building, Save, Loader2, Image as ImageIcon } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { SchoolProfileData } from "@/lib/types";
+import { mockSchoolProfile } from "@/lib/mockData"; // Import mockSchoolProfile
+import Image from "next/image"; // Import next/image
 
 const schoolProfileSchema = z.object({
   namaSekolah: z.string().min(3, "Nama sekolah minimal 3 karakter."),
@@ -47,49 +49,42 @@ export default function AdminSchoolProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
 
-  // Mock data for initial form values (in real app, fetch this from DB)
-  const mockInitialData: Partial<SchoolProfileData> = {
-    namaSekolah: "SMA Negeri 1 Teladan Bangsa",
-    npsn: "12345678",
-    jenjang: "SMA",
-    statusSekolah: "Negeri",
-    akreditasi: "A (Unggul)",
-    namaKepalaSekolah: "Dr. H. Budi Santoso, M.Pd.",
-    alamatJalan: "Jl. Pendidikan No. 1",
-    kota: "Jakarta Selatan",
-    provinsi: "DKI Jakarta",
-    kodePos: "12345",
-    nomorTelepon: "021-1234567",
-    emailSekolah: "info@sman1teladan.sch.id",
-    websiteSekolah: "https://sman1teladan.sch.id",
-    visi: "Menjadi sekolah unggul yang berkarakter, berprestasi, dan berwawasan global.",
-    misi: "1. Melaksanakan pembelajaran yang inovatif dan kreatif.\n2. Mengembangkan potensi siswa secara optimal.\n3. Membangun karakter siswa yang berakhlak mulia."
-  };
+  // Use mockSchoolProfile for initial form values
+  const initialData = mockSchoolProfile;
   
   const form = useForm<z.infer<typeof schoolProfileSchema>>({
     resolver: zodResolver(schoolProfileSchema),
-    defaultValues: mockInitialData,
+    defaultValues: initialData,
   });
+
+  useEffect(() => {
+    // Set initial logo preview if a logo URL exists in mockSchoolProfile
+    if (typeof initialData.logo === 'string' && initialData.logo) {
+      setLogoPreview(initialData.logo);
+    }
+  }, [initialData.logo]);
+
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      form.setValue("logo", file);
+      form.setValue("logo", file); // Store the File object for potential upload
       const reader = new FileReader();
       reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
+        setLogoPreview(reader.result as string); // Show preview of the selected file
       };
       reader.readAsDataURL(file);
     } else {
       form.setValue("logo", undefined);
-      setLogoPreview(null);
+      // If no file is selected, and there was an existing logo URL, revert to it or clear
+      setLogoPreview(typeof initialData.logo === 'string' ? initialData.logo : null);
     }
   };
 
   async function onSubmit(values: z.infer<typeof schoolProfileSchema>) {
     setIsLoading(true);
     console.log("Data profil sekolah yang akan disimpan (simulasi):", values);
-
+    
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
     
@@ -98,6 +93,10 @@ export default function AdminSchoolProfilePage() {
       description: "Informasi profil sekolah telah berhasil diperbarui (simulasi).",
     });
     setIsLoading(false);
+    // In a real app, you'd update mockSchoolProfile or re-fetch if data is saved to a backend
+    // For now, if a new logo was selected via file input, it's only in logoPreview and form state.
+    // If values.logo is a File, it means a new logo was chosen.
+    // If values.logo is a string (from defaultValues), it's the existing URL.
   }
 
   return (
@@ -193,7 +192,7 @@ export default function AdminSchoolProfilePage() {
                   <FormItem>
                     <FormLabel>Akreditasi</FormLabel>
                     <FormControl>
-                      <Input placeholder="cth. A (Unggul)" {...field} />
+                      <Input placeholder="cth. A (Unggul)" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -206,7 +205,7 @@ export default function AdminSchoolProfilePage() {
                   <FormItem>
                     <FormLabel>Nama Kepala Sekolah</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nama lengkap kepala sekolah" {...field} />
+                      <Input placeholder="Nama lengkap kepala sekolah" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -227,7 +226,7 @@ export default function AdminSchoolProfilePage() {
                   <FormItem>
                     <FormLabel>Alamat Jalan</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Masukkan alamat lengkap jalan, nomor, RT/RW, Kelurahan, Kecamatan" {...field} />
+                      <Textarea placeholder="Masukkan alamat lengkap jalan, nomor, RT/RW, Kelurahan, Kecamatan" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -241,7 +240,7 @@ export default function AdminSchoolProfilePage() {
                     <FormItem>
                       <FormLabel>Kota/Kabupaten</FormLabel>
                       <FormControl>
-                        <Input placeholder="Kota atau Kabupaten" {...field} />
+                        <Input placeholder="Kota atau Kabupaten" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -254,7 +253,7 @@ export default function AdminSchoolProfilePage() {
                     <FormItem>
                       <FormLabel>Provinsi</FormLabel>
                       <FormControl>
-                        <Input placeholder="Provinsi" {...field} />
+                        <Input placeholder="Provinsi" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -267,7 +266,7 @@ export default function AdminSchoolProfilePage() {
                     <FormItem>
                       <FormLabel>Kode Pos</FormLabel>
                       <FormControl>
-                        <Input placeholder="Kode Pos" {...field} />
+                        <Input placeholder="Kode Pos" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -282,7 +281,7 @@ export default function AdminSchoolProfilePage() {
                     <FormItem>
                       <FormLabel>Nomor Telepon Sekolah</FormLabel>
                       <FormControl>
-                        <Input type="tel" placeholder="Nomor telepon sekolah" {...field} />
+                        <Input type="tel" placeholder="Nomor telepon sekolah" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -295,7 +294,7 @@ export default function AdminSchoolProfilePage() {
                     <FormItem>
                       <FormLabel>Email Sekolah</FormLabel>
                       <FormControl>
-                        <Input type="email" placeholder="Email resmi sekolah" {...field} />
+                        <Input type="email" placeholder="Email resmi sekolah" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -309,7 +308,7 @@ export default function AdminSchoolProfilePage() {
                     <FormItem>
                       <FormLabel>Website Sekolah (Opsional)</FormLabel>
                       <FormControl>
-                        <Input type="url" placeholder="https://namasekolah.sch.id" {...field} />
+                        <Input type="url" placeholder="https://namasekolah.sch.id" {...field} value={field.value || ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -330,7 +329,7 @@ export default function AdminSchoolProfilePage() {
                   <FormItem>
                     <FormLabel>Visi Sekolah (Opsional)</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Tuliskan visi sekolah" className="min-h-[100px]" {...field} />
+                      <Textarea placeholder="Tuliskan visi sekolah" className="min-h-[100px]" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -343,7 +342,7 @@ export default function AdminSchoolProfilePage() {
                   <FormItem>
                     <FormLabel>Misi Sekolah (Opsional)</FormLabel>
                     <FormControl>
-                      <Textarea placeholder="Tuliskan misi sekolah (gunakan baris baru untuk poin-poin misi)" className="min-h-[150px]" {...field} />
+                      <Textarea placeholder="Tuliskan misi sekolah (gunakan baris baru untuk poin-poin misi)" className="min-h-[150px]" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -380,7 +379,7 @@ export default function AdminSchoolProfilePage() {
               {logoPreview && (
                 <div className="mt-4">
                   <p className="mb-2 text-sm font-medium">Pratinjau Logo:</p>
-                  <img src={logoPreview} alt="Pratinjau Logo Sekolah" className="h-32 w-auto border rounded-md object-contain" />
+                  <Image src={logoPreview} alt="Pratinjau Logo Sekolah" width={160} height={40} className="h-10 w-auto border rounded-md object-contain bg-muted p-1" />
                 </div>
               )}
             </CardContent>
@@ -397,3 +396,4 @@ export default function AdminSchoolProfilePage() {
     </div>
   );
 }
+
