@@ -19,8 +19,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon } from 'lucide-react'; // Added ParentIcon
+import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import type { UserRole } from '@/lib/types';
 
 interface NavItem {
   href: string;
@@ -28,22 +29,35 @@ interface NavItem {
   icon: React.ElementType;
   adminOnly?: boolean;
   parentOnly?: boolean;
-  hideForParent?: boolean;
+  teacherOnly?: boolean; // Item ini hanya untuk guru
+  studentOnly?: boolean; // Item ini hanya untuk siswa
 }
 
 const baseNavItems: NavItem[] = [
-  { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard, hideForParent: true },
-  { href: '/parent/dashboard', label: 'Dasbor Anak', icon: Users, parentOnly: true }, // Uses Users icon, can be changed
-  { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit, hideForParent: true },
-  { href: '/lessons', label: 'Pelajaran', icon: BookOpen, hideForParent: true },
-  { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck, hideForParent: true },
-  { href: '/reports', label: 'Laporan', icon: BarChart3, hideForParent: true },
+  // Item Umum untuk Siswa, Guru, Admin (kecuali ditandai khusus)
+  { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard },
+  { href: '/lessons', label: 'Pelajaran', icon: BookOpen },
+  { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck },
+  { href: '/reports', label: 'Laporan', icon: BarChart3 },
+
+  // Item Khusus Siswa
+  { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit, studentOnly: true },
+
+  // Item Khusus Guru (Placeholder)
+  { href: '/teacher/materials', label: 'Materi Saya', icon: BookCopy, teacherOnly: true },
+
+  // Item Umum untuk Semua Peran Terautentikasi
   { href: '/profile', label: 'Profil', icon: UserCircle },
   { href: '/settings', label: 'Pengaturan', icon: Settings },
+
+  // Item Khusus Orang Tua
+  { href: '/parent/dashboard', label: 'Dasbor Anak', icon: Users, parentOnly: true },
+
+  // Item Khusus Admin
   { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
   { href: '/admin/teachers', label: 'Kelola Guru', icon: UserCog, adminOnly: true },
   { href: '/admin/students', label: 'Kelola Siswa', icon: Users, adminOnly: true },
-  { href: '/admin/parents', label: 'Kelola Orang Tua', icon: ParentIcon, adminOnly: true }, // New menu for parents
+  { href: '/admin/parents', label: 'Kelola Orang Tua', icon: ParentIcon, adminOnly: true },
   { href: '/admin/classes', label: 'Manajemen Kelas', icon: School, adminOnly: true },
   { href: '/admin/courses', label: 'Kelola Pelajaran', icon: BookCopy, adminOnly: true },
   { href: '/admin/quizzes', label: 'Kelola Kuis', icon: FileQuestion, adminOnly: true },
@@ -60,13 +74,36 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }
 
   let filteredNavItems: NavItem[];
+  const userRole = user?.role;
 
   if (user?.isAdmin) {
-    filteredNavItems = baseNavItems.filter(item => !item.parentOnly);
-  } else if (user?.role === 'parent') {
-    filteredNavItems = baseNavItems.filter(item => item.parentOnly || item.href === '/profile' || item.href === '/settings');
+    filteredNavItems = baseNavItems.filter(item =>
+      item.adminOnly || // Tampilkan semua item admin
+      (!item.parentOnly && !item.teacherOnly && !item.studentOnly) // Tampilkan item umum (bukan khusus peran lain)
+    );
+  } else if (userRole === 'parent') {
+    filteredNavItems = baseNavItems.filter(item =>
+      item.parentOnly || // Tampilkan dasbor khusus orang tua
+      item.href === '/profile' || // Tampilkan profil
+      item.href === '/settings'    // Tampilkan pengaturan
+    );
+  } else if (userRole === 'teacher') {
+    filteredNavItems = baseNavItems.filter(item => {
+      if (item.adminOnly || item.parentOnly || item.studentOnly) return false; // Sembunyikan item khusus admin, orang tua, siswa
+      if (item.teacherOnly) return true; // Tampilkan item khusus guru
+      if (item.href === '/learning-path') return false; // Guru tidak melihat "Sesuaikan Jalur"
+      // Tampilkan item umum lainnya (Dasbor, Pelajaran, Kuis, Laporan, Profil, Pengaturan)
+      return !item.adminOnly && !item.parentOnly && !item.studentOnly && !item.teacherOnly;
+    });
+  } else if (userRole === 'student') {
+    filteredNavItems = baseNavItems.filter(item => {
+      if (item.adminOnly || item.parentOnly || item.teacherOnly) return false; // Sembunyikan item khusus admin, orang tua, guru
+      // Tampilkan item khusus siswa ATAU item umum
+      return item.studentOnly || (!item.adminOnly && !item.parentOnly && !item.teacherOnly);
+    });
   } else {
-    filteredNavItems = baseNavItems.filter(item => !item.adminOnly && !item.parentOnly && !item.hideForParent);
+    // Fallback untuk peran tidak dikenal: hanya tampilkan profil & pengaturan
+    filteredNavItems = baseNavItems.filter(item => item.href === '/profile' || item.href === '/settings');
   }
 
 
@@ -85,10 +122,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} legacyBehavior passHref>
                   <SidebarMenuButton
-                    isActive={pathname === item.href || 
-                                (item.href !== '/dashboard' && 
+                    isActive={pathname === item.href ||
+                                (item.href !== '/dashboard' &&
                                  item.href !== '/parent/dashboard' &&
-                                 item.href !== '/admin' && // Ensure admin dashboard itself is exact match
+                                 item.href !== '/admin' && // Pastikan dasbor admin itu sendiri adalah pencocokan persis
+                                 item.href !== '/teacher/materials' && // Halaman placeholder guru
                                  pathname.startsWith(item.href))
                               }
                     tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
