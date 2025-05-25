@@ -37,7 +37,7 @@ const editTeacherSchema = z.object({
   Nomor_Telepon: z.string().regex(/^[0-9\-\+\(\)\s]+$/, "Format nomor telepon tidak valid.").optional().or(z.literal("")),
   Mata_Pelajaran: z.string().min(3, "Mata pelajaran minimal 3 karakter."),
   Kelas_Ajar: z.string().min(1, "Kelas ajar harus diisi.").transform(val => val.split(',').map(s => s.trim())),
-  Jabatan: z.string().optional().or(z.literal("")),
+  Jabatan: z.string().optional().or(z.literal("")), // Tetap ada di schema untuk form handling
   Status_Aktif: z.boolean().default(true),
   newPassword: z.string().min(6, "Password baru minimal 6 karakter.").optional().or(z.literal("")),
   confirmNewPassword: z.string().optional().or(z.literal("")),
@@ -119,15 +119,14 @@ export default function AdminEditTeacherPage() {
     const updatedTeacherData: TeacherData = {
       ...initialData, 
       Nama_Lengkap: values.Nama_Lengkap,
-      // Username, Email, dan Jabatan tidak diubah di sini
+      // Username, Email tidak diubah di sini
       Jenis_Kelamin: values.Jenis_Kelamin,
       Tanggal_Lahir: values.Tanggal_Lahir,
       Alamat: values.Alamat,
       Nomor_Telepon: values.Nomor_Telepon,
       Mata_Pelajaran: values.Mata_Pelajaran,
       Kelas_Ajar: values.Kelas_Ajar, 
-      // Jabatan diambil dari initialData karena read-only
-      Jabatan: initialData.Jabatan, 
+      Jabatan: initialData.Jabatan, // Jabatan diambil dari initialData, bukan dari form values
       Status_Aktif: values.Status_Aktif,
       Password_Hash: values.newPassword ? values.newPassword : initialData.Password_Hash, 
     };
@@ -282,7 +281,12 @@ export default function AdminEditTeacherPage() {
                   <FormItem>
                     <FormLabel>Jabatan</FormLabel>
                     <FormControl>
-                      <Input placeholder="cth. Guru Senior Matematika" {...field} readOnly className="bg-muted/50 cursor-not-allowed" />
+                      <Input 
+                        placeholder="cth. Guru Senior Matematika" 
+                        {...field} 
+                        readOnly // Memastikan atribut readOnly diterapkan
+                        className="bg-muted/50 cursor-not-allowed" // Styling untuk field read-only
+                      />
                     </FormControl>
                     <FormDescription>Jabatan tidak dapat diubah melalui formulir ini.</FormDescription>
                     <FormMessage />
