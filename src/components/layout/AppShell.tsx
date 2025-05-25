@@ -40,6 +40,7 @@ const baseNavItems: NavItem[] = [
   { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
   { href: '/admin/teachers', label: 'Kelola Guru', icon: UserCog, adminOnly: true },
   { href: '/admin/students', label: 'Kelola Siswa', icon: Users, adminOnly: true },
+  { href: '/admin/classes', label: 'Manajemen Kelas', icon: School, adminOnly: true },
   { href: '/admin/courses', label: 'Kelola Pelajaran', icon: BookCopy, adminOnly: true },
   { href: '/admin/quizzes', label: 'Kelola Kuis', icon: FileQuestion, adminOnly: true },
   { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart, adminOnly: true },
@@ -71,7 +72,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} legacyBehavior passHref>
                   <SidebarMenuButton
-                    isActive={pathname === item.href || (item.href !== '/dashboard' && !item.href.startsWith('/admin') && pathname.startsWith(item.href)) || (item.href.startsWith('/admin') && pathname.startsWith(item.href) && (pathname === item.href || (item.href === '/admin' && !navItems.some(nav => nav.href !== '/admin' && pathname.startsWith(nav.href)))))}
+                    isActive={pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))}
                     tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
                     className="justify-start"
                   >
@@ -150,4 +151,3 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-

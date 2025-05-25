@@ -6,20 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Users, BookCopy, FileQuestion, LineChart, Shield, ArrowRight, Loader2, MessageSquare, School } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
-import type { ClassData } from '@/lib/types';
 
-const mockClasses: ClassData[] = [
-  { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'Budi Santoso', jumlahSiswa: 30, jurusan: "IPA" },
-  { ID_Kelas: 'kelasB', Nama_Kelas: 'Kelas 11B', ID_Guru: 'Siti Aminah', jumlahSiswa: 28, jurusan: "IPS" },
-  { ID_Kelas: 'kelasC', Nama_Kelas: 'Kelas 12C', ID_Guru: 'Agus Setiawan', jumlahSiswa: 32, jurusan: "Bahasa" },
-];
 
 export default function AdminPage() {
   const { user, isLoading: authIsLoading } = useAuth();
@@ -28,10 +21,6 @@ export default function AdminPage() {
   const [whatsappApiKey, setWhatsappApiKey] = useState('');
   const [teacherPhoneNumber, setTeacherPhoneNumber] = useState('');
   const [notificationMessage, setNotificationMessage] = useState('');
-
-  const adminSections = [
-    // Sections removed as navigation is now primarily in AppShell
-  ];
 
   useEffect(() => {
     if (!authIsLoading && (!user || !user.isAdmin)) {
@@ -55,12 +44,6 @@ export default function AdminPage() {
     });
   };
   
-  const handleEditClassAction = (className: string) => {
-    toast({
-      title: `Edit Kelas ${className}`,
-      description: `Membuka form edit untuk ${className}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
-    });
-  };
 
   if (authIsLoading || !user || !user.isAdmin) {
     return (
@@ -83,31 +66,6 @@ export default function AdminPage() {
           <p className="mt-1 text-lg opacity-90">Selamat datang di pusat kontrol AdeptLearn, {user.name}.</p>
         </div>
       </div>
-
-      {adminSections.length > 0 && (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {adminSections.map((section) => (
-            <Card key={section.title} className="flex flex-col shadow-lg">
-              <CardHeader>
-                <div className="flex items-center gap-3 mb-2">
-                  {section.icon}
-                  <CardTitle className="text-xl">{section.title}</CardTitle>
-                </div>
-                <CardDescription>{section.description}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex-grow">
-              </CardContent>
-              <CardFooter>
-                <Button asChild className="w-full">
-                  <Link href={section.href}>
-                    {section.cta} <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      )}
       
       <Card className="shadow-lg">
         <CardHeader>
@@ -157,55 +115,43 @@ export default function AdminPage() {
         </CardFooter>
       </Card>
 
+      {/* Card ringkasan atau tautan cepat lainnya bisa ditambahkan di sini jika perlu */}
       <Card className="shadow-lg">
         <CardHeader>
-          <div className="flex items-center gap-3 mb-2">
-             <School className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Kelas & Wali Kelas</CardTitle>
-          </div>
-          <CardDescription>Kelola data kelas, jurusan, dan penetapan wali kelas.</CardDescription>
+            <CardTitle>Ringkasan Cepat</CardTitle>
+            <CardDescription>Akses cepat ke berbagai modul manajemen.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="mb-4">
-             <Button onClick={() => toast({ title: "Fitur Dalam Pengembangan", description: "Form tambah kelas baru akan segera hadir."})}>
-              Tambah Kelas Baru
+        <CardContent className="grid gap-4 md:grid-cols-2">
+            <Button asChild variant="outline">
+                <Link href="/admin/teachers" className="flex items-center justify-center gap-2">
+                    <UserCog className="w-5 h-5" /> Kelola Guru
+                </Link>
             </Button>
-          </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nama Kelas</TableHead>
-                <TableHead>Jurusan</TableHead>
-                <TableHead>Wali Kelas (ID Guru)</TableHead>
-                <TableHead>Jumlah Siswa (Contoh)</TableHead>
-                <TableHead>Aksi</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mockClasses.map((kelas) => {
-                const tableCells = [
-                  <TableCell key={`nama-${kelas.ID_Kelas}`}>{kelas.Nama_Kelas}</TableCell>,
-                  <TableCell key={`jurusan-${kelas.ID_Kelas}`}>{kelas.jurusan || '-'}</TableCell>,
-                  <TableCell key={`guru-${kelas.ID_Kelas}`}>{kelas.ID_Guru}</TableCell>,
-                  <TableCell key={`jumlah-${kelas.ID_Kelas}`}>{kelas.jumlahSiswa || 0}</TableCell>,
-                  <TableCell key={`aksi-${kelas.ID_Kelas}`}>
-                    <Button variant="outline" size="sm" onClick={() => handleEditClassAction(kelas.Nama_Kelas)}>
-                      Edit
-                    </Button>
-                  </TableCell>
-                ];
-                return <TableRow key={kelas.ID_Kelas}>{tableCells}</TableRow>;
-              })}
-              {mockClasses.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground">
-                    Belum ada data kelas.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-           <p className="mt-4 text-xs text-muted-foreground">Catatan: Fitur ini adalah placeholder UI. Implementasi CRUD (Create, Read, Update, Delete) penuh diperlukan.</p>
+            <Button asChild variant="outline">
+                <Link href="/admin/students" className="flex items-center justify-center gap-2">
+                    <Users className="w-5 h-5" /> Kelola Siswa
+                </Link>
+            </Button>
+            <Button asChild variant="outline">
+                <Link href="/admin/classes" className="flex items-center justify-center gap-2">
+                    <School className="w-5 h-5" /> Kelola Kelas
+                </Link>
+            </Button>
+            <Button asChild variant="outline">
+                <Link href="/admin/courses" className="flex items-center justify-center gap-2">
+                    <BookCopy className="w-5 h-5" /> Kelola Pelajaran
+                </Link>
+            </Button>
+             <Button asChild variant="outline">
+                <Link href="/admin/quizzes" className="flex items-center justify-center gap-2">
+                    <FileQuestion className="w-5 h-5" /> Kelola Kuis
+                </Link>
+            </Button>
+             <Button asChild variant="outline">
+                <Link href="/admin/stats" className="flex items-center justify-center gap-2">
+                    <LineChart className="w-5 h-5" /> Statistik Situs
+                </Link>
+            </Button>
         </CardContent>
       </Card>
     </div>
