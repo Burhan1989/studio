@@ -3,7 +3,7 @@
 
 import type { Quiz, Question } from '@/lib/types';
 import { useState } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState, useFormStatus } from 'react'; // Updated import
 import { submitQuizAction, type QuizSubmissionState } from '@/lib/actions';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ export default function QuizView({ quiz }: QuizViewProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   const initialState: QuizSubmissionState = { message: null, errors: {} };
-  const [state, formAction] = useFormState(submitQuizAction, initialState);
+  const [state, formAction] = useActionState(submitQuizAction, initialState); // Updated hook
 
   const handleAnswerChange = (questionId: string, value: string | boolean) => {
     setSelectedAnswers(prev => ({ ...prev, [questionId]: value }));
@@ -164,3 +164,4 @@ export default function QuizView({ quiz }: QuizViewProps) {
 
 // Need to include FormItem and FormControl for RadioGroup structure
 import { FormItem, FormControl } from "@/components/ui/form";
+
