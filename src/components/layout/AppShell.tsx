@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle } from 'lucide-react';
 
 interface NavItem {
   href: string;
@@ -31,8 +31,10 @@ const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/learning-path', label: 'Customize Path', icon: BrainCircuit },
   { href: '/lessons', label: 'Lessons', icon: BookOpen },
-  { href: '/quizzes', label: 'Quizzes', icon: ClipboardCheck }, // This could be a page listing available quizzes.
+  { href: '/quizzes', label: 'Quizzes', icon: ClipboardCheck },
   { href: '/reports', label: 'Reports', icon: BarChart3 },
+  { href: '/profile', label: 'Profil', icon: UserCircle },
+  { href: '/settings', label: 'Pengaturan', icon: Settings },
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {
@@ -95,10 +97,15 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/settings')}>
                 <Settings className="w-4 h-4 mr-2" />
-                Settings (mock)
+                Pengaturan
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/profile')}>
+                <UserCircle className="w-4 h-4 mr-2" />
+                Profil
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout}>
                 <LogOut className="w-4 h-4 mr-2" />
                 Log out
@@ -133,3 +140,5 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useRouter } from 'next/navigation'; // Added for programmatic navigation
+
