@@ -46,6 +46,8 @@ const newQuizSchema = z.object({
 
 type NewQuizFormData = z.infer<typeof newQuizSchema>;
 
+const NO_CLASS_ASSIGNED_VALUE = "_no_class_assigned_";
+
 export default function TeacherNewQuizPage() {
   const { toast } = useToast();
   const router = useRouter();
@@ -59,7 +61,7 @@ export default function TeacherNewQuizPage() {
       title: "",
       description: "",
       questions: [{ text: "", type: "multiple-choice", options: ["", "", "", ""], correctAnswer: "", points: 1 }],
-      assignedClassId: "",
+      assignedClassId: "", // "" will show placeholder
     },
   });
 
@@ -75,16 +77,20 @@ export default function TeacherNewQuizPage() {
     }
     setIsLoading(true);
     
+    const finalAssignedClassId = values.assignedClassId === NO_CLASS_ASSIGNED_VALUE || values.assignedClassId === ""
+      ? undefined
+      : values.assignedClassId;
+
     const quizDataForMock: Omit<Quiz, 'id'> & { teacherId: string } = {
         title: values.title,
         description: values.description,
         teacherId: user.id, 
-        assignedClassId: values.assignedClassId || undefined,
+        assignedClassId: finalAssignedClassId,
         questions: values.questions.map(q => ({
             ...q,
             id: `q${Date.now()}${Math.random().toString(36).substring(2,7)}`,
             correctAnswer: q.type === 'true-false' ? (q.correctAnswer === 'true' || q.correctAnswer === true) : q.correctAnswer,
-            points: q.points || 1, // Pastikan poin memiliki nilai default jika tidak diisi
+            points: q.points || 1,
         }))
     };
 
@@ -179,14 +185,14 @@ export default function TeacherNewQuizPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tugaskan ke Kelas (Opsional)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih kelas untuk kuis ini" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="">Tidak Ditugaskan</SelectItem>
+                        <SelectItem value={NO_CLASS_ASSIGNED_VALUE}>Tidak Ditugaskan</SelectItem>
                         {availableClasses.map((cls) => (
                           <SelectItem key={cls.ID_Kelas} value={cls.ID_Kelas}>
                             {cls.Nama_Kelas} - {cls.jurusan}
