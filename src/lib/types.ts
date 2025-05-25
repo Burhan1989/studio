@@ -1,3 +1,4 @@
+
 export interface User {
   id: string;
   email: string;
@@ -128,4 +129,23 @@ export interface GradeData {
   Nilai_Tugas?: number;
   Nilai_Ujian?: number;
   Nilai_Akhir?: number;
+}
+
+export interface SchoolProfileData {
+  namaSekolah: string;
+  npsn: string;
+  jenjang: 'SD' | 'SMP' | 'SMA' | 'SMK' | 'Lainnya' | '';
+  statusSekolah: 'Negeri' | 'Swasta' | '';
+  akreditasi: string;
+  namaKepalaSekolah: string;
+  alamatJalan: string;
+  kota: string;
+  provinsi: string;
+  kodePos: string;
+  nomorTelepon: string;
+  emailSekolah: string;
+  websiteSekolah?: string;
+  visi?: string;
+  misi?: string;
+  logo?: File | string; // File for upload, string for URL if already uploaded
 }

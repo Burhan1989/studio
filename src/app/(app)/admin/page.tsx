@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Users, BookCopy, FileQuestion, LineChart, Shield, MessageSquare, School, UserCog, Users2 as ParentIcon } from 'lucide-react';
+import { Users, BookCopy, FileQuestion, LineChart, Shield, MessageSquare, School, UserCog, Users2 as ParentIcon, Building } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -124,6 +124,11 @@ export default function AdminPage() {
             <CardDescription>Akses cepat ke berbagai modul manajemen.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Button asChild variant="outline">
+                <Link href="/admin/school-profile" className="flex items-center justify-center gap-2">
+                    <Building className="w-5 h-5" /> Profil Sekolah
+                </Link>
+            </Button>
             <Button asChild variant="outline">
                 <Link href="/admin/teachers" className="flex items-center justify-center gap-2">
                     <UserCog className="w-5 h-5" /> Kelola Guru

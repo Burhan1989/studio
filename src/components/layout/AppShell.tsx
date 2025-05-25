@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { UserRole } from '@/lib/types';
 
@@ -55,6 +55,7 @@ const baseNavItems: NavItem[] = [
 
   // Item Khusus Admin
   { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
+  { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building, adminOnly: true },
   { href: '/admin/teachers', label: 'Kelola Guru', icon: UserCog, adminOnly: true },
   { href: '/admin/students', label: 'Kelola Siswa', icon: Users, adminOnly: true },
   { href: '/admin/parents', label: 'Kelola Orang Tua', icon: ParentIcon, adminOnly: true },
@@ -125,9 +126,9 @@ export default function AppShell({ children }: { children: ReactNode }) {
                     isActive={pathname === item.href ||
                                 (item.href !== '/dashboard' &&
                                  item.href !== '/parent/dashboard' &&
-                                 item.href !== '/admin' && // Pastikan dasbor admin itu sendiri adalah pencocokan persis
-                                 item.href !== '/teacher/materials' && // Halaman placeholder guru
-                                 pathname.startsWith(item.href))
+                                 !item.href.startsWith('/admin/') && // Generic admin/* should not make admin/dashboard active unless exact match
+                                 pathname.startsWith(item.href)) ||
+                                 (item.href === '/admin' && pathname.startsWith('/admin/')) // Special case for Admin Dashboard
                               }
                     tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
                     className="justify-start"
