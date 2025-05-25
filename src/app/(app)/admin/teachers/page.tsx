@@ -9,8 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, UserCog, KeyRound, Upload, Download, RefreshCw } from "lucide-react";
 import type { TeacherData } from "@/lib/types";
 import Link from "next/link";
-import { getTeachers, deleteTeacherById } from "@/lib/mockData"; // Updated imports
-import { useState, useEffect } from "react";
+import { getTeachers, deleteTeacherById } from "@/lib/mockData";
+import { useState, useEffect, useRef, type ChangeEvent } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertDialog,
@@ -21,7 +21,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
 
@@ -29,6 +28,7 @@ export default function AdminTeachersPage() {
   const { toast } = useToast();
   const [teachers, setTeachers] = useState<TeacherData[]>([]);
   const [teacherToDelete, setTeacherToDelete] = useState<TeacherData | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchTeachers = () => {
     setTeachers(getTeachers());
@@ -46,7 +46,7 @@ export default function AdminTeachersPage() {
           title: "Guru Dihapus",
           description: `Guru "${teacherToDelete.Nama_Lengkap}" telah berhasil dihapus.`,
         });
-        fetchTeachers(); // Refresh the list
+        fetchTeachers(); 
       } else {
         toast({
           title: "Gagal Menghapus",
@@ -54,7 +54,7 @@ export default function AdminTeachersPage() {
           variant: "destructive",
         });
       }
-      setTeacherToDelete(null); // Close dialog
+      setTeacherToDelete(null); 
     }
   };
 
@@ -69,15 +69,70 @@ export default function AdminTeachersPage() {
     });
   };
 
-
-  const handleExcelAction = (actionType: "Import" | "Export", dataType: string) => {
-    let actionDescription = actionType === "Import" ? "Impor" : "Ekspor";
+  const handleExportData = () => {
     toast({
-      title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas "${actionDescription} ${dataType} dari file Excel" akan segera hadir. Ini adalah placeholder dan memerlukan implementasi backend.`,
-      variant: "default",
+      title: "Memulai Ekspor Data Guru",
+      description: "Sedang mempersiapkan file CSV...",
+    });
+    // Simulate data fetching and CSV creation
+    const dataToExport = getTeachers();
+    if (dataToExport.length === 0) {
+      toast({
+        title: "Ekspor Dibatalkan",
+        description: "Tidak ada data guru untuk diekspor.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const header = "ID_Guru,Nama_Lengkap,Email,Jabatan,Mata_Pelajaran,Status_Aktif\n";
+    const csvRows = dataToExport.map(teacher => 
+      `${teacher.ID_Guru},"${teacher.Nama_Lengkap.replace(/"/g, '""')}","${teacher.Email}","${teacher.Jabatan || ''}","${teacher.Mata_Pelajaran}",${teacher.Status_Aktif}`
+    ).join("\n");
+    const csvString = header + csvRows;
+
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "data_guru.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Ekspor Berhasil",
+      description: "Data guru telah berhasil diekspor sebagai data_guru.csv.",
     });
   };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      toast({
+        title: "File Dipilih",
+        description: `File "${file.name}" dipilih. Memproses impor (simulasi)...`,
+      });
+      // Simulate processing
+      setTimeout(() => {
+        toast({
+          title: "Impor Selesai (Simulasi)",
+          description: `Impor data guru dari "${file.name}" telah selesai. Data tidak benar-benar diperbarui dalam simulasi ini.`,
+        });
+      }, 2000);
+    }
+    // Reset file input untuk memungkinkan pemilihan file yang sama lagi
+    if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
+  };
+
 
   const handleMassPasswordGenerate = () => {
     toast({
@@ -90,6 +145,13 @@ export default function AdminTeachersPage() {
 
   return (
     <div className="space-y-8">
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        onChange={handleFileSelected}
+        accept=".csv,.xlsx" 
+      />
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Guru</h1>
       </div>
@@ -98,20 +160,20 @@ export default function AdminTeachersPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <UserCog className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Data Guru (Excel)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Data Guru (CSV/Excel)</CardTitle>
           </div>
-          <CardDescription>Impor dan ekspor data guru menggunakan file Excel.</CardDescription>
+          <CardDescription>Impor dan ekspor data guru menggunakan file CSV atau Excel.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button onClick={() => handleExcelAction("Import", "Data Guru")} variant="outline" className="flex-1">
+            <Button onClick={handleImportClick} variant="outline" className="flex-1">
               <Upload className="w-4 h-4 mr-2" /> Import Guru
             </Button>
-            <Button onClick={() => handleExcelAction("Export", "Data Guru")} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Export Guru
+            <Button onClick={handleExportData} variant="outline" className="flex-1">
+              <Download className="w-4 h-4 mr-2" /> Export Guru (CSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor/ekspor Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file CSV contoh.</p>
         </CardContent>
       </Card>
 

@@ -7,9 +7,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Edit, Trash2, Network, Upload, Download } from "lucide-react";
 import type { MajorData } from "@/lib/types";
-import { getMajors, addMajor, deleteMajorById } from "@/lib/mockData"; // Updated imports
+import { getMajors, addMajor, deleteMajorById } from "@/lib/mockData";
 import Link from "next/link";
-import { useState, useEffect, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent, useRef, type ChangeEvent } from "react";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +30,7 @@ export default function AdminMajorsPage() {
   const router = useRouter();
   const [majors, setMajors] = useState<MajorData[]>([]);
   const [isAddMajorDialogOpen, setIsAddMajorDialogOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state for adding new major
   const [newMajorName, setNewMajorName] = useState("");
@@ -42,7 +43,7 @@ export default function AdminMajorsPage() {
 
   const refreshMajors = () => {
     setMajors(getMajors());
-    router.refresh(); // To ensure Server Components re-fetch if they use this data
+    router.refresh(); 
   };
 
   const handleAddMajor = (e: FormEvent<HTMLFormElement>) => {
@@ -76,17 +77,75 @@ export default function AdminMajorsPage() {
     }
   };
   
-  const handleExcelAction = (actionType: "Import" | "Export") => {
-    let actionDescription = actionType === "Import" ? "Impor" : "Ekspor";
+  const handleExportData = () => {
     toast({
-      title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas "${actionDescription} Data Jurusan dari file Excel" akan segera hadir. Ini adalah placeholder dan memerlukan implementasi backend.`,
-      variant: "default",
+      title: "Memulai Ekspor Data Jurusan",
+      description: "Sedang mempersiapkan file CSV...",
     });
+    const dataToExport = getMajors();
+    if (dataToExport.length === 0) {
+      toast({
+        title: "Ekspor Dibatalkan",
+        description: "Tidak ada data jurusan untuk diekspor.",
+        variant: "destructive"
+      });
+      return;
+    }
+    const header = "ID_Jurusan,Nama_Jurusan,Deskripsi_Jurusan,Nama_Kepala_Program\n";
+    const csvRows = dataToExport.map(major =>
+      `${major.ID_Jurusan},"${major.Nama_Jurusan.replace(/"/g, '""')}","${(major.Deskripsi_Jurusan || '').replace(/"/g, '""')}","${(major.Nama_Kepala_Program || '').replace(/"/g, '""')}"`
+    ).join("\n");
+    const csvString = header + csvRows;
+
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "data_jurusan.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Ekspor Berhasil",
+      description: "Data jurusan telah berhasil diekspor sebagai data_jurusan.csv.",
+    });
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      toast({
+        title: "File Dipilih",
+        description: `File "${file.name}" dipilih. Memproses impor (simulasi)...`,
+      });
+      setTimeout(() => {
+        toast({
+          title: "Impor Selesai (Simulasi)",
+          description: `Impor data jurusan dari "${file.name}" telah selesai. Data tidak benar-benar diperbarui.`,
+        });
+      }, 2000);
+    }
+    if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
   };
 
   return (
     <div className="space-y-8">
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        onChange={handleFileSelected}
+        accept=".csv,.xlsx"
+      />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
             <Network className="w-10 h-10 text-primary" />
@@ -98,20 +157,20 @@ export default function AdminMajorsPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <Network className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Data Jurusan (Excel)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Data Jurusan (CSV/Excel)</CardTitle>
           </div>
-          <CardDescription>Impor dan ekspor data jurusan menggunakan file Excel.</CardDescription>
+          <CardDescription>Impor dan ekspor data jurusan menggunakan file CSV atau Excel.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button onClick={() => handleExcelAction("Import")} variant="outline" className="flex-1">
+            <Button onClick={handleImportClick} variant="outline" className="flex-1">
               <Upload className="w-4 h-4 mr-2" /> Impor Data Jurusan
             </Button>
-            <Button onClick={() => handleExcelAction("Export")} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Ekspor Data Jurusan
+            <Button onClick={handleExportData} variant="outline" className="flex-1">
+              <Download className="w-4 h-4 mr-2" /> Ekspor Data Jurusan (CSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor/ekspor Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file CSV contoh.</p>
         </CardContent>
       </Card>
 

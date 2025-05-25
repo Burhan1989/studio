@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, Users, KeyRound, Upload, Download, RefreshCw } from "lucide-react";
 import type { StudentData } from "@/lib/types";
-import { getStudents, deleteStudentById } from "@/lib/mockData"; // Updated imports
+import { getStudents, deleteStudentById } from "@/lib/mockData";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, type ChangeEvent } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertDialog,
@@ -21,7 +21,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 
 
@@ -29,6 +28,7 @@ export default function AdminStudentsPage() {
   const { toast } = useToast();
   const [students, setStudents] = useState<StudentData[]>([]);
   const [studentToDelete, setStudentToDelete] = useState<StudentData | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchStudents = () => {
     setStudents(getStudents());
@@ -46,7 +46,7 @@ export default function AdminStudentsPage() {
           title: "Siswa Dihapus",
           description: `Siswa "${studentToDelete.Nama_Lengkap}" telah berhasil dihapus.`,
         });
-        fetchStudents(); // Refresh the list
+        fetchStudents(); 
       } else {
         toast({
           title: "Gagal Menghapus",
@@ -54,7 +54,7 @@ export default function AdminStudentsPage() {
           variant: "destructive",
         });
       }
-      setStudentToDelete(null); // Close dialog
+      setStudentToDelete(null); 
     }
   };
 
@@ -75,14 +75,64 @@ export default function AdminStudentsPage() {
     });
   };
 
-
-  const handleExcelAction = (actionType: "Import" | "Export", dataType: string) => {
-    let actionDescription = actionType === "Import" ? "Impor" : "Ekspor";
+  const handleExportData = () => {
     toast({
-      title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas "${actionDescription} ${dataType} dari file Excel" akan segera hadir. Ini adalah placeholder dan memerlukan implementasi backend.`,
-      variant: "default",
+      title: "Memulai Ekspor Data Siswa",
+      description: "Sedang mempersiapkan file CSV...",
     });
+    const dataToExport = getStudents();
+    if (dataToExport.length === 0) {
+      toast({
+        title: "Ekspor Dibatalkan",
+        description: "Tidak ada data siswa untuk diekspor.",
+        variant: "destructive"
+      });
+      return;
+    }
+    const header = "ID_Siswa,Nama_Lengkap,Email,NISN,Nomor_Induk,Kelas,Jurusan,Status_Aktif\n";
+    const csvRows = dataToExport.map(student =>
+      `${student.ID_Siswa},"${student.Nama_Lengkap.replace(/"/g, '""')}","${student.Email}","${student.NISN}","${student.Nomor_Induk}","${student.Kelas}","${student.Program_Studi}",${student.Status_Aktif}`
+    ).join("\n");
+    const csvString = header + csvRows;
+
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "data_siswa.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Ekspor Berhasil",
+      description: "Data siswa telah berhasil diekspor sebagai data_siswa.csv.",
+    });
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      toast({
+        title: "File Dipilih",
+        description: `File "${file.name}" dipilih. Memproses impor (simulasi)...`,
+      });
+      setTimeout(() => {
+        toast({
+          title: "Impor Selesai (Simulasi)",
+          description: `Impor data siswa dari "${file.name}" telah selesai. Data tidak benar-benar diperbarui.`,
+        });
+      }, 2000);
+    }
+    if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
   };
 
   const handleMassPasswordGenerate = () => {
@@ -96,6 +146,13 @@ export default function AdminStudentsPage() {
 
   return (
     <div className="space-y-8">
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        onChange={handleFileSelected}
+        accept=".csv,.xlsx"
+      />
        <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Siswa</h1>
       </div>
@@ -104,20 +161,20 @@ export default function AdminStudentsPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Data Siswa (Excel)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Data Siswa (CSV/Excel)</CardTitle>
           </div>
-          <CardDescription>Impor dan ekspor data siswa menggunakan file Excel.</CardDescription>
+          <CardDescription>Impor dan ekspor data siswa menggunakan file CSV atau Excel.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button onClick={() => handleExcelAction("Import", "Data Siswa")} variant="outline" className="flex-1">
+            <Button onClick={handleImportClick} variant="outline" className="flex-1">
               <Upload className="w-4 h-4 mr-2" /> Import Siswa
             </Button>
-            <Button onClick={() => handleExcelAction("Export", "Data Siswa")} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Export Siswa
+            <Button onClick={handleExportData} variant="outline" className="flex-1">
+              <Download className="w-4 h-4 mr-2" /> Export Siswa (CSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor/ekspor Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file CSV contoh.</p>
         </CardContent>
       </Card>
 

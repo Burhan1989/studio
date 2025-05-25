@@ -9,6 +9,11 @@ import { BookCopy, PlusCircle, Edit, Trash2, Eye, Upload, Download, Link2, FileU
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRef, type ChangeEvent } from "react";
+import { getSchedules } from "@/lib/mockData"; // For export example
+import { format, parseISO } from 'date-fns';
+import { id as LocaleID } from 'date-fns/locale';
+
 
 // Mock Data (Sementara)
 const mockCourses = [
@@ -20,6 +25,7 @@ const mockCourses = [
 
 export default function AdminCoursesPage() {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleActionPlaceholder = (action: string, item: string) => {
     toast({
@@ -35,13 +41,64 @@ export default function AdminCoursesPage() {
     });
   };
 
-  const handleExcelAction = (actionType: "Import" | "Export", dataType: string) => {
-    let actionDescription = actionType === "Import" ? "Impor" : "Ekspor";
+  const handleExportJadwal = () => {
     toast({
-      title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas "${actionDescription} ${dataType} dari file Excel" akan segera hadir. Ini adalah placeholder dan memerlukan implementasi backend.`,
-      variant: "default",
+      title: "Memulai Ekspor Jadwal Pelajaran",
+      description: "Sedang mempersiapkan file CSV...",
     });
+    const dataToExport = getSchedules(); // Assuming getSchedules returns enriched data
+    if (dataToExport.length === 0) {
+      toast({
+        title: "Ekspor Dibatalkan",
+        description: "Tidak ada data jadwal untuk diekspor.",
+        variant: "destructive"
+      });
+      return;
+    }
+    const header = "ID,Judul,Tanggal,Waktu,Kelas,Guru,Kategori,Deskripsi\n";
+    const csvRows = dataToExport.map(schedule =>
+      `${schedule.id},"${schedule.title.replace(/"/g, '""')}","${format(parseISO(schedule.date), 'dd MMM yyyy', { locale: LocaleID })}","${schedule.time}","${schedule.className || ''}","${schedule.teacherName || ''}","${schedule.category}","${(schedule.description || '').replace(/"/g, '""')}"`
+    ).join("\n");
+    const csvString = header + csvRows;
+
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "jadwal_pelajaran.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Ekspor Berhasil",
+      description: "Jadwal pelajaran telah berhasil diekspor sebagai jadwal_pelajaran.csv.",
+    });
+  };
+
+  const handleImportJadwalClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelectedJadwal = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      toast({
+        title: "File Dipilih",
+        description: `File "${file.name}" dipilih untuk impor jadwal. Memproses (simulasi)...`,
+      });
+      setTimeout(() => {
+        toast({
+          title: "Impor Jadwal Selesai (Simulasi)",
+          description: `Impor jadwal dari "${file.name}" telah selesai. Data tidak benar-benar diperbarui.`,
+        });
+      }, 2000);
+    }
+    if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
   };
 
   const handleSaveMaterials = () => {
@@ -53,6 +110,13 @@ export default function AdminCoursesPage() {
 
   return (
     <div className="space-y-8">
+       <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        onChange={handleFileSelectedJadwal}
+        accept=".csv,.xlsx"
+      />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
             <BookCopy className="w-10 h-10 text-primary" />
@@ -67,20 +131,20 @@ export default function AdminCoursesPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <BookCopy className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Jadwal Pelajaran (Excel)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Jadwal Pelajaran (CSV/Excel)</CardTitle>
           </div>
-          <CardDescription>Import dan export jadwal pelajaran menggunakan file Excel.</CardDescription>
+          <CardDescription>Import dan export jadwal pelajaran menggunakan file CSV atau Excel.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button onClick={() => handleExcelAction("Import", "Jadwal Pelajaran")} variant="outline" className="flex-1">
+            <Button onClick={handleImportJadwalClick} variant="outline" className="flex-1">
               <Upload className="w-4 h-4 mr-2" /> Import Jadwal
             </Button>
-            <Button onClick={() => handleExcelAction("Export", "Jadwal Pelajaran")} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Export Jadwal
+            <Button onClick={handleExportJadwal} variant="outline" className="flex-1">
+              <Download className="w-4 h-4 mr-2" /> Export Jadwal (CSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur import/export Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file CSV contoh.</p>
         </CardContent>
       </Card>
 
@@ -137,7 +201,7 @@ export default function AdminCoursesPage() {
       <Card className="shadow-lg">
         <CardHeader>
             <CardTitle className="flex items-center gap-2 text-xl">
-                <Upload className="w-6 h-6 text-primary" /> Pengelolaan Materi untuk Pelajaran (Contoh)
+                <UploadCloud className="w-6 h-6 text-primary" /> Pengelolaan Materi untuk Pelajaran (Contoh)
             </CardTitle>
             <CardDescription>
                 Ini adalah placeholder UI untuk menunjukkan bagaimana materi pelajaran dapat dikelola. 

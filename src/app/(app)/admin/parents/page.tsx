@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, type ChangeEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,12 +9,13 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, Users, KeyRound, Upload, Download } from "lucide-react";
 import type { ParentData } from "@/lib/types";
-import { getParents } from "@/lib/mockData"; // Changed from mockParents
+import { getParents } from "@/lib/mockData";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AdminParentsPage() {
   const { toast } = useToast();
   const [parentsList, setParentsList] = useState<ParentData[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setParentsList(getParents());
@@ -34,17 +35,75 @@ export default function AdminParentsPage() {
     });
   };
 
-  const handleExcelAction = (actionType: "Import" | "Export", dataType: string) => {
-    let actionDescription = actionType === "Import" ? "Impor" : "Ekspor";
+  const handleExportData = () => {
     toast({
-      title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas "${actionDescription} ${dataType} dari file Excel" akan segera hadir. Ini adalah placeholder dan memerlukan implementasi backend.`,
-      variant: "default",
+      title: "Memulai Ekspor Data Orang Tua",
+      description: "Sedang mempersiapkan file CSV...",
     });
+    const dataToExport = getParents();
+    if (dataToExport.length === 0) {
+      toast({
+        title: "Ekspor Dibatalkan",
+        description: "Tidak ada data orang tua untuk diekspor.",
+        variant: "destructive"
+      });
+      return;
+    }
+    const header = "ID_OrangTua,Nama_Lengkap,Email,Nomor_Telepon,Status_Aktif\n";
+    const csvRows = dataToExport.map(parent =>
+      `${parent.ID_OrangTua},"${parent.Nama_Lengkap.replace(/"/g, '""')}","${parent.Email}","${parent.Nomor_Telepon || ''}",${parent.Status_Aktif}`
+    ).join("\n");
+    const csvString = header + csvRows;
+
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "data_orang_tua.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    toast({
+      title: "Ekspor Berhasil",
+      description: "Data orang tua telah berhasil diekspor sebagai data_orang_tua.csv.",
+    });
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelected = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      toast({
+        title: "File Dipilih",
+        description: `File "${file.name}" dipilih. Memproses impor (simulasi)...`,
+      });
+      setTimeout(() => {
+        toast({
+          title: "Impor Selesai (Simulasi)",
+          description: `Impor data orang tua dari "${file.name}" telah selesai. Data tidak benar-benar diperbarui.`,
+        });
+      }, 2000);
+    }
+    if(fileInputRef.current) {
+        fileInputRef.current.value = "";
+    }
   };
 
   return (
     <div className="space-y-8">
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        style={{ display: 'none' }} 
+        onChange={handleFileSelected}
+        accept=".csv,.xlsx"
+      />
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Orang Tua</h1>
       </div>
@@ -53,20 +112,20 @@ export default function AdminParentsPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Data Orang Tua (Excel)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Data Orang Tua (CSV/Excel)</CardTitle>
           </div>
-          <CardDescription>Import dan export data orang tua menggunakan file Excel.</CardDescription>
+          <CardDescription>Import dan export data orang tua menggunakan file CSV atau Excel.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
-            <Button onClick={() => handleExcelAction("Import", "Data Orang Tua")} variant="outline" className="flex-1">
+            <Button onClick={handleImportClick} variant="outline" className="flex-1">
               <Upload className="w-4 h-4 mr-2" /> Import Data Orang Tua
             </Button>
-            <Button onClick={() => handleExcelAction("Export", "Data Orang Tua")} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Export Data Orang Tua
+            <Button onClick={handleExportData} variant="outline" className="flex-1">
+              <Download className="w-4 h-4 mr-2" /> Export Data Orang Tua (CSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor/ekspor Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file CSV contoh.</p>
         </CardContent>
       </Card>
 
