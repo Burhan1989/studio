@@ -25,12 +25,22 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { ScheduleItem } from "@/lib/types";
 import { addSchedule, mockClasses, mockTeachers, mockLessons, mockQuizzes } from "@/lib/mockData";
+import { format, getDay, addDays, startOfWeek, nextMonday, nextTuesday, nextWednesday, nextThursday, nextFriday, nextSaturday, isPast, setDay } from "date-fns";
 
 const scheduleCategories = ['Pelajaran', 'Kuis', 'Tugas', 'Diskusi', 'Lainnya'] as const;
+const daysOfWeek = [
+  { value: "1", label: "Senin" }, // Monday
+  { value: "2", label: "Selasa" }, // Tuesday
+  { value: "3", label: "Rabu" },   // Wednesday
+  { value: "4", label: "Kamis" },  // Thursday
+  { value: "5", label: "Jumat" },  // Friday
+  { value: "6", label: "Sabtu" },  // Saturday
+] as const;
+
 
 const newScheduleSchema = z.object({
   title: z.string().min(3, "Judul jadwal minimal 3 karakter."),
-  date: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Tanggal tidak valid." }),
+  dayOfWeek: z.string().min(1, "Hari harus dipilih."),
   time: z.string().min(5, "Waktu harus diisi, cth. 08:00 - 09:30."),
   classId: z.string().optional(),
   teacherId: z.string().optional(),
@@ -51,7 +61,7 @@ export default function AdminNewSchedulePage() {
     resolver: zodResolver(newScheduleSchema),
     defaultValues: {
       title: "",
-      date: new Date().toISOString().split('T')[0], // Default to today
+      dayOfWeek: "", // Default to empty, user must select
       time: "",
       classId: "_NO_CLASS_",
       teacherId: "_NO_TEACHER_",
@@ -62,12 +72,38 @@ export default function AdminNewSchedulePage() {
     },
   });
 
+  function calculateDateForSelectedDay(dayValue: string): string {
+    const selectedDayNumber = parseInt(dayValue, 10); // 1 for Mon, ..., 6 for Sat
+    let targetDate = new Date();
+    const currentDayNumber = getDay(targetDate) === 0 ? 7 : getDay(targetDate); // Adjust Sunday to 7 to align with 1-6 for Mon-Sat
+
+    if (selectedDayNumber < currentDayNumber && !isPast(setDay(targetDate, selectedDayNumber, { weekStartsOn:1 }))) {
+        // If selected day is earlier in the current week and not past, use current week's day
+        targetDate = setDay(targetDate, selectedDayNumber, { weekStartsOn: 1});
+    } else {
+        // Otherwise, find the next occurrence of that day
+        switch (selectedDayNumber) {
+            case 1: targetDate = nextMonday(targetDate); break;
+            case 2: targetDate = nextTuesday(targetDate); break;
+            case 3: targetDate = nextWednesday(targetDate); break;
+            case 4: targetDate = nextThursday(targetDate); break;
+            case 5: targetDate = nextFriday(targetDate); break;
+            case 6: targetDate = nextSaturday(targetDate); break;
+            default: targetDate = new Date(); // Should not happen
+        }
+    }
+    return format(targetDate, "yyyy-MM-dd");
+  }
+
+
   async function onSubmit(values: NewScheduleFormData) {
     setIsLoading(true);
+
+    const calculatedDate = calculateDateForSelectedDay(values.dayOfWeek);
     
     const newScheduleData: Omit<ScheduleItem, 'id' | 'className' | 'teacherName'> = {
       title: values.title,
-      date: values.date,
+      date: calculatedDate, // Use calculated date
       time: values.time,
       classId: values.classId === "_NO_CLASS_" ? undefined : values.classId,
       teacherId: values.teacherId === "_NO_TEACHER_" ? undefined : values.teacherId,
@@ -85,9 +121,9 @@ export default function AdminNewSchedulePage() {
     if (addedSchedule) {
       toast({
         title: "Jadwal Baru Ditambahkan",
-        description: `Jadwal "${values.title}" telah berhasil ditambahkan.`,
+        description: `Jadwal "${values.title}" untuk ${format(new Date(calculatedDate), 'EEEE, dd MMMM yyyy')} telah berhasil ditambahkan.`,
       });
-      router.push("/admin"); // Redirect to admin dashboard
+      router.push("/admin"); 
       router.refresh(); 
     } else {
        toast({
@@ -119,7 +155,7 @@ export default function AdminNewSchedulePage() {
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-xl">Detail Jadwal Pembelajaran</CardTitle>
-              <CardDescription>Lengkapi semua field yang diperlukan.</CardDescription>
+              <CardDescription>Lengkapi semua field yang diperlukan. Tanggal akan dihitung otomatis berdasarkan hari yang dipilih (untuk minggu ini/depan).</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6 md:grid-cols-2">
               <FormField
@@ -137,13 +173,22 @@ export default function AdminNewSchedulePage() {
               />
               <FormField
                 control={form.control}
-                name="date"
+                name="dayOfWeek"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tanggal</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
+                    <FormLabel>Hari</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih hari" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {daysOfWeek.map(day => (
+                          <SelectItem key={day.value} value={day.value}>{day.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -309,3 +354,5 @@ export default function AdminNewSchedulePage() {
     </div>
   );
 }
+
+    

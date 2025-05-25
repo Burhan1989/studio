@@ -25,12 +25,21 @@ import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
 import type { ScheduleItem, ClassData, TeacherData, Lesson, Quiz } from "@/lib/types";
 import { getScheduleById, updateSchedule, mockClasses, mockTeachers, mockLessons, mockQuizzes } from "@/lib/mockData";
+import { format, getDay, addDays, startOfWeek, setDay, parseISO } from "date-fns";
 
 const scheduleCategories = ['Pelajaran', 'Kuis', 'Tugas', 'Diskusi', 'Lainnya'] as const;
+const daysOfWeek = [
+  { value: "1", label: "Senin" }, // Monday
+  { value: "2", label: "Selasa" }, // Tuesday
+  { value: "3", label: "Rabu" },   // Wednesday
+  { value: "4", label: "Kamis" },  // Thursday
+  { value: "5", label: "Jumat" },  // Friday
+  { value: "6", label: "Sabtu" },  // Saturday
+] as const;
 
 const editScheduleSchema = z.object({
   title: z.string().min(3, "Judul jadwal minimal 3 karakter."),
-  date: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Tanggal tidak valid." }),
+  dayOfWeek: z.string().min(1, "Hari harus dipilih."),
   time: z.string().min(5, "Waktu harus diisi, cth. 08:00 - 09:30."),
   classId: z.string().optional(),
   teacherId: z.string().optional(),
@@ -55,7 +64,7 @@ export default function AdminEditSchedulePage() {
     resolver: zodResolver(editScheduleSchema),
     defaultValues: {
       title: "",
-      date: "",
+      dayOfWeek: "",
       time: "",
       classId: undefined,
       teacherId: undefined,
@@ -71,14 +80,18 @@ export default function AdminEditSchedulePage() {
       const scheduleData = getScheduleById(scheduleId);
       if (scheduleData) {
         setInitialData(scheduleData);
+        const scheduleDateObj = parseISO(scheduleData.date);
+        // getDay: Sunday is 0, Monday is 1, etc. Align with our 1-6 values.
+        const dayVal = getDay(scheduleDateObj) === 0 ? "7" : String(getDay(scheduleDateObj)); // Should not be 7, adjust if needed
+
         form.reset({
           title: scheduleData.title,
-          date: scheduleData.date, // Assuming YYYY-MM-DD format
+          dayOfWeek: dayVal,
           time: scheduleData.time,
-          classId: scheduleData.classId || undefined,
-          teacherId: scheduleData.teacherId || undefined,
-          lessonId: scheduleData.lessonId || undefined,
-          quizId: scheduleData.quizId || undefined,
+          classId: scheduleData.classId || "_NO_CLASS_",
+          teacherId: scheduleData.teacherId || "_NO_TEACHER_",
+          lessonId: scheduleData.lessonId || "_NO_LESSON_",
+          quizId: scheduleData.quizId || "_NO_QUIZ_",
           description: scheduleData.description || "",
           category: scheduleData.category,
         });
@@ -93,14 +106,26 @@ export default function AdminEditSchedulePage() {
     }
   }, [scheduleId, form, router, toast]);
 
+  function calculateDateForSelectedDayEdit(dayValue: string, originalDateStr: string): string {
+    const selectedDayNumber = parseInt(dayValue, 10); // 1 for Mon, ..., 6 for Sat
+    const originalDate = parseISO(originalDateStr);
+    
+    // Set the day of the week within the same week as the original date
+    const targetDate = setDay(originalDate, selectedDayNumber, { weekStartsOn: 1 });
+    
+    return format(targetDate, "yyyy-MM-dd");
+  }
+
   async function onSubmit(values: EditScheduleFormData) {
     if (!initialData) return;
     setIsLoading(true);
+
+    const calculatedDate = calculateDateForSelectedDayEdit(values.dayOfWeek, initialData.date);
     
     const updatedScheduleData: ScheduleItem = {
-      ...initialData, // Retain original ID
+      ...initialData, 
       title: values.title,
-      date: values.date,
+      date: calculatedDate,
       time: values.time,
       classId: values.classId === "_NO_CLASS_" ? undefined : values.classId,
       teacherId: values.teacherId === "_NO_TEACHER_" ? undefined : values.teacherId,
@@ -108,7 +133,6 @@ export default function AdminEditSchedulePage() {
       quizId: values.quizId === "_NO_QUIZ_" ? undefined : values.quizId,
       description: values.description,
       category: values.category,
-      // className and teacherName will be updated by updateSchedule function based on IDs
     };
     
     console.log("Data jadwal yang akan diperbarui (simulasi):", updatedScheduleData);
@@ -119,9 +143,9 @@ export default function AdminEditSchedulePage() {
     if (success) {
       toast({
         title: "Jadwal Diperbarui",
-        description: `Jadwal "${values.title}" telah berhasil diperbarui.`,
+        description: `Jadwal "${values.title}" untuk ${format(new Date(calculatedDate), 'EEEE, dd MMMM yyyy')} telah berhasil diperbarui.`,
       });
-      router.push("/admin"); // Redirect to admin dashboard to see the updated list
+      router.push("/admin"); 
       router.refresh(); 
     } else {
        toast({
@@ -162,7 +186,7 @@ export default function AdminEditSchedulePage() {
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-xl">Detail Jadwal Pembelajaran</CardTitle>
-              <CardDescription>Perbarui detail jadwal di bawah ini.</CardDescription>
+              <CardDescription>Perbarui detail jadwal di bawah ini. Tanggal akan dihitung berdasarkan hari yang dipilih dalam minggu jadwal asli.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6 md:grid-cols-2">
               <FormField
@@ -180,13 +204,22 @@ export default function AdminEditSchedulePage() {
               />
               <FormField
                 control={form.control}
-                name="date"
+                name="dayOfWeek"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tanggal</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
+                    <FormLabel>Hari</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih hari" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {daysOfWeek.map(day => (
+                          <SelectItem key={day.value} value={day.value}>{day.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -352,3 +385,5 @@ export default function AdminEditSchedulePage() {
     </div>
   );
 }
+
+    
