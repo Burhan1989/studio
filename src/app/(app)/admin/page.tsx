@@ -3,43 +3,59 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users, BookCopy, FileQuestion, LineChart, Shield, ArrowRight, Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Users, BookCopy, FileQuestion, LineChart, Shield, ArrowRight, Loader2, Upload, Download, MessageSquare, UsersRound, School } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext'; // Impor useAuth
 import { useRouter } from 'next/navigation'; // Impor useRouter
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useToast } from "@/hooks/use-toast";
+
+// Mock data untuk tabel kelas & wali kelas
+const mockClasses = [
+  { id: 'kelasA', name: 'Kelas 10A', waliKelas: 'Budi Santoso', jumlahSiswa: 30 },
+  { id: 'kelasB', name: 'Kelas 11B', waliKelas: 'Siti Aminah', jumlahSiswa: 28 },
+  { id: 'kelasC', name: 'Kelas 12C', waliKelas: 'Agus Setiawan', jumlahSiswa: 32 },
+];
 
 export default function AdminPage() {
   const { user, isLoading: authIsLoading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
+  const [whatsappApiKey, setWhatsappApiKey] = useState('');
+  const [teacherPhoneNumber, setTeacherPhoneNumber] = useState('');
+  const [notificationMessage, setNotificationMessage] = useState('');
 
   const adminSections = [
     {
       title: "Kelola Pengguna",
       description: "Lihat, edit, atau hapus data pengguna.",
       icon: <Users className="w-8 h-8 text-primary" />,
-      href: "/admin/users", 
+      href: "/admin/users",
       cta: "Buka Manajemen Pengguna"
     },
     {
       title: "Kelola Kursus & Pelajaran",
       description: "Tambah, edit, atau hapus kursus dan pelajaran.",
       icon: <BookCopy className="w-8 h-8 text-primary" />,
-      href: "/admin/courses", 
+      href: "/admin/courses",
       cta: "Buka Manajemen Kursus"
     },
     {
       title: "Kelola Kuis",
       description: "Buat, edit, atau tinjau kuis dan pertanyaan.",
       icon: <FileQuestion className="w-8 h-8 text-primary" />,
-      href: "/admin/quizzes", 
+      href: "/admin/quizzes",
       cta: "Buka Manajemen Kuis"
     },
     {
       title: "Statistik Situs",
       description: "Lihat analitik dan laporan penggunaan situs.",
       icon: <LineChart className="w-8 h-8 text-primary" />,
-      href: "/admin/stats", 
+      href: "/admin/stats",
       cta: "Lihat Statistik"
     },
   ];
@@ -49,6 +65,36 @@ export default function AdminPage() {
       router.replace('/dashboard');
     }
   }, [user, authIsLoading, router]);
+
+  const handleSendNotification = () => {
+    if (!whatsappApiKey || !teacherPhoneNumber || !notificationMessage) {
+      toast({
+        title: "Input Tidak Lengkap",
+        description: "Mohon isi API Key, nomor HP guru, dan pesan notifikasi.",
+        variant: "destructive",
+      });
+      return;
+    }
+    // Placeholder: Logika pengiriman notifikasi WhatsApp akan ada di sini
+    console.log("Mengirim notifikasi:", { whatsappApiKey, teacherPhoneNumber, notificationMessage });
+    toast({
+      title: "Notifikasi Terkirim (Simulasi)",
+      description: `Pesan ke ${teacherPhoneNumber}: ${notificationMessage}`,
+    });
+    // Kosongkan field setelah "terkirim"
+    // setTeacherPhoneNumber('');
+    // setNotificationMessage('');
+  };
+
+  const handleExcelAction = (actionType: string) => {
+    // Placeholder: Logika untuk import/export Excel akan ada di sini
+    console.log(`Aksi Excel: ${actionType}`);
+    toast({
+      title: "Fitur Dalam Pengembangan",
+      description: `Fungsionalitas ${actionType} menggunakan file Excel akan segera hadir. Ini adalah placeholder.`,
+      variant: "default",
+    });
+  };
 
   if (authIsLoading || !user || !user.isAdmin) {
     return (
@@ -95,6 +141,167 @@ export default function AdminPage() {
           </Card>
         ))}
       </div>
+
+      <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+        {/* Manajemen Data Guru & Siswa */}
+        <Card className="shadow-lg">
+          <CardHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <UsersRound className="w-8 h-8 text-primary" />
+              <CardTitle className="text-xl">Manajemen Data Guru & Siswa (Excel)</CardTitle>
+            </div>
+            <CardDescription>Import dan export data guru serta siswa menggunakan file Excel.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <h4 className="font-medium">Data Guru</h4>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button onClick={() => handleExcelAction("Import Guru")} variant="outline" className="flex-1">
+                  <Upload className="w-4 h-4 mr-2" /> Import Guru
+                </Button>
+                <Button onClick={() => handleExcelAction("Export Guru")} variant="outline" className="flex-1">
+                  <Download className="w-4 h-4 mr-2" /> Export Guru
+                </Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <h4 className="font-medium">Data Siswa</h4>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button onClick={() => handleExcelAction("Import Siswa")} variant="outline" className="flex-1">
+                  <Upload className="w-4 h-4 mr-2" /> Import Siswa
+                </Button>
+                <Button onClick={() => handleExcelAction("Export Siswa")} variant="outline" className="flex-1">
+                  <Download className="w-4 h-4 mr-2" /> Export Siswa
+                </Button>
+              </div>
+            </div>
+             <p className="text-xs text-muted-foreground">Catatan: Fitur import/export Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
+          </CardContent>
+        </Card>
+
+        {/* Manajemen Jadwal Pelajaran */}
+        <Card className="shadow-lg">
+          <CardHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <BookCopy className="w-8 h-8 text-primary" />
+              <CardTitle className="text-xl">Manajemen Jadwal Pelajaran (Excel)</CardTitle>
+            </div>
+            <CardDescription>Import dan export jadwal pelajaran menggunakan file Excel.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button onClick={() => handleExcelAction("Import Jadwal")} variant="outline" className="flex-1">
+                <Upload className="w-4 h-4 mr-2" /> Import Jadwal
+              </Button>
+              <Button onClick={() => handleExcelAction("Export Jadwal")} variant="outline" className="flex-1">
+                <Download className="w-4 h-4 mr-2" /> Export Jadwal
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">Catatan: Fitur import/export Excel saat ini adalah placeholder UI. Implementasi backend diperlukan.</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Notifikasi Guru via WhatsApp */}
+      <Card className="shadow-lg">
+        <CardHeader>
+          <div className="flex items-center gap-3 mb-2">
+            <MessageSquare className="w-8 h-8 text-primary" />
+            <CardTitle className="text-xl">Notifikasi Guru (WhatsApp)</CardTitle>
+          </div>
+          <CardDescription>Kirim notifikasi ke guru melalui WhatsApp (memerlukan API Key).</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <Label htmlFor="whatsapp-api-key">API Key WhatsApp</Label>
+            <Input
+              id="whatsapp-api-key"
+              placeholder="Masukkan API Key WhatsApp Anda"
+              value={whatsappApiKey}
+              onChange={(e) => setWhatsappApiKey(e.target.value)}
+            />
+            <p className="text-xs text-muted-foreground mt-1">API Key ini bersifat rahasia dan digunakan untuk otentikasi.</p>
+          </div>
+          <div>
+            <Label htmlFor="teacher-phone">Nomor HP Guru</Label>
+            <Input
+              id="teacher-phone"
+              type="tel"
+              placeholder="cth. 081234567890"
+              value={teacherPhoneNumber}
+              onChange={(e) => setTeacherPhoneNumber(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="notification-message">Pesan Notifikasi</Label>
+            <Textarea
+              id="notification-message"
+              placeholder="Tulis pesan notifikasi Anda di sini..."
+              value={notificationMessage}
+              onChange={(e) => setNotificationMessage(e.target.value)}
+              className="min-h-[100px]"
+            />
+          </div>
+           <p className="text-xs text-muted-foreground">Catatan: Fitur pengiriman WhatsApp saat ini adalah placeholder UI. Integrasi dengan penyedia layanan WhatsApp diperlukan.</p>
+        </CardContent>
+        <CardFooter>
+          <Button onClick={handleSendNotification} className="w-full md:w-auto">
+            Kirim Notifikasi
+          </Button>
+        </CardFooter>
+      </Card>
+
+      {/* Manajemen Kelas & Wali Kelas */}
+      <Card className="shadow-lg">
+        <CardHeader>
+          <div className="flex items-center gap-3 mb-2">
+             <School className="w-8 h-8 text-primary" />
+            <CardTitle className="text-xl">Manajemen Kelas & Wali Kelas</CardTitle>
+          </div>
+          <CardDescription>Kelola data kelas dan penetapan wali kelas.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+             <Button onClick={() => toast({ title: "Fitur Dalam Pengembangan", description: "Form tambah kelas baru akan segera hadir."})}>
+              Tambah Kelas Baru
+            </Button>
+          </div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nama Kelas</TableHead>
+                <TableHead>Wali Kelas</TableHead>
+                <TableHead>Jumlah Siswa</TableHead>
+                <TableHead>Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mockClasses.map((kelas) => (
+                <TableRow key={kelas.id}>
+                  <TableCell>{kelas.name}</TableCell>
+                  <TableCell>{kelas.waliKelas}</TableCell>
+                  <TableCell>{kelas.jumlahSiswa}</TableCell>
+                  <TableCell>
+                    <Button variant="outline" size="sm" onClick={() => toast({ title: "Fitur Dalam Pengembangan", description: `Opsi edit/hapus untuk ${kelas.name} akan segera hadir.`})}>
+                      Edit
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {mockClasses.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                    Belum ada data kelas.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+           <p className="mt-4 text-xs text-muted-foreground">Catatan: Fitur ini adalah placeholder UI. Implementasi CRUD (Create, Read, Update, Delete) penuh diperlukan.</p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
+
+    
