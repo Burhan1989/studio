@@ -115,11 +115,11 @@ export interface ParentData {
 export interface ClassData {
   ID_Kelas: string;
   Nama_Kelas: string;
-  ID_Guru: string;
+  ID_Guru: string; // ID Guru Wali Kelas
   Deskripsi_Kelas?: string;
   Waktu_Kelas?: string;
   jurusan?: string;
-  jumlahSiswa?: number;
+  jumlahSiswa?: number; // Contoh field tambahan
 }
 
 export interface GradeData {

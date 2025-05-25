@@ -1,5 +1,5 @@
 
-import type { Lesson, Quiz, Question, StudentData, TeacherData, ParentData, UserProgress, LessonStatusCounts, SchoolProfileData } from './types';
+import type { Lesson, Quiz, Question, StudentData, TeacherData, ParentData, UserProgress, LessonStatusCounts, SchoolProfileData, ClassData } from './types';
 import type { ChartConfig } from "@/components/ui/chart";
 
 export const mockLessons: Lesson[] = [
@@ -357,6 +357,13 @@ export const lessonStatusChartConfig: ChartConfig = {
   'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
 };
 
+export let mockClasses: ClassData[] = [
+  { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'guru1', jumlahSiswa: 30, jurusan: "IPA" },
+  { ID_Kelas: 'kelasB', Nama_Kelas: 'Kelas 11B', ID_Guru: 'guru2', jumlahSiswa: 28, jurusan: "IPS" },
+  { ID_Kelas: 'kelasC', Nama_Kelas: 'Kelas 12C', ID_Guru: 'guru3', jumlahSiswa: 32, jurusan: "Bahasa" },
+];
+
+
 export const mockSchoolProfile: SchoolProfileData = {
   namaSekolah: "SMA Negeri 1 Teladan Bangsa",
   npsn: "12345678",
@@ -385,4 +392,18 @@ export function getQuizById(id: string): Quiz | undefined {
   return mockQuizzes.find(quiz => quiz.id === id);
 }
 
-    
+export function getClassById(id: string): ClassData | undefined {
+  return mockClasses.find(kelas => kelas.ID_Kelas === id);
+}
+
+// Function to update a class in the mockClasses array
+// This directly mutates the mockClasses array.
+// In a real app, this would involve an API call and state update.
+export function updateClass(updatedClass: ClassData): boolean {
+  const index = mockClasses.findIndex(kelas => kelas.ID_Kelas === updatedClass.ID_Kelas);
+  if (index !== -1) {
+    mockClasses[index] = updatedClass;
+    return true; // Indicate success
+  }
+  return false; // Indicate class not found
+}

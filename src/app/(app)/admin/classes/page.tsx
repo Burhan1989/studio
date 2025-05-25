@@ -5,24 +5,27 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { School, Edit } from "lucide-react"; // Import Edit
+import { School, Edit, PlusCircle } from "lucide-react"; 
+import Link from "next/link";
+import { mockClasses } from "@/lib/mockData"; // Import mockClasses
 import type { ClassData } from '@/lib/types';
-
-const mockClasses: ClassData[] = [
-  { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'Budi Santoso', jumlahSiswa: 30, jurusan: "IPA" },
-  { ID_Kelas: 'kelasB', Nama_Kelas: 'Kelas 11B', ID_Guru: 'Siti Aminah', jumlahSiswa: 28, jurusan: "IPS" },
-  { ID_Kelas: 'kelasC', Nama_Kelas: 'Kelas 12C', ID_Guru: 'Agus Setiawan', jumlahSiswa: 32, jurusan: "Bahasa" },
-];
+import { useEffect, useState } from "react";
 
 export default function AdminClassesPage() {
   const { toast } = useToast();
+  // Use a state to hold classes if you plan to update them client-side and re-render.
+  // For now, directly using imported mockClasses for simplicity in display.
+  // If mockClasses is mutated by the edit page, this page won't re-render automatically
+  // without further state management or a re-fetch mechanism.
+  const [classes, setClasses] = useState<ClassData[]>([]);
 
-  const handleEditClassAction = (className: string) => {
-    toast({
-      title: `Edit Kelas ${className}`,
-      description: `Membuka form edit untuk ${className}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
-    });
-  };
+  useEffect(() => {
+    // Simulate fetching or initializing classes.
+    // This ensures that if mockClasses is mutated elsewhere (like in edit page),
+    // this component uses a fresh (or rather, the current state of the mutated) version on mount/navigation.
+    setClasses([...mockClasses]); // Create a shallow copy to trigger re-render if needed in future
+  }, []);
+
 
   return (
     <div className="space-y-8">
@@ -32,7 +35,7 @@ export default function AdminClassesPage() {
           <h1 className="text-3xl font-bold">Manajemen Kelas & Wali Kelas</h1>
         </div>
         <Button onClick={() => toast({ title: "Fitur Dalam Pengembangan", description: "Form tambah kelas baru akan segera hadir."})}>
-          Tambah Kelas Baru
+           <PlusCircle className="w-4 h-4 mr-2" /> Tambah Kelas Baru
         </Button>
       </div>
       
@@ -53,20 +56,22 @@ export default function AdminClassesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockClasses.map((kelas) => (
+              {classes.map((kelas) => (
                 <TableRow key={kelas.ID_Kelas}>
                   <TableCell>{kelas.Nama_Kelas}</TableCell>
                   <TableCell>{kelas.jurusan || '-'}</TableCell>
                   <TableCell>{kelas.ID_Guru}</TableCell>
                   <TableCell>{kelas.jumlahSiswa || 0}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="outline" size="sm" onClick={() => handleEditClassAction(kelas.Nama_Kelas)}>
-                      <Edit className="w-4 h-4" /> Edit
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/admin/classes/${kelas.ID_Kelas}/edit`}>
+                        <Edit className="w-4 h-4 mr-1" /> Edit
+                      </Link>
                     </Button>
                   </TableCell>
                 </TableRow>
               ))}
-              {mockClasses.length === 0 && (
+              {classes.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">
                     Belum ada data kelas.
@@ -75,7 +80,7 @@ export default function AdminClassesPage() {
               )}
             </TableBody>
           </Table>
-           <p className="mt-4 text-xs text-muted-foreground">Catatan: Fitur ini adalah placeholder UI. Implementasi CRUD (Create, Read, Update, Delete) penuh diperlukan.</p>
+           <p className="mt-4 text-xs text-muted-foreground">Catatan: Fitur "Tambah Kelas Baru" dan "Hapus Kelas" akan diimplementasikan pada iterasi berikutnya.</p>
         </CardContent>
       </Card>
     </div>
