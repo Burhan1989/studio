@@ -19,14 +19,14 @@ import Image from 'next/image'; // Import Image
 
 export default function Header() {
   const { user, logout } = useAuth();
-  const schoolLogo = typeof mockSchoolProfile.logo === 'string' ? mockSchoolProfile.logo : null;
+  const schoolLogoUrl = (typeof mockSchoolProfile.logo === 'string' && mockSchoolProfile.logo.trim() !== '') ? mockSchoolProfile.logo : null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex items-center h-16 max-w-screen-2xl">
         <Link href="/" className="flex items-center gap-2 mr-6">
-          {schoolLogo ? (
-            <Image src={schoolLogo} alt={`${mockSchoolProfile.namaSekolah} Logo`} width={120} height={30} className="h-8 w-auto object-contain" data-ai-hint="school logo" />
+          {schoolLogoUrl ? (
+            <Image src={schoolLogoUrl} alt={`${mockSchoolProfile.namaSekolah} Logo`} width={120} height={30} className="h-8 w-auto object-contain" data-ai-hint="school logo" />
           ) : (
             <GraduationCap className="w-8 h-8 text-primary" />
           )}
@@ -109,4 +109,3 @@ export default function Header() {
     </header>
   );
 }
-

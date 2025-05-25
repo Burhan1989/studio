@@ -54,12 +54,16 @@ export default function AdminSchoolProfilePage() {
   
   const form = useForm<z.infer<typeof schoolProfileSchema>>({
     resolver: zodResolver(schoolProfileSchema),
-    defaultValues: initialData,
+    defaultValues: {
+      ...initialData, // Spread initialData
+      // Ensure logo field in form is initially aligned with what mockData might have (URL string or undefined)
+      logo: typeof initialData.logo === 'string' ? initialData.logo : undefined,
+    },
   });
 
   useEffect(() => {
     // Set initial logo preview if a logo URL exists in mockSchoolProfile
-    if (typeof initialData.logo === 'string' && initialData.logo) {
+    if (typeof initialData.logo === 'string' && initialData.logo.trim() !== '') {
       setLogoPreview(initialData.logo);
     }
   }, [initialData.logo]);
@@ -379,7 +383,7 @@ export default function AdminSchoolProfilePage() {
               {logoPreview && (
                 <div className="mt-4">
                   <p className="mb-2 text-sm font-medium">Pratinjau Logo:</p>
-                  <Image src={logoPreview} alt="Pratinjau Logo Sekolah" width={160} height={40} className="h-10 w-auto border rounded-md object-contain bg-muted p-1" />
+                  <Image src={logoPreview} alt="Pratinjau Logo Sekolah" width={160} height={40} className="h-10 w-auto border rounded-md object-contain bg-muted p-1" data-ai-hint="school logo" />
                 </div>
               )}
             </CardContent>
@@ -396,4 +400,3 @@ export default function AdminSchoolProfilePage() {
     </div>
   );
 }
-

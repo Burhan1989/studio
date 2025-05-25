@@ -60,7 +60,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
-  const schoolLogo = typeof mockSchoolProfile.logo === 'string' ? mockSchoolProfile.logo : null;
+  const schoolLogoUrl = (typeof mockSchoolProfile.logo === 'string' && mockSchoolProfile.logo.trim() !== '') ? mockSchoolProfile.logo : null;
 
 
   if (!user) {
@@ -110,8 +110,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <Sidebar className="bg-card border-r" collapsible="icon">
         <SidebarHeader className="p-4 border-b">
           <Link href={user?.role === 'parent' ? "/parent/dashboard" : "/dashboard"} className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
-            {schoolLogo ? (
-              <Image src={schoolLogo} alt={`${mockSchoolProfile.namaSekolah} Logo`} width={120} height={30} className="h-8 w-auto object-contain group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8" data-ai-hint="school logo"/>
+            {schoolLogoUrl ? (
+              <Image src={schoolLogoUrl} alt={`${mockSchoolProfile.namaSekolah} Logo`} width={120} height={30} className="h-8 w-auto object-contain group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:w-8" data-ai-hint="school logo"/>
             ) : (
               <GraduationCap className="w-8 h-8 text-primary" />
             )}
@@ -211,5 +211,3 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-
