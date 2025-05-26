@@ -1,7 +1,7 @@
 
 "use client";
 
-import type { User } from '@/lib/types';
+import type { User, LoginHistoryEntry, UserRole } from '@/lib/types'; // Added LoginHistoryEntry & UserRole
 import { useRouter, usePathname } from 'next/navigation';
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 
@@ -13,6 +13,8 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const LOGIN_HISTORY_KEY = 'adeptlearn-login-history';
+const MAX_LOGIN_HISTORY_ENTRIES = 10;
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -43,7 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log(`AuthContext: Redirection effect check. isLoading: ${isLoading}, user: ${!!user}, pathname: ${pathname}`);
     if (isLoading) {
       console.log("AuthContext: Still loading, redirection logic skipped.");
-      return; 
+      return;
     }
 
     const publicPaths = ['/login', '/register', '/'];
@@ -79,6 +81,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log("AuthContext: login function called with:", userData);
     localStorage.setItem('adeptlearn-user', JSON.stringify(userData));
     setUser(userData);
+
+    // Record login event
+    try {
+      const now = new Date().toISOString();
+      const loginEntry: LoginHistoryEntry = {
+        email: userData.email,
+        name: userData.name,
+        role: userData.role,
+        loginTime: now,
+      };
+      const historyString = localStorage.getItem(LOGIN_HISTORY_KEY);
+      let history: LoginHistoryEntry[] = historyString ? JSON.parse(historyString) : [];
+      history.unshift(loginEntry); // Add to the beginning
+      history = history.slice(0, MAX_LOGIN_HISTORY_ENTRIES); // Keep only the last N entries
+      localStorage.setItem(LOGIN_HISTORY_KEY, JSON.stringify(history));
+      console.log("AuthContext: Login event recorded:", loginEntry);
+    } catch (error) {
+      console.error("AuthContext: Failed to record login history", error);
+    }
+
+
     // Pengalihan akan ditangani oleh useEffect
     let targetDashboard = '/dashboard';
     if (userData.isAdmin) {
@@ -86,7 +109,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } else if (userData.role === 'parent') {
       targetDashboard = '/parent/dashboard';
     }
-    console.log(`AuthContext: Login successful, redirecting to ${targetDashboard}`);
+    console.log(`AuthContext: Login successful, router.push to ${targetDashboard}`);
     router.push(targetDashboard);
   };
 
@@ -98,19 +121,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
   
   const publicPathsForLoading = ['/login', '/register', '/'];
-  if (isLoading && !publicPathsForLoading.includes(pathname)) {
-     return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-          <svg className="w-16 h-16 mb-4 text-primary animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <div className="p-4 m-4 text-lg font-semibold rounded-md shadow-lg bg-card text-primary">
-            Memuat AdeptLearn...
-          </div>
-        </div>
-      );
-  }
+  // if (isLoading && !publicPathsForLoading.includes(pathname)) {
+  //    return (
+  //       <div className="flex flex-col items-center justify-center min-h-screen bg-background">
+  //         <svg className="w-16 h-16 mb-4 text-primary animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+  //           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+  //           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+  //         </svg>
+  //         <div className="p-4 m-4 text-lg font-semibold rounded-md shadow-lg bg-card text-primary">
+  //           Memuat AdeptLearn...
+  //         </div>
+  //       </div>
+  //     );
+  // }
 
   return (
     <AuthContext.Provider value={{ user, login, logout, isLoading }}>

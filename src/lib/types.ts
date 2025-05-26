@@ -11,6 +11,13 @@ export interface User {
 
 export type UserRole = 'admin' | 'teacher' | 'student' | 'parent';
 
+export interface LoginHistoryEntry {
+  email: string;
+  name?: string;
+  role?: UserRole;
+  loginTime: string;
+}
+
 export interface LearningResource {
   resourceType: string;
   resourceLink: string;
@@ -177,3 +184,4 @@ export interface ScheduleItem {
   description?: string; // Catatan tambahan
   category: 'Pelajaran' | 'Kuis' | 'Tugas' | 'Diskusi' | 'Lainnya'; // Kategori jadwal
 }
+

@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, Edit, PlusCircle, Activity, TrendingUp, MessageSquare } from 'lucide-react';
+import { Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, Edit, PlusCircle, Activity, TrendingUp, MessageSquare, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -11,11 +11,13 @@ import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getSchedules, getClasses, getTeachers, getStudents } from "@/lib/mockData"; // Import getter functions
-import type { ScheduleItem } from "@/lib/types";
-import { format, parseISO } from 'date-fns';
+import type { ScheduleItem, LoginHistoryEntry, UserRole } from "@/lib/types"; // Added LoginHistoryEntry
+import { format, parseISO, formatDistanceToNow } from 'date-fns'; // Added formatDistanceToNow
 import { id as LocaleID } from 'date-fns/locale';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export const dynamic = 'force-dynamic'; 
+const LOGIN_HISTORY_KEY = 'adeptlearn-login-history';
 
 export default function AdminPage() {
   const { user, isLoading: authIsLoading } = useAuth();
@@ -24,6 +26,7 @@ export default function AdminPage() {
   const [recentSchedules, setRecentSchedules] = useState<ScheduleItem[]>([]);
   const [activeTeachersCount, setActiveTeachersCount] = useState(0);
   const [activeStudentsCount, setActiveStudentsCount] = useState(0);
+  const [loginHistory, setLoginHistory] = useState<LoginHistoryEntry[]>([]);
 
   useEffect(() => {
     if (!authIsLoading && (!user || !user.isAdmin)) {
@@ -45,12 +48,20 @@ export default function AdminPage() {
       const teacherInfo = schedule.teacherId ? teachers.find(t => t.ID_Guru === schedule.teacherId) : null;
       return {
         ...schedule,
-        className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (schedule.classId ? schedule.className : 'Umum (Semua Kelas)'),
-        teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (schedule.teacherId ? schedule.teacherName : 'Tidak Ditentukan'),
+        className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (schedule.classId ? schedule.className || 'Info Kelas Hilang' : 'Umum (Semua Kelas)'),
+        teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (schedule.teacherId ? schedule.teacherName || 'Info Guru Hilang' : 'Tidak Ditentukan'),
       };
     }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()) 
       .slice(0, 5); 
     setRecentSchedules(enrichedSchedules);
+
+    // Load login history from localStorage
+    if (typeof window !== 'undefined') {
+      const historyString = localStorage.getItem(LOGIN_HISTORY_KEY);
+      if (historyString) {
+        setLoginHistory(JSON.parse(historyString));
+      }
+    }
   }, []);
 
 
@@ -68,6 +79,13 @@ export default function AdminPage() {
       </div>
     );
   }
+
+  const roleDisplay: Record<UserRole, string> = {
+    admin: "Admin",
+    teacher: "Guru",
+    student: "Siswa",
+    parent: "Orang Tua",
+  };
 
   return (
     <div className="space-y-8">
@@ -113,7 +131,7 @@ export default function AdminPage() {
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-3"> {/* Changed to lg:grid-cols-3 */}
         <Card className="shadow-lg">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -147,6 +165,32 @@ export default function AdminPage() {
                 </ul>
                 <Button variant="link" className="px-0 mt-2">Lihat Laporan Siswa Rinci</Button>
             </CardContent>
+        </Card>
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+                <Clock className="w-6 h-6 text-primary" /> Pengguna Baru Login (Simulasi)
+            </CardTitle>
+            <CardDescription>Daftar pengguna yang baru saja login.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loginHistory.length > 0 ? (
+              <ScrollArea className="h-[200px]"> {/* Added ScrollArea for longer lists */}
+                <ul className="space-y-3">
+                  {loginHistory.map((entry, index) => (
+                    <li key={index} className="p-2 text-sm rounded-md bg-muted/50">
+                      <div className="font-medium">{entry.name || entry.email}</div>
+                      <div className="text-xs text-muted-foreground">
+                        ({entry.role ? roleDisplay[entry.role] : 'Tidak Diketahui'}) - {formatDistanceToNow(parseISO(entry.loginTime), { addSuffix: true, locale: LocaleID })}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </ScrollArea>
+            ) : (
+              <p className="text-sm text-muted-foreground">Belum ada riwayat login.</p>
+            )}
+          </CardContent>
         </Card>
       </div>
 
@@ -280,5 +324,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-    
