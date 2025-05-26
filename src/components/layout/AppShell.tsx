@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud, Network, ShieldCheck, CalendarDays, MessageSquare, Contact } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud, Network, ShieldCheck, CalendarDays, MessageSquare, Contact,ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { UserRole, SchoolProfileData } from '@/lib/types';
 import { getSchoolProfile } from '@/lib/mockData';
@@ -33,6 +33,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+
 
 interface NavItem {
   href: string;
@@ -42,10 +49,9 @@ interface NavItem {
   parentOnly?: boolean;
   teacherOnly?: boolean;
   studentOnly?: boolean;
-  general?: boolean;
+  general?: boolean; // Item ini umum untuk semua peran non-spesifik
 }
 
-// general: true means it's visible to admin, teacher, and student by default unless overridden
 const baseNavItems: NavItem[] = [
   // General items (potentially visible to Student, Teacher, Admin)
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard, general: true },
@@ -53,6 +59,7 @@ const baseNavItems: NavItem[] = [
   { href: '/lessons', label: 'Pelajaran', icon: BookOpen, general: true },
   { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck, general: true },
   { href: '/reports', label: 'Laporan', icon: BarChart3, general: true },
+  // Profil & Pengaturan selalu general untuk semua yang login
   { href: '/profile', label: 'Profil', icon: UserCircle, general: true },
   { href: '/settings', label: 'Pengaturan', icon: Settings, general: true },
 
@@ -66,8 +73,8 @@ const baseNavItems: NavItem[] = [
   // Parent specific
   { href: '/parent/dashboard', label: 'Dasbor Anak', icon: ParentIcon, parentOnly: true },
 
-  // Admin Specific
-  { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
+  // Admin Specific - Ini akan dikelompokkan
+  { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true }, // Item utama Admin
   { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building, adminOnly: true },
   { href: '/admin/admins', label: 'Kelola Admin', icon: ShieldCheck, adminOnly: true },
   { href: '/admin/teachers', label: 'Kelola Guru', icon: UserCog, adminOnly: true },
@@ -81,6 +88,40 @@ const baseNavItems: NavItem[] = [
   { href: '/admin/notifications', label: 'Notifikasi Guru', icon: MessageSquare, adminOnly: true },
   { href: '/admin/contacts/class-contacts', label: 'Kontak Siswa', icon: Contact, adminOnly: true },
 ];
+
+const adminMenuGroups = {
+  userManagement: {
+    label: "Manajemen Pengguna",
+    icon: Users,
+    items: [
+      { href: '/admin/admins', label: 'Kelola Admin', icon: ShieldCheck },
+      { href: '/admin/teachers', label: 'Kelola Guru', icon: UserCog },
+      { href: '/admin/students', label: 'Kelola Siswa', icon: Users },
+      { href: '/admin/parents', label: 'Kelola Orang Tua', icon: ParentIcon },
+    ]
+  },
+  academicManagement: {
+    label: "Manajemen Akademik",
+    icon: BookCopy,
+    items: [
+      { href: '/admin/classes', label: 'Manajemen Kelas', icon: School },
+      { href: '/admin/majors', label: 'Manajemen Jurusan', icon: Network },
+      { href: '/admin/courses', label: 'Kelola Pelajaran', icon: BookCopy },
+      { href: '/admin/quizzes', label: 'Kelola Kuis Admin', icon: FileQuestion },
+    ]
+  },
+  toolsAndReports: {
+    label: "Alat & Laporan",
+    icon: Settings,
+    items: [
+      { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building },
+      { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart },
+      { href: '/admin/notifications', label: 'Notifikasi Guru', icon: MessageSquare },
+      { href: '/admin/contacts/class-contacts', label: 'Kontak Siswa', icon: Contact },
+    ]
+  }
+};
+
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const { user, logout } = useAuth();
@@ -102,112 +143,54 @@ export default function AppShell({ children }: { children: ReactNode }) {
 
     let items = baseNavItems.filter(item => {
       const isGeneralItem = item.general || (!item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly);
+      const isProfileOrSettings = item.href === '/profile' || item.href === '/settings';
 
       if (user.isAdmin) {
-        return item.adminOnly || isGeneralItem;
+        // Admin melihat item adminOnly dan item general.
+        // Item spesifik admin akan dirender dalam accordion, jadi kita kecualikan mereka dari daftar datar utama, kecuali dasbor admin.
+        return item.href === '/admin' || (isGeneralItem && !item.adminOnly);
       }
       if (userRole === 'teacher') {
-        return (item.teacherOnly || (isGeneralItem && !item.studentOnly)) && !item.adminOnly && !item.parentOnly;
+        return (item.teacherOnly || (isGeneralItem && !item.studentOnly && !item.adminOnly && !item.parentOnly));
       }
       if (userRole === 'student') {
-        return (item.studentOnly || (isGeneralItem && !item.teacherOnly)) && !item.adminOnly && !item.parentOnly;
+        return (item.studentOnly || (isGeneralItem && !item.teacherOnly && !item.adminOnly && !item.parentOnly));
       }
       if (userRole === 'parent') {
-        if (item.parentOnly) return true;
-        return isGeneralItem && (item.href === '/profile' || item.href === '/settings');
+        return item.parentOnly || isProfileOrSettings;
       }
-      return isGeneralItem;
+      return isGeneralItem; // Fallback untuk peran lain jika ada
     });
 
+     // Pengurutan dasar
      items.sort((a, b) => {
-        const roleSpecificOrder = (item: NavItem) => {
-            if (user.isAdmin) {
-                if (item.href === '/admin') return -200;
-                if (item.adminOnly) return -100 + item.label.localeCompare(b.label);
-            }
-            if (userRole === 'teacher') {
-                if (item.href === '/dashboard') return -200;
-                if (item.teacherOnly) return -100;
-            }
-            if (userRole === 'student') {
-                if (item.href === '/dashboard') return -200;
-                if (item.studentOnly) return -100;
-            }
-            if (userRole === 'parent') {
-                if (item.href === '/parent/dashboard') return -200;
-            }
-            return 0;
-        };
+        const order = ['/dashboard', '/admin', '/parent/dashboard', '/schedule', '/lessons', '/teacher/materials', '/learning-path', '/quizzes', '/teacher/quizzes', '/reports'];
+        const indexA = order.indexOf(a.href);
+        const indexB = order.indexOf(b.href);
 
-        const orderA = roleSpecificOrder(a);
-        const orderB = roleSpecificOrder(b);
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
 
-        if (orderA !== orderB) return orderA - orderB;
-
-        // Adjusted general order, specific admin items will be grouped by adminOnly flag
-        const generalOrder = [
-            '/dashboard', '/schedule', '/lessons', '/quizzes', '/reports', // Common student/teacher items
-            '/learning-path', // Student specific
-            '/teacher/materials', '/teacher/quizzes', // Teacher specific
-            // Admin general items are typically covered by adminOnly or direct href check
-        ];
-        const indexA = generalOrder.indexOf(a.href);
-        const indexB = generalOrder.indexOf(b.href);
-
-        if (indexA !== -1 && indexB !== -1) {
-            if (indexA !== indexB) return indexA - indexB;
-        } else if (indexA !== -1) {
-            return -1;
-        } else if (indexB !== -1) {
-            return 1;
-        }
+        // Profil dan Pengaturan selalu di akhir
+        if (a.href === '/profile') return 1;
+        if (b.href === '/profile') return -1;
+        if (a.href === '/settings') return 1;
+        if (b.href === '/settings') return -1;
         
-        // Sort admin items more granularly
-        if (user.isAdmin && a.adminOnly && b.adminOnly) {
-             const adminOrder = [
-                '/admin/school-profile',
-                '/admin/admins',
-                '/admin/teachers',
-                '/admin/students',
-                '/admin/parents',
-                '/admin/contacts/class-contacts', // New item
-                '/admin/classes',
-                '/admin/majors',
-                '/admin/courses',
-                '/admin/quizzes',
-                '/admin/stats',
-                '/admin/notifications',
-            ];
-            const adminIndexA = adminOrder.indexOf(a.href);
-            const adminIndexB = adminOrder.indexOf(b.href);
-            if (adminIndexA !== -1 && adminIndexB !== -1) {
-                return adminIndexA - adminIndexB;
-            }
-        }
-
-
-        const settingsProfileOrder = (item: NavItem) => {
-            if (item.href === '/profile') return 100;
-            if (item.href === '/settings') return 200;
-            return 0;
-        };
-        const settingsOrderA = settingsProfileOrder(a);
-        const settingsOrderB = settingsProfileOrder(b);
-        if (settingsOrderA !== settingsOrderB) return settingsOrderA - settingsOrderB;
-
         return a.label.localeCompare(b.label);
     });
     return items;
   }, [user]);
 
   if (!user) {
-    console.log("AppShell: No user, rendering null (AuthProvider should have redirected).");
+    // Handled by AuthProvider redirect
     return null;
   }
 
   return (
     <SidebarProvider defaultOpen>
-      <Sidebar className="bg-card border-r" collapsible="icon">
+      <Sidebar className="bg-sidebar border-r" collapsible="icon">
          <SidebarHeader className="p-2 border-b flex flex-col items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
             <Link
                 href={user?.isAdmin ? "/admin" : (user?.role === 'parent' ? "/parent/dashboard" : "/dashboard")}
@@ -226,7 +209,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             ) : (
               <GraduationCap className="w-8 h-8 text-primary mb-1" />
             )}
-            <span className="text-xs font-semibold text-foreground truncate max-w-[120px]">
+            <span className="text-xs font-semibold text-sidebar-foreground truncate max-w-[120px]">
               {schoolName}
             </span>
           </Link>
@@ -256,25 +239,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} legacyBehavior passHref>
                   <SidebarMenuButton
-                    isActive={
-                      pathname === item.href ||
-                      (item.href !== '/' && pathname.startsWith(item.href) && item.href.length > 1 &&
-                        (
-                          (item.adminOnly && item.href.startsWith('/admin') && pathname.startsWith('/admin')) ||
-                          (item.teacherOnly && item.href.startsWith('/teacher') && pathname.startsWith('/teacher')) ||
-                          (item.studentOnly && item.href.startsWith('/student') && pathname.startsWith('/student')) || // Assuming student only paths might exist
-                          (item.parentOnly && item.href.startsWith('/parent') && pathname.startsWith('/parent')) ||
-                          // More specific checks for sub-routes if href is a base admin/teacher path
-                          (item.href === '/admin/quizzes' && pathname.startsWith('/admin/quizzes')) ||
-                          (item.href === '/teacher/quizzes' && pathname.startsWith('/teacher/quizzes')) ||
-                          (item.href === '/admin/contacts/class-contacts' && pathname.startsWith('/admin/contacts/class-contacts')) ||
-                          // General case for sub-routes, trying to be more precise
-                          (pathname.startsWith(item.href + "/") && !item.href.endsWith('/') && // ensure it's a sub-path
-                           !['/admin', '/teacher', '/student', '/parent'].includes(item.href) // avoid matching base role paths too broadly
-                          )
-                        )
-                      )
-                    }
+                    isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/') && item.href.length > 1)}
                     tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
                     className="justify-start"
                   >
@@ -285,6 +250,40 @@ export default function AppShell({ children }: { children: ReactNode }) {
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
+
+          {user.isAdmin && (
+            <Accordion type="multiple" className="w-full group-data-[collapsible=icon]:hidden">
+              {Object.entries(adminMenuGroups).map(([key, group]) => (
+                <AccordionItem value={key} key={key} className="border-b-0">
+                  <AccordionTrigger className="px-2 py-1.5 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md hover:no-underline [&[data-state=open]>svg]:text-sidebar-accent-foreground">
+                     <div className="flex items-center gap-2">
+                        <group.icon className="w-5 h-5" />
+                        <span className="font-medium">{group.label}</span>
+                     </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-1 pb-0 pl-2">
+                    <SidebarMenu className="ml-3 border-l border-sidebar-border pl-3">
+                      {group.items.map((item) => (
+                        <SidebarMenuItem key={item.href}>
+                          <Link href={item.href} legacyBehavior passHref>
+                            <SidebarMenuButton
+                              isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
+                              className="justify-start h-8 text-xs"
+                              variant="ghost"
+                            >
+                              <item.icon className="w-4 h-4" />
+                              <span>{item.label}</span>
+                            </SidebarMenuButton>
+                          </Link>
+                        </SidebarMenuItem>
+                      ))}
+                    </SidebarMenu>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          )}
+
         </SidebarContent>
       </Sidebar>
       <SidebarInset className="bg-background">
