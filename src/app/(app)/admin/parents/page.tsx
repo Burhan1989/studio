@@ -12,12 +12,9 @@ import type { ParentData } from "@/lib/types";
 import { getParents } from "@/lib/mockData";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-function escapeCsvField(field: any): string {
+function escapeTsvField(field: any): string {
   const fieldStr = String(field === null || field === undefined ? '' : field);
-  if (/[",\n\r]/.test(fieldStr)) {
-    return `"${fieldStr.replace(/"/g, '""')}"`;
-  }
-  return fieldStr;
+  return fieldStr.replace(/\t/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ' ');
 }
 
 export default function AdminParentsPage() {
@@ -46,7 +43,7 @@ export default function AdminParentsPage() {
   const handleExportData = () => {
     toast({
       title: "Memulai Ekspor Data Orang Tua",
-      description: "Sedang mempersiapkan file Excel (format CSV)...",
+      description: "Sedang mempersiapkan file Excel (format TSV)...",
     });
     const dataToExport = getParents();
     if (dataToExport.length === 0) {
@@ -60,9 +57,9 @@ export default function AdminParentsPage() {
     const header = [
         "ID_OrangTua", "Nama_Lengkap", "Username", "Email",
         "Nomor_Telepon", "Status_Aktif", "Anak_Terkait_ID_Siswa"
-    ].map(escapeCsvField).join(",") + "\n";
+    ].map(escapeTsvField).join("\t") + "\n";
 
-    const csvRows = dataToExport.map(parent => {
+    const tsvRows = dataToExport.map(parent => {
       const anakTerkaitCsv = parent.Anak_Terkait ? parent.Anak_Terkait.map(anak => anak.ID_Siswa).join('; ') : '';
       return [
         parent.ID_OrangTua,
@@ -72,12 +69,12 @@ export default function AdminParentsPage() {
         parent.Nomor_Telepon || '',
         String(parent.Status_Aktif),
         anakTerkaitCsv
-      ].map(escapeCsvField).join(",");
+      ].map(escapeTsvField).join("\t");
     }).join("\n");
 
-    const csvString = "\uFEFF" + header + csvRows; // Add BOM
+    const tsvString = "\uFEFF" + header + tsvRows; // Add BOM
 
-    const blob = new Blob([csvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
+    const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
@@ -90,7 +87,7 @@ export default function AdminParentsPage() {
 
     toast({
       title: "Ekspor Berhasil",
-      description: "Data orang tua telah berhasil diekspor sebagai data_orang_tua.xlsx (format CSV).",
+      description: "Data orang tua telah berhasil diekspor sebagai data_orang_tua.xlsx (format TSV).",
     });
   };
 
@@ -124,7 +121,7 @@ export default function AdminParentsPage() {
         ref={fileInputRef}
         style={{ display: 'none' }}
         onChange={handleFileSelected}
-        accept=".xlsx,.xls,.csv"
+        accept=".xlsx,.xls,.tsv,.csv"
       />
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Orang Tua</h1>
@@ -134,9 +131,9 @@ export default function AdminParentsPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Data Orang Tua (Excel/CSV)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Data Orang Tua (Excel/TSV)</CardTitle>
           </div>
-          <CardDescription>Impor dan ekspor data orang tua menggunakan file Excel atau CSV.</CardDescription>
+          <CardDescription>Impor dan ekspor data orang tua menggunakan file Excel atau format TSV.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -144,10 +141,10 @@ export default function AdminParentsPage() {
               <Upload className="w-4 h-4 mr-2" /> Import Data Orang Tua
             </Button>
             <Button onClick={handleExportData} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Export Data Orang Tua (Excel - Format CSV)
+              <Download className="w-4 h-4 mr-2" /> Export Data Orang Tua (Excel - Format TSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data CSV.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data TSV.</p>
         </CardContent>
       </Card>
 

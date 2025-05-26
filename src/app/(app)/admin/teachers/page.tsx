@@ -26,13 +26,12 @@ import {
 import { format, parseISO } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
 
-function escapeCsvField(field: any): string {
+function escapeTsvField(field: any): string {
   const fieldStr = String(field === null || field === undefined ? '' : field);
-  if (/[",\n\r]/.test(fieldStr)) {
-    return `"${fieldStr.replace(/"/g, '""')}"`;
-  }
-  return fieldStr;
+  // Replace tabs and newlines with spaces to prevent breaking TSV structure
+  return fieldStr.replace(/\t/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ' ');
 }
+
 
 export default function AdminTeachersPage() {
   const { toast } = useToast();
@@ -81,7 +80,7 @@ export default function AdminTeachersPage() {
   const handleExportData = () => {
     toast({
       title: "Memulai Ekspor Data Guru",
-      description: "Sedang mempersiapkan file Excel (format CSV)...",
+      description: "Sedang mempersiapkan file Excel (format TSV)...",
     });
 
     const dataToExport = getTeachers();
@@ -98,10 +97,10 @@ export default function AdminTeachersPage() {
       "ID_Guru", "Nama_Lengkap", "Username", "Email", "Jenis_Kelamin",
       "Tanggal_Lahir", "Alamat", "Nomor_Telepon", "Mata_Pelajaran",
       "Kelas_Ajar", "Jabatan", "Status_Aktif", "Tanggal_Pendaftaran", "isAdmin"
-    ].map(escapeCsvField).join(",") + "\n";
+    ].map(escapeTsvField).join("\t") + "\n";
 
-    const csvRows = dataToExport.map(teacher => {
-      const kelasAjarCsv = Array.isArray(teacher.Kelas_Ajar) ? teacher.Kelas_Ajar.join('; ') : teacher.Kelas_Ajar; // Join array for CSV
+    const tsvRows = dataToExport.map(teacher => {
+      const kelasAjarCsv = Array.isArray(teacher.Kelas_Ajar) ? teacher.Kelas_Ajar.join('; ') : teacher.Kelas_Ajar; // Join array
       return [
         teacher.ID_Guru,
         teacher.Nama_Lengkap,
@@ -117,12 +116,12 @@ export default function AdminTeachersPage() {
         String(teacher.Status_Aktif),
         teacher.Tanggal_Pendaftaran ? format(parseISO(teacher.Tanggal_Pendaftaran), 'yyyy-MM-dd', { locale: LocaleID }) : '',
         String(teacher.isAdmin || false)
-      ].map(escapeCsvField).join(",");
+      ].map(escapeTsvField).join("\t");
     }).join("\n");
 
-    const csvString = "\uFEFF" + header + csvRows; // Add BOM
+    const tsvString = "\uFEFF" + header + tsvRows; // Add BOM
 
-    const blob = new Blob([csvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
+    const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
@@ -135,7 +134,7 @@ export default function AdminTeachersPage() {
 
     toast({
       title: "Ekspor Berhasil",
-      description: "Data guru telah berhasil diekspor sebagai data_guru.xlsx (format CSV).",
+      description: "Data guru telah berhasil diekspor sebagai data_guru.xlsx (format TSV).",
     });
   };
 
@@ -178,7 +177,7 @@ export default function AdminTeachersPage() {
         ref={fileInputRef}
         style={{ display: 'none' }}
         onChange={handleFileSelected}
-        accept=".xlsx,.xls,.csv"
+        accept=".xlsx,.xls,.tsv,.csv"
       />
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Guru</h1>
@@ -188,9 +187,9 @@ export default function AdminTeachersPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <UserCog className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Data Guru (Excel/CSV)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Data Guru (Excel/TSV)</CardTitle>
           </div>
-          <CardDescription>Impor dan ekspor data guru menggunakan file Excel atau CSV.</CardDescription>
+          <CardDescription>Impor dan ekspor data guru menggunakan file Excel atau format TSV.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -198,10 +197,10 @@ export default function AdminTeachersPage() {
               <Upload className="w-4 h-4 mr-2" /> Import Guru
             </Button>
             <Button onClick={handleExportData} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Export Guru (Excel - Format CSV)
+              <Download className="w-4 h-4 mr-2" /> Export Guru (Excel - Format TSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data CSV.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data TSV.</p>
         </CardContent>
       </Card>
 
