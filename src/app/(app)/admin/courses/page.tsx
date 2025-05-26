@@ -22,6 +22,14 @@ const mockCourses = [
   { id: "course4", title: "Aljabar Linear untuk Ilmu Data", category: "Matematika", modules: 15, status: "Dipublikasikan" },
 ];
 
+function escapeCsvField(field: any): string {
+  const fieldStr = String(field === null || field === undefined ? '' : field);
+  if (/[",\n\r]/.test(fieldStr)) {
+    return `"${fieldStr.replace(/"/g, '""')}"`;
+  }
+  return fieldStr;
+}
+
 export default function AdminCoursesPage() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -43,7 +51,7 @@ export default function AdminCoursesPage() {
   const handleExportJadwal = () => {
     toast({
       title: "Memulai Ekspor Jadwal Pelajaran",
-      description: "Sedang mempersiapkan file Excel (TSV)...",
+      description: "Sedang mempersiapkan file Excel (format CSV)...",
     });
     const dataToExport = getSchedules();
     if (dataToExport.length === 0) {
@@ -54,8 +62,12 @@ export default function AdminCoursesPage() {
       });
       return;
     }
-    const header = "ID\tJudul\tTanggal\tWaktu\tID_Kelas\tNama_Kelas\tID_Guru\tNama_Guru\tID_Pelajaran\tID_Kuis\tDeskripsi\tKategori\n";
-    const tsvRows = dataToExport.map(schedule =>
+    const header = [
+        "ID", "Judul", "Tanggal", "Waktu", "ID_Kelas", "Nama_Kelas",
+        "ID_Guru", "Nama_Guru", "ID_Pelajaran", "ID_Kuis", "Deskripsi", "Kategori"
+    ].map(escapeCsvField).join(",") + "\n";
+
+    const csvRows = dataToExport.map(schedule =>
       [
         schedule.id,
         schedule.title,
@@ -69,12 +81,11 @@ export default function AdminCoursesPage() {
         schedule.quizId || '',
         schedule.description || '',
         schedule.category
-      ].map(field => String(field).replace(/\t|\n|\r/g, ' ')) // Ensure fields are strings and replace tabs/newlines
-       .join("\t")
+      ].map(escapeCsvField).join(",")
     ).join("\n");
-    const tsvString = "\uFEFF" + header + tsvRows; // Add BOM
+    const csvString = "\uFEFF" + header + csvRows; // Add BOM
 
-    const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
+    const blob = new Blob([csvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
@@ -87,7 +98,7 @@ export default function AdminCoursesPage() {
 
     toast({
       title: "Ekspor Berhasil",
-      description: "Jadwal pelajaran telah berhasil diekspor sebagai jadwal_pelajaran.xlsx (format TSV, buka dengan Excel).",
+      description: "Jadwal pelajaran telah berhasil diekspor sebagai jadwal_pelajaran.xlsx (format CSV).",
     });
   };
 
@@ -128,7 +139,7 @@ export default function AdminCoursesPage() {
         ref={fileInputRef}
         style={{ display: 'none' }}
         onChange={handleFileSelectedJadwal}
-        accept=".xlsx,.xls,.tsv,.csv"
+        accept=".xlsx,.xls,.csv"
       />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -144,9 +155,9 @@ export default function AdminCoursesPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <BookCopy className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Jadwal Pelajaran (Excel/TSV)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Jadwal Pelajaran (Excel/CSV)</CardTitle>
           </div>
-          <CardDescription>Import dan export jadwal pelajaran menggunakan file Excel (format TSV).</CardDescription>
+          <CardDescription>Impor dan ekspor jadwal pelajaran menggunakan file Excel atau CSV.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -154,10 +165,10 @@ export default function AdminCoursesPage() {
               <Upload className="w-4 h-4 mr-2" /> Import Jadwal
             </Button>
             <Button onClick={handleExportJadwal} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Export Jadwal (Excel - TSV)
+              <Download className="w-4 h-4 mr-2" /> Export Jadwal (Excel - Format CSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data TSV.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data CSV.</p>
         </CardContent>
       </Card>
 
@@ -250,3 +261,5 @@ export default function AdminCoursesPage() {
     </div>
   );
 }
+
+    
