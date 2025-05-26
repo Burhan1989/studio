@@ -34,14 +34,14 @@
 
     --radius: 0.5rem;
 
-    /* Chart colors (can be customized further if needed) */
+    /* Chart colors */
     --chart-1: 207 87% 68%; /* Primary */
     --chart-2: 125 39% 75%; /* Accent */
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
 
-    /* Sidebar colors (can be adjusted based on exact sidebar design) */
+    /* Sidebar colors - Default Light Theme */
     --sidebar-background: 0 0% 100%; /* White sidebar */
     --sidebar-foreground: 224 71.4% 4.1%;
     --sidebar-primary: 207 87% 68%;
@@ -73,13 +73,16 @@
     --chart-1: 190 70% 55%;
     --chart-2: 170 60% 70%;
     --chart-3: 210 60% 45%;
-    --sidebar-background: 200 80% 98%;
-    --sidebar-foreground: 210 50% 15%;
-    --sidebar-primary: 190 70% 55%;
+
+    /* Sidebar colors - Ocean Theme */
+    --sidebar-background: 195 75% 97%; /* Very light cyan */
+    --sidebar-foreground: 210 50% 20%; /* Darker cyan text */
+    --sidebar-primary: 190 70% 55%; /* Teal for active */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 200 100% 92%;
-    --sidebar-accent-foreground: 190 70% 55%;
+    --sidebar-accent: 190 70% 88%; /* Lighter teal for hover */
+    --sidebar-accent-foreground: 190 70% 35%;
     --sidebar-border: 200 50% 85%;
+    --sidebar-ring: 190 70% 55%;
   }
 
   .theme-forest {
@@ -103,59 +106,63 @@
     --chart-1: 130 45% 40%;
     --chart-2: 40 50% 60%;
     --chart-3: 120 30% 30%;
-    --sidebar-background: 90 30% 98%;
-    --sidebar-foreground: 120 60% 10%;
-    --sidebar-primary: 130 45% 40%;
+
+    /* Sidebar colors - Forest Theme */
+    --sidebar-background: 110 35% 96%; /* Very light green */
+    --sidebar-foreground: 120 50% 15%; /* Dark green text */
+    --sidebar-primary: 130 45% 40%; /* Forest green for active */
     --sidebar-primary-foreground: 90 60% 95%;
-    --sidebar-accent: 100 20% 95%;
-    --sidebar-accent-foreground: 130 45% 40%;
+    --sidebar-accent: 120 30% 85%; /* Lighter green for hover */
+    --sidebar-accent-foreground: 130 45% 30%;
     --sidebar-border: 100 20% 88%;
+    --sidebar-ring: 130 45% 40%;
   }
 
   .dark {
-    /* Define dark theme variables if needed, for now focusing on light theme */
-    --background: 224 71.4% 4.1%;
-    --foreground: 210 20% 98%;
+    --background: 220 15% 10%; /* Dark cool gray */
+    --foreground: 210 20% 95%; /* Light gray text */
 
-    --card: 224 71.4% 4.1%;
-    --card-foreground: 210 20% 98%;
+    --card: 220 15% 15%; /* Slightly lighter dark gray for cards */
+    --card-foreground: 210 20% 95%;
 
-    --popover: 224 71.4% 4.1%;
-    --popover-foreground: 210 20% 98%;
+    --popover: 220 15% 12%; /* Darker popover */
+    --popover-foreground: 210 20% 95%;
 
-    --primary: 207 87% 68%; /* Keep primary blue */
-    --primary-foreground: 224 71.4% 4.1%; /* Dark text on primary for consistency */
+    --primary: 207 80% 60%; /* Brighter blue for dark mode primary */
+    --primary-foreground: 210 20% 95%; /* Light text on primary */
 
-    --secondary: 215 27.9% 16.9%;
-    --secondary-foreground: 210 20% 98%;
+    --secondary: 220 15% 20%; /* Darker secondary */
+    --secondary-foreground: 210 20% 90%;
 
-    --muted: 215 27.9% 16.9%;
-    --muted-foreground: 217.9 10.6% 64.9%;
+    --muted: 220 15% 25%; /* Darker muted */
+    --muted-foreground: 210 15% 65%; /* Lighter muted text */
 
-    --accent: 125 39% 75%; /* Keep accent green */
-    --accent-foreground: 224 71.4% 4.1%;
+    --accent: 125 50% 55%; /* Brighter green for dark mode accent */
+    --accent-foreground: 210 20% 95%; /* Light text on accent */
 
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 70% 50%; /* Slightly less intense red for dark */
     --destructive-foreground: 0 0% 98%;
 
-    --border: 215 27.9% 16.9%;
-    --input: 215 27.9% 16.9%;
-    --ring: 207 87% 68%; /* Ring color same as primary */
+    --border: 220 15% 25%; /* Border for dark mode */
+    --input: 220 15% 18%; /* Input background for dark mode */
+    --ring: 207 80% 60%; /* Ring color same as primary */
 
-    --chart-1: 207 87% 68%;
-    --chart-2: 125 39% 75%;
-    --chart-3: 197 37% 44%; /* Adjusted for dark */
-    --chart-4: 43 74% 46%; /* Adjusted for dark */
-    --chart-5: 27 87% 47%; /* Adjusted for dark */
+    /* Chart colors for dark mode */
+    --chart-1: 207 80% 60%;
+    --chart-2: 125 50% 55%;
+    --chart-3: 197 37% 60%; 
+    --chart-4: 43 74% 60%;  
+    --chart-5: 27 87% 60%;  
 
-    --sidebar-background: 224 71.4% 4.1%;
-    --sidebar-foreground: 210 20% 98%;
-    --sidebar-primary: 207 87% 68%;
-    --sidebar-primary-foreground: 224 71.4% 4.1%;
-    --sidebar-accent: 215 27.9% 16.9%;
-    --sidebar-accent-foreground: 210 20% 98%;
-    --sidebar-border: 215 27.9% 16.9%;
-    --sidebar-ring: 207 87% 68%;
+    /* Sidebar colors - Dark Theme */
+    --sidebar-background: 220 15% 12%; /* Slightly darker than main dark bg */
+    --sidebar-foreground: 210 20% 90%; /* Light text */
+    --sidebar-primary: 207 80% 60%; /* Primary color */
+    --sidebar-primary-foreground: 210 20% 95%;
+    --sidebar-accent: 220 15% 22%; /* Hover/active background */
+    --sidebar-accent-foreground: 207 80% 70%; /* Text on hover/active */
+    --sidebar-border: 220 15% 25%;
+    --sidebar-ring: 207 80% 60%;
   }
 }
 

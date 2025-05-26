@@ -1,7 +1,8 @@
+
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Settings as SettingsIcon, Bell, Smartphone, Palette } from 'lucide-react';
+import { Settings as SettingsIcon, Bell, Smartphone, Palette, Moon, Sun } from 'lucide-react';
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
@@ -11,7 +12,7 @@ import { useState, useEffect } from 'react';
 
 const THEME_STORAGE_KEY = "adeptlearn-theme";
 
-type Theme = "default" | "ocean" | "forest";
+type Theme = "default" | "ocean" | "forest" | "dark";
 
 export default function SettingsPage() {
   const { toast } = useToast();
@@ -22,17 +23,33 @@ export default function SettingsPage() {
   useEffect(() => {
     const storedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
     if (storedTheme) {
-      applyTheme(storedTheme);
+      applyThemeClasses(storedTheme);
+      setCurrentTheme(storedTheme);
     }
   }, []);
 
-  const applyTheme = (themeName: Theme) => {
-    document.documentElement.classList.remove("theme-ocean", "theme-forest");
-    if (themeName !== "default") {
-      document.documentElement.classList.add(`theme-${themeName}`);
+  const applyThemeClasses = (themeName: Theme) => {
+    const htmlEl = document.documentElement;
+    htmlEl.classList.remove("dark", "theme-ocean", "theme-forest");
+
+    if (themeName === "dark") {
+      htmlEl.classList.add("dark");
+    } else if (themeName === "ocean") {
+      htmlEl.classList.add("theme-ocean");
+    } else if (themeName === "forest") {
+      htmlEl.classList.add("theme-forest");
     }
+    // "default" theme means no extra classes beyond potentially "dark" if that's a separate toggle in future
+  };
+
+  const handleThemeChange = (themeName: Theme) => {
+    applyThemeClasses(themeName);
     localStorage.setItem(THEME_STORAGE_KEY, themeName);
     setCurrentTheme(themeName);
+    toast({
+      title: "Tema Diubah",
+      description: `Tema aplikasi diubah menjadi ${themeName.charAt(0).toUpperCase() + themeName.slice(1)}.`,
+    });
   };
 
   const handleSaveNotificationPreferences = () => {
@@ -43,13 +60,6 @@ export default function SettingsPage() {
     });
   };
   
-  const handleThemeChange = (themeName: Theme) => {
-    applyTheme(themeName);
-    toast({
-      title: "Tema Diubah",
-      description: `Tema aplikasi diubah menjadi ${themeName.charAt(0).toUpperCase() + themeName.slice(1)}.`,
-    });
-  };
 
   return (
     <div className="space-y-6">
@@ -76,24 +86,32 @@ export default function SettingsPage() {
             <Button 
               variant={currentTheme === "default" ? "default" : "outline"} 
               onClick={() => handleThemeChange("default")}
+              className="flex items-center gap-2"
             >
-              Bawaan (Biru Muda)
+              <Sun className="w-4 h-4" /> Bawaan (Biru Muda)
             </Button>
             <Button 
               variant={currentTheme === "ocean" ? "default" : "outline"} 
               onClick={() => handleThemeChange("ocean")}
-               className="bg-[hsl(190,70%,55%)] hover:bg-[hsl(190,70%,60%)] text-white"
+               className="flex items-center gap-2 bg-[hsl(190,70%,55%)] hover:bg-[hsl(190,70%,60%)] text-white"
                style={currentTheme === "ocean" ? {} : {backgroundColor: 'hsl(200 100% 92%)', color: 'hsl(190 70% 55%)', borderColor: 'hsl(190 70% 55%)'} }
             >
-              Samudra (Teal)
+              <Sun className="w-4 h-4" /> Samudra (Teal)
             </Button>
             <Button 
               variant={currentTheme === "forest" ? "default" : "outline"} 
               onClick={() => handleThemeChange("forest")}
-              className="bg-[hsl(130,45%,40%)] hover:bg-[hsl(130,45%,45%)] text-white"
+              className="flex items-center gap-2 bg-[hsl(130,45%,40%)] hover:bg-[hsl(130,45%,45%)] text-white"
               style={currentTheme === "forest" ? {} : {backgroundColor: 'hsl(100 20% 95%)', color: 'hsl(130 45% 40%)', borderColor: 'hsl(130 45% 40%)'} }
             >
-              Hutan (Hijau)
+              <Sun className="w-4 h-4" /> Hutan (Hijau)
+            </Button>
+            <Button
+              variant={currentTheme === "dark" ? "default" : "outline"}
+              onClick={() => handleThemeChange("dark")}
+              className="flex items-center gap-2"
+            >
+              <Moon className="w-4 h-4" /> Mode Gelap
             </Button>
           </div>
            <p className="text-xs text-muted-foreground mt-2">
