@@ -32,13 +32,13 @@ const editStudentSchema = z.object({
   Nama_Panggilan: z.string().optional(),
   Username: z.string().min(3, "Username minimal 3 karakter."),
   Email: z.string().email("Format email tidak valid."),
-  NISN: z.string().min(5, "NISN minimal 5 karakter."), // Example validation
-  Nomor_Induk: z.string().min(3, "Nomor induk minimal 3 karakter."), // Example validation
+  NISN: z.string().regex(/^[0-9]{10}$/, "NISN harus 10 digit angka."),
+  Nomor_Induk: z.string().min(3, "Nomor induk minimal 3 karakter."),
   Jenis_Kelamin: z.enum(["Laki-laki", "Perempuan", ""], { required_error: "Jenis kelamin harus dipilih." }).refine(val => val !== "", { message: "Jenis kelamin harus dipilih." }),
   Tanggal_Lahir: z.string().refine((val) => !isNaN(Date.parse(val)), { message: "Tanggal lahir tidak valid." }),
   Alamat: z.string().min(5, "Alamat minimal 5 karakter.").optional().or(z.literal("")),
   Nomor_Telepon: z.string().regex(/^[0-9\-\+\(\)\s]+$/, "Format nomor telepon tidak valid.").optional().or(z.literal("")),
-  Program_Studi: z.string().min(1, "Jurusan harus diisi."), // Jurusan
+  Program_Studi: z.string().min(1, "Jurusan harus diisi."),
   Kelas: z.string().min(1, "Kelas harus diisi."),
   Status_Aktif: z.boolean().default(true),
   newPassword: z.string().min(6, "Password baru minimal 6 karakter.").optional().or(z.literal("")),
@@ -126,7 +126,10 @@ export default function AdminEditStudentPage() {
       ...initialData, 
       Nama_Lengkap: values.Nama_Lengkap,
       Nama_Panggilan: values.Nama_Panggilan,
-      // Username, Email, NISN, Nomor_Induk tidak diubah di sini
+      Username: values.Username, // Username can be updated by admin
+      Email: values.Email, // Email can be updated by admin
+      NISN: values.NISN, // NISN can be updated by admin
+      Nomor_Induk: values.Nomor_Induk, // Nomor Induk can be updated by admin
       Jenis_Kelamin: values.Jenis_Kelamin,
       Tanggal_Lahir: values.Tanggal_Lahir,
       Alamat: values.Alamat,
@@ -189,7 +192,7 @@ export default function AdminEditStudentPage() {
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="text-xl">Informasi Data Siswa</CardTitle>
-              <CardDescription>Perbarui detail siswa di bawah ini. Username, Email, NISN, dan Nomor Induk tidak dapat diubah.</CardDescription>
+              <CardDescription>Perbarui detail siswa di bawah ini.</CardDescription>
             </CardHeader>
             <CardContent className="grid gap-6 md:grid-cols-2">
               <FormField
@@ -225,9 +228,8 @@ export default function AdminEditStudentPage() {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="cth. budisanjaya" {...field} readOnly className="bg-muted/50 cursor-not-allowed" />
+                      <Input placeholder="cth. budisanjaya" {...field} />
                     </FormControl>
-                     <FormDescription>Username tidak dapat diubah.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -239,9 +241,8 @@ export default function AdminEditStudentPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="cth. budi.s@example.com" {...field} readOnly className="bg-muted/50 cursor-not-allowed" />
+                      <Input type="email" placeholder="cth. budi.s@example.com" {...field} />
                     </FormControl>
-                    <FormDescription>Email tidak dapat diubah.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -253,9 +254,9 @@ export default function AdminEditStudentPage() {
                   <FormItem>
                     <FormLabel>NISN</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nomor Induk Siswa Nasional" {...field} readOnly className="bg-muted/50 cursor-not-allowed" />
+                      <Input placeholder="Nomor Induk Siswa Nasional (10 digit)" {...field} />
                     </FormControl>
-                     <FormDescription>NISN tidak dapat diubah.</FormDescription>
+                     <FormDescription>NISN harus terdiri dari 10 digit angka.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -267,9 +268,8 @@ export default function AdminEditStudentPage() {
                   <FormItem>
                     <FormLabel>Nomor Induk Siswa</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nomor Induk Siswa di Sekolah" {...field} readOnly className="bg-muted/50 cursor-not-allowed" />
+                      <Input placeholder="Nomor Induk Siswa di Sekolah" {...field} />
                     </FormControl>
-                     <FormDescription>Nomor Induk tidak dapat diubah.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -421,3 +421,5 @@ export default function AdminEditStudentPage() {
     </div>
   );
 }
+
+    

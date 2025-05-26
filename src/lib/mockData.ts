@@ -20,7 +20,7 @@ const initialMockStudents: StudentData[] = [
     Nama_Panggilan: "Siswa",
     Username: "siswarajin",
     Email: "student@example.com",
-    NISN: "0098765432",
+    NISN: "0098765432", // 10 digits
     Nomor_Induk: "S1004",
     Kelas: "Kelas 10A IPA",
     Jenis_Kelamin: "Perempuan",
@@ -39,7 +39,7 @@ const initialMockStudents: StudentData[] = [
     Nama_Panggilan: "Zaini",
     Username: "ahmad.zaini",
     Email: "ahmad.z@example.com",
-    NISN: "0012345678",
+    NISN: "0012345678", // 10 digits
     Nomor_Induk: "S1001",
     Kelas: "Kelas 10A IPA",
     Jenis_Kelamin: "Laki-laki",
@@ -58,7 +58,7 @@ const initialMockStudents: StudentData[] = [
     Nama_Panggilan: "Rina",
     Username: "rina.amelia",
     Email: "rina.a@example.com",
-    NISN: "0023456789",
+    NISN: "0023456789", // 10 digits
     Nomor_Induk: "S1002",
     Kelas: "Kelas 11B IPS",
     Jenis_Kelamin: "Perempuan",
@@ -77,7 +77,7 @@ const initialMockStudents: StudentData[] = [
     Nama_Panggilan: "Kevin",
     Username: "kevin.sanjaya",
     Email: "kevin.s@example.com",
-    NISN: "0034567890",
+    NISN: "0034567890", // 10 digits
     Nomor_Induk: "S1003",
     Kelas: "Kelas 12C Bahasa",
     Jenis_Kelamin: "Laki-laki",
@@ -129,7 +129,6 @@ const initialMockTeachers: TeacherData[] = [
     Profil_Foto: "https://placehold.co/100x100.png?text=GI",
     isAdmin: false,
   },
-  // ... (data guru lainnya dari iterasi sebelumnya tetap di sini)
 ];
 
 const initialMockParents: ParentData[] = [
@@ -146,31 +145,43 @@ const initialMockParents: ParentData[] = [
             { ID_Siswa: "student001", Nama_Siswa: "Siswa Rajin" },
         ]
     },
-    // ... (data orang tua lainnya)
 ];
 
 const initialMockMajors: MajorData[] = [
   { ID_Jurusan: "major001", Nama_Jurusan: "Ilmu Pengetahuan Alam (IPA)", Deskripsi_Jurusan: "Fokus pada studi sains seperti Fisika, Kimia, Biologi.", Nama_Kepala_Program: "Dr. Annisa Fitri, M.Si." },
-  // ... (data jurusan lainnya)
+  { ID_Jurusan: "major002", Nama_Jurusan: "Ilmu Pengetahuan Sosial (IPS)", Deskripsi_Jurusan: "Mempelajari aspek sosial, ekonomi, dan sejarah.", Nama_Kepala_Program: "Drs. Joko Susilo, M.Hum." },
+  { ID_Jurusan: "major003", Nama_Jurusan: "Bahasa dan Sastra", Deskripsi_Jurusan: "Mendalami bahasa dan karya sastra.", Nama_Kepala_Program: "Prof. Dr. Ratih Ayu, M.A." },
 ];
 
 const initialMockClasses: ClassData[] = [
   { ID_Kelas: 'kelasA', Nama_Kelas: 'Kelas 10A', ID_Guru: 'teacher001', jumlahSiswa: 30, jurusan: "IPA" },
-  // ... (data kelas lainnya)
+  { ID_Kelas: 'kelasB', Nama_Kelas: 'Kelas 11B', ID_Guru: 'teacher001', jumlahSiswa: 28, jurusan: "IPS" },
+  { ID_Kelas: 'kelasC', Nama_Kelas: 'Kelas 12C', ID_Guru: 'teacher001', jumlahSiswa: 32, jurusan: "Bahasa" },
 ];
 
 const initialMockSchedules: ScheduleItem[] = [
   {
     id: 'schedule1',
     title: 'Pelajaran Matematika: Aljabar Dasar',
-    date: '2024-08-15', // Contoh tanggal, akan disesuaikan oleh form jika perlu
+    date: '2024-08-15', 
     time: '08:00 - 09:30',
     classId: 'kelasA',
     teacherId: 'teacher001',
     description: 'Pembahasan Bab 1 dan latihan soal.',
     category: 'Pelajaran',
+    lessonId: '1',
   },
-  // ... (data jadwal lainnya)
+  {
+    id: 'schedule2',
+    title: 'Kuis Sejarah Indonesia',
+    date: '2024-08-16',
+    time: '10:00 - 11:00',
+    classId: 'kelasB',
+    teacherId: 'teacher001',
+    description: 'Kuis mencakup periode pra-kolonial hingga kemerdekaan.',
+    category: 'Kuis',
+    quizId: 'quiz2', // Assuming quiz2 exists
+  },
 ];
 
 const initialMockQuestionsQuiz1: Question[] = [
@@ -273,7 +284,7 @@ function loadDataFromStorage<T>(key: string, initialData: T, isSingleObject = fa
         return JSON.parse(storedData);
       } catch (e) {
         console.error(`Gagal memparsing data dari localStorage (key: ${key}):`, e);
-        localStorage.setItem(key, JSON.stringify(initialData));
+        localStorage.setItem(key, JSON.stringify(initialData)); // Simpan data awal jika parsing gagal
         return initialData;
       }
     } else {
@@ -300,18 +311,18 @@ let schedules: ScheduleItem[] = loadDataFromStorage<ScheduleItem[]>(SCHEDULES_ST
 let quizzes: Quiz[] = loadDataFromStorage<Quiz[]>(QUIZZES_STORAGE_KEY, initialMockQuizzes);
 let schoolProfile: SchoolProfileData = loadDataFromStorage<SchoolProfileData>(SCHOOL_PROFILE_STORAGE_KEY, initialMockSchoolProfile, true);
 
-
 // --- Student Data Functions ---
 export function getStudents(): StudentData[] {
   // Re-load from storage if array is empty on client, to catch updates from other tabs/sessions (basic)
-  if (typeof window !== 'undefined' && students.length === 0 && localStorage.getItem(STUDENTS_STORAGE_KEY)) {
+  if (typeof window !== 'undefined' && (!students || students.length === 0) && localStorage.getItem(STUDENTS_STORAGE_KEY)) {
     students = loadDataFromStorage<StudentData[]>(STUDENTS_STORAGE_KEY, initialMockStudents);
   }
-  return [...students];
+  return [...(students || [])];
 }
 
 export function getStudentById(id: string): StudentData | undefined {
-  return students.find(student => student.ID_Siswa === id);
+  const currentStudents = getStudents();
+  return currentStudents.find(student => student.ID_Siswa === id);
 }
 
 export function addStudent(studentData: Omit<StudentData, 'ID_Siswa' | 'Tanggal_Daftar' | 'Profil_Foto'>): StudentData {
@@ -321,15 +332,17 @@ export function addStudent(studentData: Omit<StudentData, 'ID_Siswa' | 'Tanggal_
     Profil_Foto: `https://placehold.co/100x100.png?text=${studentData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
     Tanggal_Daftar: new Date().toISOString().split('T')[0],
   };
-  students.push(newStudent);
+  students = [...getStudents(), newStudent];
   saveDataToStorage(STUDENTS_STORAGE_KEY, students);
   return newStudent;
 }
 
 export function updateStudent(updatedStudent: StudentData): boolean {
-  const index = students.findIndex(student => student.ID_Siswa === updatedStudent.ID_Siswa);
+  let currentStudents = getStudents();
+  const index = currentStudents.findIndex(student => student.ID_Siswa === updatedStudent.ID_Siswa);
   if (index !== -1) {
-    students[index] = updatedStudent;
+    currentStudents[index] = updatedStudent;
+    students = currentStudents;
     saveDataToStorage(STUDENTS_STORAGE_KEY, students);
     return true;
   }
@@ -337,8 +350,9 @@ export function updateStudent(updatedStudent: StudentData): boolean {
 }
 
 export function deleteStudentById(studentId: string): boolean {
-  const initialLength = students.length;
-  students = students.filter(student => student.ID_Siswa !== studentId);
+  let currentStudents = getStudents();
+  const initialLength = currentStudents.length;
+  students = currentStudents.filter(student => student.ID_Siswa !== studentId);
   if (students.length < initialLength) {
     saveDataToStorage(STUDENTS_STORAGE_KEY, students);
     return true;
@@ -348,14 +362,15 @@ export function deleteStudentById(studentId: string): boolean {
 
 // --- Teacher Data Functions ---
 export function getTeachers(): TeacherData[] {
-  if (typeof window !== 'undefined' && teachers.length === 0 && localStorage.getItem(TEACHERS_STORAGE_KEY)) {
+  if (typeof window !== 'undefined' && (!teachers || teachers.length === 0) && localStorage.getItem(TEACHERS_STORAGE_KEY)) {
      teachers = loadDataFromStorage<TeacherData[]>(TEACHERS_STORAGE_KEY, initialMockTeachers);
   }
-  return [...teachers];
+  return [...(teachers || [])];
 }
 
 export function getTeacherById(id: string): TeacherData | undefined {
-  return teachers.find(teacher => teacher.ID_Guru === id);
+  const currentTeachers = getTeachers();
+  return currentTeachers.find(teacher => teacher.ID_Guru === id);
 }
 
 export function addTeacher(teacherData: Omit<TeacherData, 'ID_Guru' | 'Tanggal_Pendaftaran' | 'Profil_Foto' | 'isAdmin'>): TeacherData {
@@ -366,15 +381,17 @@ export function addTeacher(teacherData: Omit<TeacherData, 'ID_Guru' | 'Tanggal_P
     Profil_Foto: `https://placehold.co/100x100.png?text=${teacherData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
     Tanggal_Pendaftaran: new Date().toISOString().split('T')[0],
   };
-  teachers.push(newTeacher);
+  teachers = [...getTeachers(), newTeacher];
   saveDataToStorage(TEACHERS_STORAGE_KEY, teachers);
   return newTeacher;
 }
 
 export function updateTeacher(updatedTeacher: TeacherData): boolean {
-  const index = teachers.findIndex(teacher => teacher.ID_Guru === updatedTeacher.ID_Guru);
+  let currentTeachers = getTeachers();
+  const index = currentTeachers.findIndex(teacher => teacher.ID_Guru === updatedTeacher.ID_Guru);
   if (index !== -1) {
-    teachers[index] = updatedTeacher;
+    currentTeachers[index] = updatedTeacher;
+    teachers = currentTeachers;
     saveDataToStorage(TEACHERS_STORAGE_KEY, teachers);
     return true;
   }
@@ -382,8 +399,9 @@ export function updateTeacher(updatedTeacher: TeacherData): boolean {
 }
 
 export function deleteTeacherById(teacherId: string): boolean {
-  const initialLength = teachers.length;
-  teachers = teachers.filter(teacher => teacher.ID_Guru !== teacherId);
+  let currentTeachers = getTeachers();
+  const initialLength = currentTeachers.length;
+  teachers = currentTeachers.filter(teacher => teacher.ID_Guru !== teacherId);
   if (teachers.length < initialLength) {
     saveDataToStorage(TEACHERS_STORAGE_KEY, teachers);
     return true;
@@ -392,8 +410,9 @@ export function deleteTeacherById(teacherId: string): boolean {
 }
 
 export function addAdminUser(newAdminData: Omit<TeacherData, 'ID_Guru' | 'Tanggal_Pendaftaran' | 'Profil_Foto'>): TeacherData | null {
-    const emailExists = teachers.some(teacher => teacher.Email === newAdminData.Email);
-    const usernameExists = teachers.some(teacher => teacher.Username === newAdminData.Username);
+    let currentTeachers = getTeachers();
+    const emailExists = currentTeachers.some(teacher => teacher.Email === newAdminData.Email);
+    const usernameExists = currentTeachers.some(teacher => teacher.Username === newAdminData.Username);
 
     if (emailExists) {
         console.warn(`Gagal menambahkan admin: Email ${newAdminData.Email} sudah digunakan.`);
@@ -412,17 +431,17 @@ export function addAdminUser(newAdminData: Omit<TeacherData, 'ID_Guru' | 'Tangga
       Tanggal_Pendaftaran: new Date().toISOString().split('T')[0],
     };
 
-    teachers.push(newAdmin);
+    teachers = [...currentTeachers, newAdmin];
     saveDataToStorage(TEACHERS_STORAGE_KEY, teachers);
     return newAdmin;
 }
 
 // --- Parent Data Functions ---
 export function getParents(): ParentData[] {
-  if (typeof window !== 'undefined' && parents.length === 0 && localStorage.getItem(PARENTS_STORAGE_KEY)) {
+  if (typeof window !== 'undefined' && (!parents || parents.length === 0) && localStorage.getItem(PARENTS_STORAGE_KEY)) {
      parents = loadDataFromStorage<ParentData[]>(PARENTS_STORAGE_KEY, initialMockParents);
   }
-  return [...parents];
+  return [...(parents || [])];
 }
 
 export function addParent(parentData: Omit<ParentData, 'ID_OrangTua' | 'Profil_Foto'>): ParentData {
@@ -431,15 +450,17 @@ export function addParent(parentData: Omit<ParentData, 'ID_OrangTua' | 'Profil_F
     ...parentData,
     Profil_Foto: `https://placehold.co/100x100.png?text=${parentData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
   };
-  parents.push(newParent);
+  parents = [...getParents(), newParent];
   saveDataToStorage(PARENTS_STORAGE_KEY, parents);
   return newParent;
 }
 
 export function updateParent(updatedParent: ParentData): boolean {
-  const index = parents.findIndex(p => p.ID_OrangTua === updatedParent.ID_OrangTua);
+  let currentParents = getParents();
+  const index = currentParents.findIndex(p => p.ID_OrangTua === updatedParent.ID_OrangTua);
   if (index !== -1) {
-    parents[index] = updatedParent;
+    currentParents[index] = updatedParent;
+    parents = currentParents;
     saveDataToStorage(PARENTS_STORAGE_KEY, parents);
     return true;
   }
@@ -447,8 +468,9 @@ export function updateParent(updatedParent: ParentData): boolean {
 }
 
 export function deleteParentById(parentId: string): boolean {
-  const initialLength = parents.length;
-  parents = parents.filter(p => p.ID_OrangTua !== parentId);
+  let currentParents = getParents();
+  const initialLength = currentParents.length;
+  parents = currentParents.filter(p => p.ID_OrangTua !== parentId);
   if (parents.length < initialLength) {
     saveDataToStorage(PARENTS_STORAGE_KEY, parents);
     return true;
@@ -458,10 +480,10 @@ export function deleteParentById(parentId: string): boolean {
 
 // --- Major Data Functions ---
 export function getMajors(): MajorData[] {
-  if (typeof window !== 'undefined' && majors.length === 0 && localStorage.getItem(MAJORS_STORAGE_KEY)) {
+  if (typeof window !== 'undefined' && (!majors || majors.length === 0) && localStorage.getItem(MAJORS_STORAGE_KEY)) {
     majors = loadDataFromStorage<MajorData[]>(MAJORS_STORAGE_KEY, initialMockMajors);
   }
-  return [...majors];
+  return [...(majors || [])];
 }
 
 export function addMajor(newMajorData: Omit<MajorData, 'ID_Jurusan'>): MajorData {
@@ -469,19 +491,22 @@ export function addMajor(newMajorData: Omit<MajorData, 'ID_Jurusan'>): MajorData
     ID_Jurusan: `major${Date.now()}${Math.floor(Math.random() * 100)}`,
     ...newMajorData,
   };
-  majors.push(newMajor);
+  majors = [...getMajors(), newMajor];
   saveDataToStorage(MAJORS_STORAGE_KEY, majors);
   return newMajor;
 }
 
 export function getMajorById(id: string): MajorData | undefined {
-  return majors.find(major => major.ID_Jurusan === id);
+  const currentMajors = getMajors();
+  return currentMajors.find(major => major.ID_Jurusan === id);
 }
 
 export function updateMajor(updatedMajor: MajorData): boolean {
-  const index = majors.findIndex(major => major.ID_Jurusan === updatedMajor.ID_Jurusan);
+  let currentMajors = getMajors();
+  const index = currentMajors.findIndex(major => major.ID_Jurusan === updatedMajor.ID_Jurusan);
   if (index !== -1) {
-    majors[index] = updatedMajor;
+    currentMajors[index] = updatedMajor;
+    majors = currentMajors;
     saveDataToStorage(MAJORS_STORAGE_KEY, majors);
     return true;
   }
@@ -489,8 +514,9 @@ export function updateMajor(updatedMajor: MajorData): boolean {
 }
 
 export function deleteMajorById(majorId: string): boolean {
-  const initialLength = majors.length;
-  majors = majors.filter(major => major.ID_Jurusan !== majorId);
+  let currentMajors = getMajors();
+  const initialLength = currentMajors.length;
+  majors = currentMajors.filter(major => major.ID_Jurusan !== majorId);
   if (majors.length < initialLength) {
     saveDataToStorage(MAJORS_STORAGE_KEY, majors);
     return true;
@@ -500,36 +526,37 @@ export function deleteMajorById(majorId: string): boolean {
 
 // --- Class Data Functions ---
 export function getClasses(): ClassData[] {
-  if (typeof window !== 'undefined' && classes.length === 0 && localStorage.getItem(CLASSES_STORAGE_KEY)) {
+  if (typeof window !== 'undefined' && (!classes || classes.length === 0) && localStorage.getItem(CLASSES_STORAGE_KEY)) {
     classes = loadDataFromStorage<ClassData[]>(CLASSES_STORAGE_KEY, initialMockClasses);
   }
-  return [...classes];
+  return [...(classes || [])];
 }
 
 export function getClassById(id: string): ClassData | undefined {
-  return classes.find(kelas => kelas.ID_Kelas === id);
+  const currentClasses = getClasses();
+  return currentClasses.find(kelas => kelas.ID_Kelas === id);
 }
 
 export function updateClass(updatedClass: ClassData): boolean {
-  const index = classes.findIndex(kelas => kelas.ID_Kelas === updatedClass.ID_Kelas);
+  let currentClasses = getClasses();
+  const index = currentClasses.findIndex(kelas => kelas.ID_Kelas === updatedClass.ID_Kelas);
   if (index !== -1) {
-    classes[index] = updatedClass;
+    currentClasses[index] = updatedClass;
+    classes = currentClasses;
     saveDataToStorage(CLASSES_STORAGE_KEY, classes);
     return true;
   }
   return false;
 }
-// Fungsi addClass dan deleteClassById bisa ditambahkan jika diperlukan
 
 // --- Schedule Data Functions ---
 export function getSchedules(): ScheduleItem[] {
-  if (typeof window !== 'undefined' && schedules.length === 0 && localStorage.getItem(SCHEDULES_STORAGE_KEY)) {
+  if (typeof window !== 'undefined' && (!schedules || schedules.length === 0) && localStorage.getItem(SCHEDULES_STORAGE_KEY)) {
     schedules = loadDataFromStorage<ScheduleItem[]>(SCHEDULES_STORAGE_KEY, initialMockSchedules);
   }
-  // Perkaya jadwal dengan nama kelas dan guru setiap kali diambil
   const allCls = getClasses();
   const allTchrs = getTeachers();
-  return schedules.map(schedule => {
+  return (schedules || []).map(schedule => {
       const classInfo = schedule.classId ? allCls.find(c => c.ID_Kelas === schedule.classId) : null;
       const teacherInfo = schedule.teacherId ? allTchrs.find(t => t.ID_Guru === schedule.teacherId) : null;
       return {
@@ -541,25 +568,20 @@ export function getSchedules(): ScheduleItem[] {
 }
 
 export function getScheduleById(id: string): ScheduleItem | undefined {
-  const sch = schedules.find(schedule => schedule.id === id);
-  if (sch) {
-    const allCls = getClasses();
-    const allTchrs = getTeachers();
-    const classInfo = sch.classId ? allCls.find(c => c.ID_Kelas === sch.classId) : null;
-    const teacherInfo = sch.teacherId ? allTchrs.find(t => t.ID_Guru === sch.teacherId) : null;
-    return {
-      ...sch,
-      className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (sch.classId ? sch.className || 'Info Kelas Hilang' : 'Umum (Semua Kelas)'),
-      teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (sch.teacherId ? sch.teacherName || 'Info Guru Hilang' : 'Tidak Ditentukan'),
-    }
-  }
-  return undefined;
+  const currentSchedules = getSchedules();
+  const sch = currentSchedules.find(schedule => schedule.id === id);
+  // Enrichment for className and teacherName is handled by getSchedules itself
+  return sch;
 }
 
 export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
-  const index = schedules.findIndex(schedule => schedule.id === updatedSchedule.id);
+  let currentSchedules = loadDataFromStorage<ScheduleItem[]>(SCHEDULES_STORAGE_KEY, initialMockSchedules); // Load fresh from storage
+  const index = currentSchedules.findIndex(schedule => schedule.id === updatedSchedule.id);
   if (index !== -1) {
-    schedules[index] = updatedSchedule; // Data className dan teacherName sudah ada di updatedSchedule dari form
+    // Remove enrichment before saving
+    const { className, teacherName, ...dataToSave } = updatedSchedule;
+    currentSchedules[index] = dataToSave;
+    schedules = currentSchedules;
     saveDataToStorage(SCHEDULES_STORAGE_KEY, schedules);
     return true;
   }
@@ -567,36 +589,41 @@ export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
 }
 
 export function addSchedule(newScheduleData: Omit<ScheduleItem, 'id' | 'className' | 'teacherName'>): ScheduleItem {
-  const allCls = getClasses();
-  const allTchrs = getTeachers();
-  const classInfo = newScheduleData.classId ? allCls.find(c => c.ID_Kelas === newScheduleData.classId) : null;
-  const teacherInfo = newScheduleData.teacherId ? allTchrs.find(t => t.ID_Guru === newScheduleData.teacherId) : null;
-
-  const newSchedule: ScheduleItem = {
+  const newScheduleBase: Omit<ScheduleItem, 'className' | 'teacherName'> = {
     id: `schedule${Date.now()}${Math.floor(Math.random() * 100)}`,
     ...newScheduleData,
-    className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (newScheduleData.classId ? 'Info Kelas Hilang' : 'Umum (Semua Kelas)'),
-    teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (newScheduleData.teacherId ? 'Info Guru Hilang' : 'Tidak Ditentukan'),
   };
-  schedules.push(newSchedule);
+  schedules = [...loadDataFromStorage<ScheduleItem[]>(SCHEDULES_STORAGE_KEY, initialMockSchedules), newScheduleBase];
   saveDataToStorage(SCHEDULES_STORAGE_KEY, schedules);
-  return newSchedule;
+  
+  // Return enriched schedule
+  const allCls = getClasses();
+  const allTchrs = getTeachers();
+  const classInfo = newScheduleBase.classId ? allCls.find(c => c.ID_Kelas === newScheduleBase.classId) : null;
+  const teacherInfo = newScheduleBase.teacherId ? allTchrs.find(t => t.ID_Guru === newScheduleBase.teacherId) : null;
+  return {
+    ...newScheduleBase,
+    className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (newScheduleBase.classId ? 'Info Kelas Hilang' : 'Umum (Semua Kelas)'),
+    teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (newScheduleBase.teacherId ? 'Info Guru Hilang' : 'Tidak Ditentukan'),
+  };
 }
 
 // --- Quiz Data Functions ---
 export function getQuizzes(): Quiz[] {
-  if (typeof window !== 'undefined' && quizzes.length === 0 && localStorage.getItem(QUIZZES_STORAGE_KEY)) {
+  if (typeof window !== 'undefined' && (!quizzes || quizzes.length === 0) && localStorage.getItem(QUIZZES_STORAGE_KEY)) {
     quizzes = loadDataFromStorage<Quiz[]>(QUIZZES_STORAGE_KEY, initialMockQuizzes);
   }
-  return [...quizzes];
+  return [...(quizzes || [])];
 }
 
 export function getQuizById(id: string): Quiz | undefined {
-  return quizzes.find(quiz => quiz.id === id);
+  const currentQuizzes = getQuizzes();
+  return currentQuizzes.find(quiz => quiz.id === id);
 }
 
 export function getQuizzesByTeacherId(teacherId: string): Quiz[] {
-  return quizzes.filter(quiz => quiz.teacherId === teacherId);
+  const currentQuizzes = getQuizzes();
+  return currentQuizzes.filter(quiz => quiz.teacherId === teacherId);
 }
 
 export function addQuiz(quizData: Omit<Quiz, 'id'> & { teacherId: string }): Quiz {
@@ -604,22 +631,24 @@ export function addQuiz(quizData: Omit<Quiz, 'id'> & { teacherId: string }): Qui
     id: `quiz${Date.now()}${Math.floor(Math.random() * 100)}`,
     ...quizData,
   };
-  quizzes.push(newQuiz);
+  quizzes = [...getQuizzes(), newQuiz];
   saveDataToStorage(QUIZZES_STORAGE_KEY, quizzes);
   return newQuiz;
 }
 
 export function updateQuiz(updatedQuiz: Quiz): boolean {
-  const index = quizzes.findIndex(quiz => quiz.id === updatedQuiz.id);
+  let currentQuizzes = getQuizzes();
+  const index = currentQuizzes.findIndex(quiz => quiz.id === updatedQuiz.id);
   if (index !== -1) {
-    quizzes[index] = {
-      ...quizzes[index],
+    currentQuizzes[index] = {
+      ...currentQuizzes[index],
       ...updatedQuiz,
       questions: updatedQuiz.questions.map(q => ({
         ...q,
         id: q.id || `q_updated_${Date.now()}${Math.random().toString(36).substring(2,7)}`,
       })),
     };
+    quizzes = currentQuizzes;
     saveDataToStorage(QUIZZES_STORAGE_KEY, quizzes);
     return true;
   }
@@ -631,7 +660,7 @@ export function getSchoolProfile(): SchoolProfileData {
   if (typeof window !== 'undefined' && (!schoolProfile || Object.keys(schoolProfile).length === 0) && localStorage.getItem(SCHOOL_PROFILE_STORAGE_KEY)) {
     schoolProfile = loadDataFromStorage<SchoolProfileData>(SCHOOL_PROFILE_STORAGE_KEY, initialMockSchoolProfile, true);
   }
-  return schoolProfile;
+  return schoolProfile || initialMockSchoolProfile; // Fallback if still null
 }
 
 export function updateSchoolProfile(updatedProfile: SchoolProfileData): SchoolProfileData {
@@ -745,4 +774,6 @@ export const lessonStatusChartConfig: ChartConfig = {
   Selesai: { label: 'Selesai', color: 'hsl(var(--chart-1))' },
   Dikerjakan: { label: 'Dikerjakan', color: 'hsl(var(--chart-2))' },
   'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
-};
+} satisfies ChartConfig;
+
+    
