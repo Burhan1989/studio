@@ -3,31 +3,27 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Shield, MessageSquare, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, Edit, PlusCircle } from 'lucide-react';
+import { Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, Edit, PlusCircle, Activity, TrendingUp, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getSchedules, getClasses, getTeachers } from "@/lib/mockData"; // Import getter functions
+import { getSchedules, getClasses, getTeachers, getStudents } from "@/lib/mockData"; // Import getter functions
 import type { ScheduleItem } from "@/lib/types";
 import { format, parseISO } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
 
-export const dynamic = 'force-dynamic'; // Ensure admin dashboard always gets fresh schedule data
+export const dynamic = 'force-dynamic'; 
 
 export default function AdminPage() {
   const { user, isLoading: authIsLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
-  const [whatsappApiKey, setWhatsappApiKey] = useState('');
-  const [teacherPhoneNumber, setTeacherPhoneNumber] = useState('');
-  const [notificationMessage, setNotificationMessage] = useState('');
   const [recentSchedules, setRecentSchedules] = useState<ScheduleItem[]>([]);
+  const [activeTeachersCount, setActiveTeachersCount] = useState(0);
+  const [activeStudentsCount, setActiveStudentsCount] = useState(0);
 
   useEffect(() => {
     if (!authIsLoading && (!user || !user.isAdmin)) {
@@ -37,8 +33,12 @@ export default function AdminPage() {
 
   useEffect(() => {
     const teachers = getTeachers(); 
+    const students = getStudents();
     const schedules = getSchedules();
     const classes = getClasses();
+    
+    setActiveTeachersCount(teachers.filter(t => t.Status_Aktif).length);
+    setActiveStudentsCount(students.filter(s => s.Status_Aktif).length);
     
     const enrichedSchedules = schedules.map(schedule => {
       const classInfo = schedule.classId ? classes.find(c => c.ID_Kelas === schedule.classId) : null;
@@ -52,23 +52,6 @@ export default function AdminPage() {
       .slice(0, 5); 
     setRecentSchedules(enrichedSchedules);
   }, []);
-
-
-  const handleSendNotification = () => {
-    if (!whatsappApiKey || !teacherPhoneNumber || !notificationMessage) {
-      toast({
-        title: "Input Tidak Lengkap",
-        description: "Mohon isi API Key, nomor HP guru, dan pesan notifikasi.",
-        variant: "destructive",
-      });
-      return;
-    }
-    console.log("Mengirim notifikasi:", { whatsappApiKey, teacherPhoneNumber, notificationMessage });
-    toast({
-      title: "Notifikasi Terkirim (Simulasi)",
-      description: `Pesan ke ${teacherPhoneNumber}: ${notificationMessage}`,
-    });
-  };
 
 
   if (authIsLoading || !user || !user.isAdmin) {
@@ -96,53 +79,77 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <div className="flex items-center gap-3 mb-2">
-            <MessageSquare className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Notifikasi Guru (WhatsApp)</CardTitle>
-          </div>
-          <CardDescription>Kirim notifikasi ke guru melalui WhatsApp (memerlukan API Key).</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <Label htmlFor="whatsapp-api-key">API Key WhatsApp</Label>
-            <Input
-              id="whatsapp-api-key"
-              placeholder="Masukkan API Key WhatsApp Anda"
-              value={whatsappApiKey}
-              onChange={(e) => setWhatsappApiKey(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground mt-1">API Key ini bersifat rahasia dan digunakan untuk otentikasi.</p>
-          </div>
-          <div>
-            <Label htmlFor="teacher-phone">Nomor HP Guru</Label>
-            <Input
-              id="teacher-phone"
-              type="tel"
-              placeholder="cth. 081234567890"
-              value={teacherPhoneNumber}
-              onChange={(e) => setTeacherPhoneNumber(e.target.value)}
-            />
-          </div>
-          <div>
-            <Label htmlFor="notification-message">Pesan Notifikasi</Label>
-            <Textarea
-              id="notification-message"
-              placeholder="Tulis pesan notifikasi Anda di sini..."
-              value={notificationMessage}
-              onChange={(e) => setNotificationMessage(e.target.value)}
-              className="min-h-[100px]"
-            />
-          </div>
-           <p className="text-xs text-muted-foreground">Catatan: Fitur pengiriman WhatsApp saat ini adalah placeholder UI. Integrasi dengan penyedia layanan WhatsApp diperlukan.</p>
-        </CardContent>
-        <CardFooter>
-          <Button onClick={handleSendNotification} className="w-full md:w-auto">
-            Kirim Notifikasi
-          </Button>
-        </CardFooter>
-      </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Guru Aktif</CardTitle>
+            <UserCog className="w-5 h-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{activeTeachersCount}</div>
+            <p className="text-xs text-muted-foreground">Total guru yang terdaftar dan aktif.</p>
+          </CardContent>
+        </Card>
+         <Card className="shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Siswa Aktif</CardTitle>
+            <Users className="w-5 h-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{activeStudentsCount}</div>
+            <p className="text-xs text-muted-foreground">Total siswa yang terdaftar dan aktif.</p>
+          </CardContent>
+        </Card>
+        <Card className="shadow-md">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle className="text-sm font-medium">Pelajaran Tersedia</CardTitle>
+            <BookCopy className="w-5 h-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            {/* Placeholder: Ganti dengan data jumlah pelajaran nyata */}
+            <div className="text-2xl font-bold">15</div> 
+            <p className="text-xs text-muted-foreground">Jumlah pelajaran yang aktif.</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Activity className="w-6 h-6 text-primary" /> Aktivitas Guru Terbaru
+                </CardTitle>
+                <CardDescription>Ringkasan aktivitas terbaru dari para guru.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {/* Placeholder Content */}
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>Guru Budi menambahkan kuis baru: "Matematika Dasar Bab 5".</li>
+                    <li>Guru Siti memperbarui materi "Sejarah Kerajaan Majapahit".</li>
+                    <li>3 jadwal baru ditambahkan untuk minggu depan.</li>
+                </ul>
+                <Button variant="link" className="px-0 mt-2">Lihat Semua Aktivitas Guru</Button>
+            </CardContent>
+        </Card>
+        <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <TrendingUp className="w-6 h-6 text-accent" /> Progres Siswa Terkini
+                </CardTitle>
+                <CardDescription>Pantau kemajuan belajar siswa secara umum.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {/* Placeholder Content */}
+                 <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>Rata-rata penyelesaian kuis: 78%.</li>
+                    <li>Modul paling populer: "Pengenalan Algoritma".</li>
+                    <li>5 siswa mencapai target mingguan mereka.</li>
+                </ul>
+                <Button variant="link" className="px-0 mt-2">Lihat Laporan Siswa Rinci</Button>
+            </CardContent>
+        </Card>
+      </div>
+
 
       <Card className="shadow-lg">
         <CardHeader>
@@ -209,7 +216,7 @@ export default function AdminPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-            <CardTitle>Ringkasan Cepat</CardTitle>
+            <CardTitle>Ringkasan Cepat & Alat Admin</CardTitle>
             <CardDescription>Akses cepat ke berbagai modul manajemen.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -263,8 +270,15 @@ export default function AdminPage() {
                     <LineChart className="w-5 h-5" /> Statistik Situs
                 </Link>
             </Button>
+            <Button asChild variant="outline">
+                <Link href="/admin/notifications" className="flex items-center justify-center gap-2">
+                    <MessageSquare className="w-5 h-5" /> Notifikasi Guru
+                </Link>
+            </Button>
         </CardContent>
       </Card>
     </div>
   );
 }
+
+    

@@ -2,7 +2,7 @@
 "use client";
 
 import type { ReactNode } from 'react';
-import React, { useMemo, useEffect, useState } from 'react'; // Ditambahkan useEffect dan useState
+import React, { useMemo, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -20,10 +20,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud, Network, ShieldCheck, CalendarDays } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud, Network, ShieldCheck, CalendarDays, MessageSquare } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import type { UserRole, SchoolProfileData } from '@/lib/types'; // Ditambahkan SchoolProfileData
-import { getSchoolProfile } from '@/lib/mockData'; // Ditambahkan getSchoolProfile
+import type { UserRole, SchoolProfileData } from '@/lib/types'; 
+import { getSchoolProfile } from '@/lib/mockData';
 import Image from 'next/image';
 import {
   DropdownMenu,
@@ -45,18 +45,24 @@ interface NavItem {
   general?: boolean; 
 }
 
+// general: true means it's visible to admin, teacher, and student by default unless overridden
 const baseNavItems: NavItem[] = [
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard, general: true },
+  { href: '/schedule', label: 'Jadwal Pembelajaran', icon: CalendarDays, general: true },
   { href: '/lessons', label: 'Pelajaran', icon: BookOpen, general: true },
   { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck, general: true },
-  { href: '/schedule', label: 'Jadwal Pembelajaran', icon: CalendarDays, general: true },
   { href: '/reports', label: 'Laporan', icon: BarChart3, general: true },
-  { href: '/profile', label: 'Profil', icon: UserCircle, general: true },
-  { href: '/settings', label: 'Pengaturan', icon: Settings, general: true },
+  { href: '/profile', label: 'Profil', icon: UserCircle, general: true }, // general for all logged in users
+  { href: '/settings', label: 'Pengaturan', icon: Settings, general: true }, // general for all logged in users
+  
   { href: '/learning-path', label: 'Sesuaikan Jalur', icon: BrainCircuit, studentOnly: true },
+  
   { href: '/teacher/materials', label: 'Materi Saya', icon: UploadCloud, teacherOnly: true },
   { href: '/teacher/quizzes', label: 'Kuis Saya', icon: FileQuestion, teacherOnly: true },
+  
   { href: '/parent/dashboard', label: 'Dasbor Anak', icon: ParentIcon, parentOnly: true },
+  
+  // Admin Specific
   { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
   { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building, adminOnly: true },
   { href: '/admin/admins', label: 'Kelola Admin', icon: ShieldCheck, adminOnly: true },
@@ -68,6 +74,7 @@ const baseNavItems: NavItem[] = [
   { href: '/admin/courses', label: 'Kelola Pelajaran', icon: BookCopy, adminOnly: true },
   { href: '/admin/quizzes', label: 'Kelola Kuis Admin', icon: FileQuestion, adminOnly: true },
   { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart, adminOnly: true },
+  { href: '/admin/notifications', label: 'Notifikasi Guru', icon: MessageSquare, adminOnly: true },
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {
@@ -89,22 +96,23 @@ export default function AppShell({ children }: { children: ReactNode }) {
     const userRole = user.role;
 
     let items = baseNavItems.filter(item => {
-      const isGeneralItem = !item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly;
+      const isGeneralItem = item.general || (!item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly);
 
-      if (user.isAdmin) {
+      if (user.isAdmin) { // Admin sees admin items and general items
         return item.adminOnly || isGeneralItem;
       }
-      if (userRole === 'teacher') {
+      if (userRole === 'teacher') { // Teacher sees teacher items and general items
         return (item.teacherOnly || isGeneralItem) && !item.adminOnly && !item.parentOnly && !item.studentOnly;
       }
-      if (userRole === 'student') {
+      if (userRole === 'student') { // Student sees student items and general items
         return (item.studentOnly || isGeneralItem) && !item.adminOnly && !item.parentOnly && !item.teacherOnly;
       }
-      if (userRole === 'parent') {
+      if (userRole === 'parent') { // Parent sees parent items and specific general items
         if (item.parentOnly) return true;
+        // Parents only see Profile and Settings from general items
         return isGeneralItem && (item.href === '/profile' || item.href === '/settings');
       }
-      return isGeneralItem;
+      return isGeneralItem; // Fallback for any undefined roles, show general items
     });
 
      items.sort((a, b) => {
@@ -158,13 +166,16 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, [user]);
 
   if (!user) {
+    // This case should ideally be handled by AuthProvider redirecting,
+    // but as a fallback or during transition, rendering null is safer.
+    console.log("AppShell: No user, rendering null (AuthProvider should have redirected).");
     return null; 
   }
 
   return (
     <SidebarProvider defaultOpen>
       <Sidebar className="bg-card border-r" collapsible="icon">
-        <SidebarHeader className="p-2 border-b flex flex-col items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
+         <SidebarHeader className="p-2 border-b flex flex-col items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
           <Link
             href={user?.isAdmin ? "/admin" : (user?.role === 'parent' ? "/parent/dashboard" : "/dashboard")}
             className="flex flex-col items-center gap-1 text-center mb-2 group-data-[collapsible=icon]:hidden"
@@ -214,10 +225,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
                   <SidebarMenuButton
                     isActive={
                       pathname === item.href ||
-                      (pathname.startsWith(item.href) && item.href !== '/' && item.href.length > 1 && !item.general) ||
-                      (item.href === '/admin' && pathname.startsWith('/admin')) ||
-                      (item.href === '/teacher/quizzes' && pathname.startsWith('/teacher/quizzes')) ||
-                      (item.href === '/teacher/materials' && pathname.startsWith('/teacher/materials'))
+                      (item.href !== '/' && pathname.startsWith(item.href) && item.href.length > 1 && 
+                        ( (item.adminOnly && item.href.startsWith('/admin')) || 
+                          (item.teacherOnly && item.href.startsWith('/teacher')) ||
+                          (pathname.includes(item.href +"/") && item.href !== "/admin" && item.href !== "/teacher/quizzes") || /* Handles sub-routes like /admin/users from /admin */
+                          (item.href === '/teacher/quizzes' && pathname.startsWith('/teacher/quizzes'))
+                        )
+                      )
                     }
                     tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
                     className="justify-start"
@@ -284,3 +298,5 @@ export default function AppShell({ children }: { children: ReactNode }) {
     </SidebarProvider>
   );
 }
+
+    
