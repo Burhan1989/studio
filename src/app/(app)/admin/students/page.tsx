@@ -91,7 +91,14 @@ export default function AdminStudentsPage() {
       });
       return;
     }
-    const header = "ID_Siswa\tNISN\tNomor_Induk\tUsername\tNama_Lengkap\tNama_Panggilan\tJenis_Kelamin\tTanggal_Lahir\tAlamat\tEmail\tNomor_Telepon\tProgram_Studi\tKelas\tTanggal_Daftar\tStatus_Aktif\tProfil_Foto_URL\n";
+
+    const header = [
+      "ID_Siswa", "NISN", "Nomor_Induk", "Username", "Nama_Lengkap", 
+      "Nama_Panggilan", "Jenis_Kelamin", "Tanggal_Lahir", "Alamat", 
+      "Email", "Nomor_Telepon", "Program_Studi", "Kelas", 
+      "Tanggal_Daftar", "Status_Aktif", "Profil_Foto_URL"
+    ].join("\t") + "\n";
+
     const tsvRows = dataToExport.map(student => [
         student.ID_Siswa,
         student.NISN,
@@ -100,16 +107,16 @@ export default function AdminStudentsPage() {
         student.Nama_Lengkap,
         student.Nama_Panggilan || '',
         student.Jenis_Kelamin,
-        student.Tanggal_Lahir ? format(parseISO(student.Tanggal_Lahir), 'yyyy-MM-dd') : '',
+        student.Tanggal_Lahir ? format(parseISO(student.Tanggal_Lahir), 'yyyy-MM-dd', { locale: LocaleID }) : '',
         student.Alamat || '',
         student.Email,
         student.Nomor_Telepon || '',
         student.Program_Studi,
         student.Kelas,
-        student.Tanggal_Daftar ? format(parseISO(student.Tanggal_Daftar), 'yyyy-MM-dd') : '',
-        student.Status_Aktif,
+        student.Tanggal_Daftar ? format(parseISO(student.Tanggal_Daftar), 'yyyy-MM-dd', { locale: LocaleID }) : '',
+        String(student.Status_Aktif),
         student.Profil_Foto || ''
-      ].map(value => `"${String(value || '').replace(/"/g, '""')}"`).join("\t") 
+      ].join("\t") 
     ).join("\n");
     const tsvString = header + tsvRows;
 
@@ -295,4 +302,3 @@ export default function AdminStudentsPage() {
     </div>
   );
 }
-
