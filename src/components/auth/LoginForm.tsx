@@ -239,10 +239,7 @@ export default function LoginForm() {
         </Form>
         <div className="mt-4 text-xs text-center text-muted-foreground space-y-1">
           <p className="font-semibold">Contoh Kredensial (Pilih Peran yang Sesuai):</p>
-          <p>Admin: admin@example.com / adminpassword</p>
-          <p>Guru: teacher@example.com / password</p>
-          <p>Siswa: student@example.com / password</p>
-          <p>Ortu: parent@example.com / password</p>
+        
         </div>
         <p className="mt-6 text-sm text-center text-muted-foreground">
           Belum punya akun?{" "}
