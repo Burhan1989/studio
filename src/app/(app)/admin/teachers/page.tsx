@@ -24,16 +24,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { format, parseISO } from 'date-fns';
-// Locale ID sengaja tidak digunakan untuk format tanggal di CSV agar lebih standar
-// import { id as LocaleID } from 'date-fns/locale'; 
 
 // Fungsi untuk escaping field CSV yang benar
 function escapeCsvField(field: any): string {
   const fieldStr = String(field === null || field === undefined ? '' : field);
   // Jika field mengandung koma, tanda kutip ganda, atau newline, bungkus dengan tanda kutip ganda
-  if (/[,"\r\n]/.test(fieldStr)) {
-    // Ganti setiap tanda kutip ganda internal dengan dua tanda kutip ganda
-    const escapedStr = fieldStr.replace(/"/g, '""');
+  if (fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n') || fieldStr.includes('\r')) {
+    const escapedStr = fieldStr.replace(/"/g, '""'); // Ganti setiap tanda kutip ganda internal dengan dua tanda kutip ganda
     return `"${escapedStr}"`;
   }
   return fieldStr;
@@ -106,11 +103,11 @@ export default function AdminTeachersPage() {
       "Kelas_Ajar", "Jabatan", "Status_Aktif", "Tanggal_Pendaftaran", "isAdmin", "Profil_Foto"
     ];
 
-    const csvHeaderString = header.map(escapeCsvField).join(",") + "\n";
+    const csvHeaderString = header.map(escapeCsvField).join(",") + "\r\n"; // Menggunakan CRLF
 
     const csvRows = dataToExport.map(teacher => {
       const kelasAjarArray = Array.isArray(teacher.Kelas_Ajar) ? teacher.Kelas_Ajar : (teacher.Kelas_Ajar ? [teacher.Kelas_Ajar] : []);
-      const kelasAjarCsv = kelasAjarArray.join('; '); // Gabung kelas ajar dengan titik koma
+      const kelasAjarCsv = kelasAjarArray.join('; '); 
 
       return [
         teacher.ID_Guru,
@@ -118,26 +115,26 @@ export default function AdminTeachersPage() {
         teacher.Username,
         teacher.Email,
         teacher.Jenis_Kelamin,
-        teacher.Tanggal_Lahir ? format(parseISO(teacher.Tanggal_Lahir), 'yyyy-MM-dd') : '', // Format tanggal standar
+        teacher.Tanggal_Lahir ? format(parseISO(teacher.Tanggal_Lahir), 'yyyy-MM-dd') : '',
         teacher.Alamat || '',
         teacher.Nomor_Telepon || '',
         teacher.Mata_Pelajaran,
-        kelasAjarCsv, // String yang sudah digabung
+        kelasAjarCsv,
         teacher.Jabatan || '',
         String(teacher.Status_Aktif),
-        teacher.Tanggal_Pendaftaran ? format(parseISO(teacher.Tanggal_Pendaftaran), 'yyyy-MM-dd') : '', // Format tanggal standar
+        teacher.Tanggal_Pendaftaran ? format(parseISO(teacher.Tanggal_Pendaftaran), 'yyyy-MM-dd') : '',
         String(teacher.isAdmin || false),
         teacher.Profil_Foto || ''
-      ].map(escapeCsvField).join(","); // Escape setiap field dan gabung dengan koma
-    }).join("\n");
+      ].map(escapeCsvField).join(","); 
+    }).join("\r\n"); // Menggunakan CRLF
 
     const csvString = "\uFEFF" + csvHeaderString + csvRows; // Tambahkan BOM untuk UTF-8
 
-    const blob = new Blob([csvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' }); // Mengubah MIME type
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", "data_guru.xlsx"); // Ekstensi .xlsx
+    link.setAttribute("download", "data_guru.xlsx"); 
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -189,7 +186,7 @@ export default function AdminTeachersPage() {
         ref={fileInputRef}
         style={{ display: 'none' }}
         onChange={handleFileSelected}
-        accept=".csv,.xlsx,.xls" // Tetap terima xlsx untuk UI
+        accept=".csv,.xlsx,.xls" 
       />
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Guru</h1>
@@ -313,4 +310,6 @@ export default function AdminTeachersPage() {
     </div>
   );
 }
+    
+
     
