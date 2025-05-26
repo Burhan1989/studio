@@ -99,11 +99,11 @@ export default function AdminTeachersPage() {
       "Kelas_Ajar", "Jabatan", "Status_Aktif", "Tanggal_Pendaftaran", "isAdmin", "Profil_Foto"
     ];
 
-    const csvHeaderString = header.map(escapeCsvField).join(";") + "\r\n"; // Menggunakan titik koma
+    const csvHeaderString = header.map(escapeCsvField).join(";") + "\r\n";
 
     const csvRows = dataToExport.map(teacher => {
       const kelasAjarArray = Array.isArray(teacher.Kelas_Ajar) ? teacher.Kelas_Ajar : (teacher.Kelas_Ajar ? [teacher.Kelas_Ajar] : []);
-      const kelasAjarCsv = kelasAjarArray.join('; '); // Jika ada array di dalam data, ini juga perlu di-handle
+      const kelasAjarCsv = kelasAjarArray.join('; ');
 
       return [
         teacher.ID_Guru,
@@ -115,13 +115,13 @@ export default function AdminTeachersPage() {
         teacher.Alamat || '',
         teacher.Nomor_Telepon || '',
         teacher.Mata_Pelajaran,
-        kelasAjarCsv, // Ini sudah menjadi string
+        kelasAjarCsv,
         teacher.Jabatan || '',
-        String(teacher.Status_Aktif), 
+        teacher.Status_Aktif ? "Aktif" : "Tidak Aktif", // Perubahan di sini
         teacher.Tanggal_Pendaftaran ? format(parseISO(teacher.Tanggal_Pendaftaran), 'yyyy-MM-dd') : '',
         String(teacher.isAdmin || false),
         teacher.Profil_Foto || ''
-      ].map(escapeCsvField).join(";"); // Menggunakan titik koma
+      ].map(escapeCsvField).join(";");
     }).join("\r\n"); 
 
     const csvString = "\uFEFF" + csvHeaderString + csvRows; // Add BOM
@@ -306,3 +306,4 @@ export default function AdminTeachersPage() {
     </div>
   );
 }
+
