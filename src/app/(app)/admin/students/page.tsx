@@ -8,9 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, Users, KeyRound, Upload, Download, RefreshCw } from "lucide-react";
 import type { StudentData } from "@/lib/types";
-import { getStudents, deleteStudentById } from "@/lib/mockData";
+import { getStudents, deleteStudentById, addStudent } from "@/lib/mockData";
 import Link from "next/link";
-import { useState, useEffect, useRef, type ChangeEvent } from "react";
+import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   AlertDialog,
@@ -23,12 +23,24 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format, parseISO } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
 
 function escapeCsvField(field: any): string {
   const fieldStr = String(field === null || field === undefined ? '' : field);
-  // Selalu apit dengan tanda kutip ganda, dan gandakan tanda kutip ganda internal
   return `"${fieldStr.replace(/"/g, '""')}"`;
 }
 
@@ -37,6 +49,19 @@ export default function AdminStudentsPage() {
   const [students, setStudents] = useState<StudentData[]>([]);
   const [studentToDelete, setStudentToDelete] = useState<StudentData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isAddStudentDialogOpen, setIsAddStudentDialogOpen] = useState(false);
+
+  // State untuk form tambah siswa
+  const [newStudentNamaLengkap, setNewStudentNamaLengkap] = useState("");
+  const [newStudentUsername, setNewStudentUsername] = useState("");
+  const [newStudentEmail, setNewStudentEmail] = useState("");
+  const [newStudentPassword, setNewStudentPassword] = useState("");
+  const [newStudentNISN, setNewStudentNISN] = useState("");
+  const [newStudentNomorInduk, setNewStudentNomorInduk] = useState("");
+  const [newStudentJenisKelamin, setNewStudentJenisKelamin] = useState<StudentData['Jenis_Kelamin']>("");
+  const [newStudentTanggalLahir, setNewStudentTanggalLahir] = useState("");
+  const [newStudentKelas, setNewStudentKelas] = useState("");
+  const [newStudentProgramStudi, setNewStudentProgramStudi] = useState("");
 
   const fetchStudents = () => {
     setStudents(getStudents());
@@ -65,6 +90,51 @@ export default function AdminStudentsPage() {
       setStudentToDelete(null);
     }
   };
+
+  const handleAddStudent = (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    // Validasi sederhana, bisa diperluas dengan Zod jika perlu
+    if (!newStudentNamaLengkap || !newStudentUsername || !newStudentEmail || !newStudentPassword || !newStudentNISN || !newStudentNomorInduk || !newStudentJenisKelamin || !newStudentTanggalLahir || !newStudentKelas || !newStudentProgramStudi) {
+        toast({ title: "Input Tidak Lengkap", description: "Mohon isi semua field yang wajib.", variant: "destructive" });
+        return;
+    }
+    if (newStudentNISN.length !== 10 || !/^\d+$/.test(newStudentNISN)) {
+        toast({ title: "Format NISN Salah", description: "NISN harus 10 digit angka.", variant: "destructive" });
+        return;
+    }
+
+    addStudent({
+        Nama_Lengkap: newStudentNamaLengkap,
+        Username: newStudentUsername,
+        Email: newStudentEmail,
+        Password_Hash: newStudentPassword,
+        NISN: newStudentNISN,
+        Nomor_Induk: newStudentNomorInduk,
+        Jenis_Kelamin: newStudentJenisKelamin,
+        Tanggal_Lahir: newStudentTanggalLahir,
+        Kelas: newStudentKelas,
+        Program_Studi: newStudentProgramStudi,
+        Alamat: "", // Opsional, bisa ditambahkan field
+        Nomor_Telepon: "", // Opsional
+        Status_Aktif: true, // Default
+    });
+
+    toast({ title: "Siswa Ditambahkan", description: `Siswa "${newStudentNamaLengkap}" berhasil ditambahkan.` });
+    fetchStudents();
+    setIsAddStudentDialogOpen(false);
+    // Reset form fields
+    setNewStudentNamaLengkap("");
+    setNewStudentUsername("");
+    setNewStudentEmail("");
+    setNewStudentPassword("");
+    setNewStudentNISN("");
+    setNewStudentNomorInduk("");
+    setNewStudentJenisKelamin("");
+    setNewStudentTanggalLahir("");
+    setNewStudentKelas("");
+    setNewStudentProgramStudi("");
+  };
+
 
   const handleResetPassword = (student: StudentData) => {
     console.log(`Simulasi reset password untuk ${student.Nama_Lengkap} menjadi tanggal lahir: ${student.Tanggal_Lahir}`);
@@ -120,7 +190,7 @@ export default function AdminStudentsPage() {
       ].map(escapeCsvField).join(";")
     ).join("\r\n");
 
-    const csvString = "\uFEFF" + csvHeaderString + csvRows; // Add BOM
+    const csvString = "\uFEFF" + csvHeaderString + csvRows; 
 
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
@@ -150,7 +220,6 @@ export default function AdminStudentsPage() {
         title: "File Dipilih",
         description: `File "${file.name}" dipilih untuk impor data siswa. Memproses (simulasi)...`,
       });
-      // Simulate file processing
       setTimeout(() => {
         toast({
           title: "Impor Selesai (Simulasi)",
@@ -158,7 +227,6 @@ export default function AdminStudentsPage() {
         });
       }, 2000);
     }
-    // Reset file input to allow selecting the same file again
     if(fileInputRef.current) {
         fileInputRef.current.value = "";
     }
@@ -217,9 +285,75 @@ export default function AdminStudentsPage() {
               <Button onClick={handleMassPasswordGenerate} variant="outline">
                 <RefreshCw className="w-4 h-4 mr-2" /> Generate Password Massal (Tgl. Lahir)
               </Button>
-              <Button onClick={() => toast({title: "Fitur Dalam Pengembangan", description:"Form tambah siswa baru akan segera hadir."})}>
-                <UserPlus className="w-4 h-4 mr-2" /> Tambah Siswa Baru
-              </Button>
+              <Dialog open={isAddStudentDialogOpen} onOpenChange={setIsAddStudentDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <UserPlus className="w-4 h-4 mr-2" /> Tambah Siswa Baru
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Tambah Siswa Baru</DialogTitle>
+                    <DialogDescription>
+                      Lengkapi semua field yang diperlukan untuk menambahkan siswa baru.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleAddStudent} className="space-y-3 py-2 max-h-[70vh] overflow-y-auto px-1">
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                        <div className="space-y-1">
+                            <Label htmlFor="new-student-nama">Nama Lengkap</Label>
+                            <Input id="new-student-nama" value={newStudentNamaLengkap} onChange={(e) => setNewStudentNamaLengkap(e.target.value)} placeholder="Nama lengkap siswa" required />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="new-student-username">Username</Label>
+                            <Input id="new-student-username" value={newStudentUsername} onChange={(e) => setNewStudentUsername(e.target.value)} placeholder="Username unik" required />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="new-student-email">Email</Label>
+                            <Input id="new-student-email" type="email" value={newStudentEmail} onChange={(e) => setNewStudentEmail(e.target.value)} placeholder="Email siswa" required />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="new-student-password">Password Awal</Label>
+                            <Input id="new-student-password" type="password" value={newStudentPassword} onChange={(e) => setNewStudentPassword(e.target.value)} placeholder="Min. 6 karakter" required />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="new-student-nisn">NISN</Label>
+                            <Input id="new-student-nisn" value={newStudentNISN} onChange={(e) => setNewStudentNISN(e.target.value)} placeholder="10 digit angka" required />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="new-student-no-induk">Nomor Induk</Label>
+                            <Input id="new-student-no-induk" value={newStudentNomorInduk} onChange={(e) => setNewStudentNomorInduk(e.target.value)} placeholder="Nomor Induk Siswa" required />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="new-student-gender">Jenis Kelamin</Label>
+                            <Select value={newStudentJenisKelamin} onValueChange={(value) => setNewStudentJenisKelamin(value as StudentData['Jenis_Kelamin'])} required>
+                                <SelectTrigger id="new-student-gender"><SelectValue placeholder="Pilih Jenis Kelamin" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Laki-laki">Laki-laki</SelectItem>
+                                    <SelectItem value="Perempuan">Perempuan</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="new-student-dob">Tanggal Lahir</Label>
+                            <Input id="new-student-dob" type="date" value={newStudentTanggalLahir} onChange={(e) => setNewStudentTanggalLahir(e.target.value)} required />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="new-student-kelas">Kelas</Label>
+                            <Input id="new-student-kelas" value={newStudentKelas} onChange={(e) => setNewStudentKelas(e.target.value)} placeholder="cth. Kelas 10A IPA" required />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="new-student-jurusan">Jurusan</Label>
+                            <Input id="new-student-jurusan" value={newStudentProgramStudi} onChange={(e) => setNewStudentProgramStudi(e.target.value)} placeholder="cth. IPA" required />
+                        </div>
+                    </div>
+                    <DialogFooter className="pt-4">
+                        <DialogClose asChild><Button type="button" variant="outline">Batal</Button></DialogClose>
+                        <Button type="submit">Simpan Siswa</Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
           <CardDescription>Lihat, tambah, edit, atau hapus data siswa dalam sistem.</CardDescription>
@@ -294,7 +428,7 @@ export default function AdminStudentsPage() {
               ))}
               {students.length === 0 && (
                  <TableRow>
-                  <TableCell colSpan={10} className="text-center text-muted-foreground">Belum ada data siswa.</TableCell>
+                  <TableCell colSpan={10} className="text-center text-muted-foreground">Belum ada data siswa. Silakan tambahkan siswa baru.</TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -304,5 +438,3 @@ export default function AdminStudentsPage() {
     </div>
   );
 }
-
-    

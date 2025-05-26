@@ -20,7 +20,7 @@ const initialMockStudents: StudentData[] = [
     Nama_Panggilan: "Siswa",
     Username: "siswarajin",
     Email: "student@example.com",
-    NISN: "0098765432", // 10 digits
+    NISN: "0098765432", 
     Nomor_Induk: "S1004",
     Kelas: "Kelas 10A IPA",
     Jenis_Kelamin: "Perempuan",
@@ -39,7 +39,7 @@ const initialMockStudents: StudentData[] = [
     Nama_Panggilan: "Zaini",
     Username: "ahmad.zaini",
     Email: "ahmad.z@example.com",
-    NISN: "0012345678", // 10 digits
+    NISN: "0012345678", 
     Nomor_Induk: "S1001",
     Kelas: "Kelas 10A IPA",
     Jenis_Kelamin: "Laki-laki",
@@ -58,7 +58,7 @@ const initialMockStudents: StudentData[] = [
     Nama_Panggilan: "Rina",
     Username: "rina.amelia",
     Email: "rina.a@example.com",
-    NISN: "0023456789", // 10 digits
+    NISN: "0023456789",
     Nomor_Induk: "S1002",
     Kelas: "Kelas 11B IPS",
     Jenis_Kelamin: "Perempuan",
@@ -77,7 +77,7 @@ const initialMockStudents: StudentData[] = [
     Nama_Panggilan: "Kevin",
     Username: "kevin.sanjaya",
     Email: "kevin.s@example.com",
-    NISN: "0034567890", // 10 digits
+    NISN: "0034567890",
     Nomor_Induk: "S1003",
     Kelas: "Kelas 12C Bahasa",
     Jenis_Kelamin: "Laki-laki",
@@ -117,7 +117,7 @@ const initialMockTeachers: TeacherData[] = [
     Username: "guruinovatif",
     Email: "teacher@example.com",
     Mata_Pelajaran: "Kimia Terapan",
-    Kelas_Ajar: ["Kelas 11C", "Kelas 12A"],
+    Kelas_Ajar: ["Kelas 10A IPA", "Kelas 11B IPS"],
     Jenis_Kelamin: "Laki-laki",
     Tanggal_Lahir: "1982-03-25",
     Alamat: "Jl. Mengajar No. 10, Kota Edukasi",
@@ -180,7 +180,7 @@ const initialMockSchedules: ScheduleItem[] = [
     teacherId: 'teacher001',
     description: 'Kuis mencakup periode pra-kolonial hingga kemerdekaan.',
     category: 'Kuis',
-    quizId: 'quiz2', // Assuming quiz2 exists
+    quizId: 'quiz2', 
   },
 ];
 
@@ -276,7 +276,7 @@ const initialMockSchoolProfile: SchoolProfileData = {
 };
 
 // --- localStorage Helper Functions ---
-function loadDataFromStorage<T>(key: string, initialData: T, isSingleObject = false): T {
+function loadDataFromStorage<T>(key: string, initialData: T[], isSingleObject = false): T | T[] {
   if (typeof window !== 'undefined') {
     const storedData = localStorage.getItem(key);
     if (storedData) {
@@ -284,55 +284,55 @@ function loadDataFromStorage<T>(key: string, initialData: T, isSingleObject = fa
         return JSON.parse(storedData);
       } catch (e) {
         console.error(`Gagal memparsing data dari localStorage (key: ${key}):`, e);
-        localStorage.setItem(key, JSON.stringify(initialData)); // Simpan data awal jika parsing gagal
-        return initialData;
+        localStorage.setItem(key, JSON.stringify(isSingleObject ? initialData[0] : initialData));
+        return isSingleObject ? initialData[0] : initialData;
       }
     } else {
-      localStorage.setItem(key, JSON.stringify(initialData));
-      return initialData;
+      localStorage.setItem(key, JSON.stringify(isSingleObject ? initialData[0] : initialData));
+      return isSingleObject ? initialData[0] : initialData;
     }
   }
-  return initialData; // For SSR or if window is not available
+  return isSingleObject ? initialData[0] : initialData;
 }
 
-function saveDataToStorage<T>(key: string, data: T) {
+function saveDataToStorage<T>(key: string, data: T | T[]) {
   if (typeof window !== 'undefined') {
     localStorage.setItem(key, JSON.stringify(data));
   }
 }
 
-// --- Active Data Arrays & Objects (Loaded from localStorage or initialized) ---
-let students: StudentData[] = loadDataFromStorage<StudentData[]>(STUDENTS_STORAGE_KEY, initialMockStudents);
-let teachers: TeacherData[] = loadDataFromStorage<TeacherData[]>(TEACHERS_STORAGE_KEY, initialMockTeachers);
-let parents: ParentData[] = loadDataFromStorage<ParentData[]>(PARENTS_STORAGE_KEY, initialMockParents);
-let majors: MajorData[] = loadDataFromStorage<MajorData[]>(MAJORS_STORAGE_KEY, initialMockMajors);
-let classes: ClassData[] = loadDataFromStorage<ClassData[]>(CLASSES_STORAGE_KEY, initialMockClasses);
-let schedules: ScheduleItem[] = loadDataFromStorage<ScheduleItem[]>(SCHEDULES_STORAGE_KEY, initialMockSchedules);
-let quizzes: Quiz[] = loadDataFromStorage<Quiz[]>(QUIZZES_STORAGE_KEY, initialMockQuizzes);
-let schoolProfile: SchoolProfileData = loadDataFromStorage<SchoolProfileData>(SCHOOL_PROFILE_STORAGE_KEY, initialMockSchoolProfile, true);
+// --- Active Data (Loaded from localStorage or initialized) ---
+let students: StudentData[] = loadDataFromStorage<StudentData>(STUDENTS_STORAGE_KEY, initialMockStudents) as StudentData[];
+let teachers: TeacherData[] = loadDataFromStorage<TeacherData>(TEACHERS_STORAGE_KEY, initialMockTeachers) as TeacherData[];
+let parents: ParentData[] = loadDataFromStorage<ParentData>(PARENTS_STORAGE_KEY, initialMockParents) as ParentData[];
+let majors: MajorData[] = loadDataFromStorage<MajorData>(MAJORS_STORAGE_KEY, initialMockMajors) as MajorData[];
+let classes: ClassData[] = loadDataFromStorage<ClassData>(CLASSES_STORAGE_KEY, initialMockClasses) as ClassData[];
+let schedules: ScheduleItem[] = loadDataFromStorage<ScheduleItem>(SCHEDULES_STORAGE_KEY, initialMockSchedules) as ScheduleItem[];
+let quizzes: Quiz[] = loadDataFromStorage<Quiz>(QUIZZES_STORAGE_KEY, initialMockQuizzes) as Quiz[];
+let schoolProfile: SchoolProfileData = loadDataFromStorage<SchoolProfileData>(SCHOOL_PROFILE_STORAGE_KEY, [initialMockSchoolProfile], true) as SchoolProfileData;
+
 
 // --- Student Data Functions ---
 export function getStudents(): StudentData[] {
-  // Re-load from storage if array is empty on client, to catch updates from other tabs/sessions (basic)
-  if (typeof window !== 'undefined' && (!students || students.length === 0) && localStorage.getItem(STUDENTS_STORAGE_KEY)) {
-    students = loadDataFromStorage<StudentData[]>(STUDENTS_STORAGE_KEY, initialMockStudents);
+  if (typeof window !== 'undefined') { // Ensure this runs client-side for localStorage
+     students = loadDataFromStorage<StudentData>(STUDENTS_STORAGE_KEY, initialMockStudents) as StudentData[];
   }
   return [...(students || [])];
 }
 
 export function getStudentById(id: string): StudentData | undefined {
-  const currentStudents = getStudents();
-  return currentStudents.find(student => student.ID_Siswa === id);
+  return getStudents().find(student => student.ID_Siswa === id);
 }
 
 export function addStudent(studentData: Omit<StudentData, 'ID_Siswa' | 'Tanggal_Daftar' | 'Profil_Foto'>): StudentData {
+  const currentStudents = getStudents();
   const newStudent: StudentData = {
     ID_Siswa: `siswa${Date.now()}${Math.floor(Math.random() * 100)}`,
     ...studentData,
     Profil_Foto: `https://placehold.co/100x100.png?text=${studentData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
     Tanggal_Daftar: new Date().toISOString().split('T')[0],
   };
-  students = [...getStudents(), newStudent];
+  students = [...currentStudents, newStudent];
   saveDataToStorage(STUDENTS_STORAGE_KEY, students);
   return newStudent;
 }
@@ -342,7 +342,7 @@ export function updateStudent(updatedStudent: StudentData): boolean {
   const index = currentStudents.findIndex(student => student.ID_Siswa === updatedStudent.ID_Siswa);
   if (index !== -1) {
     currentStudents[index] = updatedStudent;
-    students = currentStudents;
+    students = currentStudents; // Update the in-memory array
     saveDataToStorage(STUDENTS_STORAGE_KEY, students);
     return true;
   }
@@ -362,18 +362,18 @@ export function deleteStudentById(studentId: string): boolean {
 
 // --- Teacher Data Functions ---
 export function getTeachers(): TeacherData[] {
-  if (typeof window !== 'undefined' && (!teachers || teachers.length === 0) && localStorage.getItem(TEACHERS_STORAGE_KEY)) {
-     teachers = loadDataFromStorage<TeacherData[]>(TEACHERS_STORAGE_KEY, initialMockTeachers);
+  if (typeof window !== 'undefined') {
+     teachers = loadDataFromStorage<TeacherData>(TEACHERS_STORAGE_KEY, initialMockTeachers) as TeacherData[];
   }
   return [...(teachers || [])];
 }
 
 export function getTeacherById(id: string): TeacherData | undefined {
-  const currentTeachers = getTeachers();
-  return currentTeachers.find(teacher => teacher.ID_Guru === id);
+  return getTeachers().find(teacher => teacher.ID_Guru === id);
 }
 
 export function addTeacher(teacherData: Omit<TeacherData, 'ID_Guru' | 'Tanggal_Pendaftaran' | 'Profil_Foto' | 'isAdmin'>): TeacherData {
+   const currentTeachers = getTeachers();
   const newTeacher: TeacherData = {
     ID_Guru: `guru${Date.now()}${Math.floor(Math.random() * 100)}`,
     ...teacherData,
@@ -381,7 +381,7 @@ export function addTeacher(teacherData: Omit<TeacherData, 'ID_Guru' | 'Tanggal_P
     Profil_Foto: `https://placehold.co/100x100.png?text=${teacherData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
     Tanggal_Pendaftaran: new Date().toISOString().split('T')[0],
   };
-  teachers = [...getTeachers(), newTeacher];
+  teachers = [...currentTeachers, newTeacher];
   saveDataToStorage(TEACHERS_STORAGE_KEY, teachers);
   return newTeacher;
 }
@@ -391,7 +391,7 @@ export function updateTeacher(updatedTeacher: TeacherData): boolean {
   const index = currentTeachers.findIndex(teacher => teacher.ID_Guru === updatedTeacher.ID_Guru);
   if (index !== -1) {
     currentTeachers[index] = updatedTeacher;
-    teachers = currentTeachers;
+    teachers = currentTeachers; // Update the in-memory array
     saveDataToStorage(TEACHERS_STORAGE_KEY, teachers);
     return true;
   }
@@ -438,19 +438,20 @@ export function addAdminUser(newAdminData: Omit<TeacherData, 'ID_Guru' | 'Tangga
 
 // --- Parent Data Functions ---
 export function getParents(): ParentData[] {
-  if (typeof window !== 'undefined' && (!parents || parents.length === 0) && localStorage.getItem(PARENTS_STORAGE_KEY)) {
-     parents = loadDataFromStorage<ParentData[]>(PARENTS_STORAGE_KEY, initialMockParents);
+  if (typeof window !== 'undefined') {
+     parents = loadDataFromStorage<ParentData>(PARENTS_STORAGE_KEY, initialMockParents) as ParentData[];
   }
   return [...(parents || [])];
 }
 
 export function addParent(parentData: Omit<ParentData, 'ID_OrangTua' | 'Profil_Foto'>): ParentData {
+  const currentParents = getParents();
   const newParent: ParentData = {
     ID_OrangTua: `parent${Date.now()}${Math.floor(Math.random() * 100)}`,
     ...parentData,
     Profil_Foto: `https://placehold.co/100x100.png?text=${parentData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
   };
-  parents = [...getParents(), newParent];
+  parents = [...currentParents, newParent];
   saveDataToStorage(PARENTS_STORAGE_KEY, parents);
   return newParent;
 }
@@ -460,7 +461,7 @@ export function updateParent(updatedParent: ParentData): boolean {
   const index = currentParents.findIndex(p => p.ID_OrangTua === updatedParent.ID_OrangTua);
   if (index !== -1) {
     currentParents[index] = updatedParent;
-    parents = currentParents;
+    parents = currentParents; // Update the in-memory array
     saveDataToStorage(PARENTS_STORAGE_KEY, parents);
     return true;
   }
@@ -480,25 +481,25 @@ export function deleteParentById(parentId: string): boolean {
 
 // --- Major Data Functions ---
 export function getMajors(): MajorData[] {
-  if (typeof window !== 'undefined' && (!majors || majors.length === 0) && localStorage.getItem(MAJORS_STORAGE_KEY)) {
-    majors = loadDataFromStorage<MajorData[]>(MAJORS_STORAGE_KEY, initialMockMajors);
+  if (typeof window !== 'undefined') {
+    majors = loadDataFromStorage<MajorData>(MAJORS_STORAGE_KEY, initialMockMajors) as MajorData[];
   }
   return [...(majors || [])];
 }
 
 export function addMajor(newMajorData: Omit<MajorData, 'ID_Jurusan'>): MajorData {
+  const currentMajors = getMajors();
   const newMajor: MajorData = {
     ID_Jurusan: `major${Date.now()}${Math.floor(Math.random() * 100)}`,
     ...newMajorData,
   };
-  majors = [...getMajors(), newMajor];
+  majors = [...currentMajors, newMajor];
   saveDataToStorage(MAJORS_STORAGE_KEY, majors);
   return newMajor;
 }
 
 export function getMajorById(id: string): MajorData | undefined {
-  const currentMajors = getMajors();
-  return currentMajors.find(major => major.ID_Jurusan === id);
+  return getMajors().find(major => major.ID_Jurusan === id);
 }
 
 export function updateMajor(updatedMajor: MajorData): boolean {
@@ -506,7 +507,7 @@ export function updateMajor(updatedMajor: MajorData): boolean {
   const index = currentMajors.findIndex(major => major.ID_Jurusan === updatedMajor.ID_Jurusan);
   if (index !== -1) {
     currentMajors[index] = updatedMajor;
-    majors = currentMajors;
+    majors = currentMajors; // Update the in-memory array
     saveDataToStorage(MAJORS_STORAGE_KEY, majors);
     return true;
   }
@@ -526,15 +527,25 @@ export function deleteMajorById(majorId: string): boolean {
 
 // --- Class Data Functions ---
 export function getClasses(): ClassData[] {
-  if (typeof window !== 'undefined' && (!classes || classes.length === 0) && localStorage.getItem(CLASSES_STORAGE_KEY)) {
-    classes = loadDataFromStorage<ClassData[]>(CLASSES_STORAGE_KEY, initialMockClasses);
+  if (typeof window !== 'undefined') {
+    classes = loadDataFromStorage<ClassData>(CLASSES_STORAGE_KEY, initialMockClasses) as ClassData[];
   }
   return [...(classes || [])];
 }
 
 export function getClassById(id: string): ClassData | undefined {
+  return getClasses().find(kelas => kelas.ID_Kelas === id);
+}
+
+export function addClass(classData: Omit<ClassData, 'ID_Kelas'>): ClassData {
   const currentClasses = getClasses();
-  return currentClasses.find(kelas => kelas.ID_Kelas === id);
+  const newClass: ClassData = {
+    ID_Kelas: `class${Date.now()}${Math.floor(Math.random() * 100)}`,
+    ...classData,
+  };
+  classes = [...currentClasses, newClass];
+  saveDataToStorage(CLASSES_STORAGE_KEY, classes);
+  return newClass;
 }
 
 export function updateClass(updatedClass: ClassData): boolean {
@@ -542,7 +553,18 @@ export function updateClass(updatedClass: ClassData): boolean {
   const index = currentClasses.findIndex(kelas => kelas.ID_Kelas === updatedClass.ID_Kelas);
   if (index !== -1) {
     currentClasses[index] = updatedClass;
-    classes = currentClasses;
+    classes = currentClasses; // Update the in-memory array
+    saveDataToStorage(CLASSES_STORAGE_KEY, classes);
+    return true;
+  }
+  return false;
+}
+
+export function deleteClassById(classId: string): boolean {
+  let currentClasses = getClasses();
+  const initialLength = currentClasses.length;
+  classes = currentClasses.filter(kelas => kelas.ID_Kelas !== classId);
+  if (classes.length < initialLength) {
     saveDataToStorage(CLASSES_STORAGE_KEY, classes);
     return true;
   }
@@ -551,8 +573,8 @@ export function updateClass(updatedClass: ClassData): boolean {
 
 // --- Schedule Data Functions ---
 export function getSchedules(): ScheduleItem[] {
-  if (typeof window !== 'undefined' && (!schedules || schedules.length === 0) && localStorage.getItem(SCHEDULES_STORAGE_KEY)) {
-    schedules = loadDataFromStorage<ScheduleItem[]>(SCHEDULES_STORAGE_KEY, initialMockSchedules);
+  if (typeof window !== 'undefined') {
+    schedules = loadDataFromStorage<ScheduleItem>(SCHEDULES_STORAGE_KEY, initialMockSchedules) as ScheduleItem[];
   }
   const allCls = getClasses();
   const allTchrs = getTeachers();
@@ -568,20 +590,16 @@ export function getSchedules(): ScheduleItem[] {
 }
 
 export function getScheduleById(id: string): ScheduleItem | undefined {
-  const currentSchedules = getSchedules();
-  const sch = currentSchedules.find(schedule => schedule.id === id);
-  // Enrichment for className and teacherName is handled by getSchedules itself
-  return sch;
+  return getSchedules().find(schedule => schedule.id === id);
 }
 
 export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
-  let currentSchedules = loadDataFromStorage<ScheduleItem[]>(SCHEDULES_STORAGE_KEY, initialMockSchedules); // Load fresh from storage
+  let currentSchedules = loadDataFromStorage<ScheduleItem>(SCHEDULES_STORAGE_KEY, initialMockSchedules) as ScheduleItem[];
   const index = currentSchedules.findIndex(schedule => schedule.id === updatedSchedule.id);
   if (index !== -1) {
-    // Remove enrichment before saving
     const { className, teacherName, ...dataToSave } = updatedSchedule;
     currentSchedules[index] = dataToSave;
-    schedules = currentSchedules;
+    schedules = currentSchedules; // Update the in-memory array
     saveDataToStorage(SCHEDULES_STORAGE_KEY, schedules);
     return true;
   }
@@ -589,14 +607,14 @@ export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
 }
 
 export function addSchedule(newScheduleData: Omit<ScheduleItem, 'id' | 'className' | 'teacherName'>): ScheduleItem {
+  let currentSchedules = loadDataFromStorage<ScheduleItem>(SCHEDULES_STORAGE_KEY, initialMockSchedules) as ScheduleItem[];
   const newScheduleBase: Omit<ScheduleItem, 'className' | 'teacherName'> = {
     id: `schedule${Date.now()}${Math.floor(Math.random() * 100)}`,
     ...newScheduleData,
   };
-  schedules = [...loadDataFromStorage<ScheduleItem[]>(SCHEDULES_STORAGE_KEY, initialMockSchedules), newScheduleBase];
+  schedules = [...currentSchedules, newScheduleBase];
   saveDataToStorage(SCHEDULES_STORAGE_KEY, schedules);
   
-  // Return enriched schedule
   const allCls = getClasses();
   const allTchrs = getTeachers();
   const classInfo = newScheduleBase.classId ? allCls.find(c => c.ID_Kelas === newScheduleBase.classId) : null;
@@ -608,30 +626,41 @@ export function addSchedule(newScheduleData: Omit<ScheduleItem, 'id' | 'classNam
   };
 }
 
+export function deleteScheduleById(scheduleId: string): boolean {
+  let currentSchedules = loadDataFromStorage<ScheduleItem>(SCHEDULES_STORAGE_KEY, initialMockSchedules) as ScheduleItem[];
+  const initialLength = currentSchedules.length;
+  schedules = currentSchedules.filter(schedule => schedule.id !== scheduleId);
+  if (schedules.length < initialLength) {
+    saveDataToStorage(SCHEDULES_STORAGE_KEY, schedules);
+    return true;
+  }
+  return false;
+}
+
+
 // --- Quiz Data Functions ---
 export function getQuizzes(): Quiz[] {
-  if (typeof window !== 'undefined' && (!quizzes || quizzes.length === 0) && localStorage.getItem(QUIZZES_STORAGE_KEY)) {
-    quizzes = loadDataFromStorage<Quiz[]>(QUIZZES_STORAGE_KEY, initialMockQuizzes);
+  if (typeof window !== 'undefined') {
+    quizzes = loadDataFromStorage<Quiz>(QUIZZES_STORAGE_KEY, initialMockQuizzes) as Quiz[];
   }
   return [...(quizzes || [])];
 }
 
 export function getQuizById(id: string): Quiz | undefined {
-  const currentQuizzes = getQuizzes();
-  return currentQuizzes.find(quiz => quiz.id === id);
+  return getQuizzes().find(quiz => quiz.id === id);
 }
 
 export function getQuizzesByTeacherId(teacherId: string): Quiz[] {
-  const currentQuizzes = getQuizzes();
-  return currentQuizzes.filter(quiz => quiz.teacherId === teacherId);
+  return getQuizzes().filter(quiz => quiz.teacherId === teacherId);
 }
 
 export function addQuiz(quizData: Omit<Quiz, 'id'> & { teacherId: string }): Quiz {
+  const currentQuizzes = getQuizzes();
   const newQuiz: Quiz = {
     id: `quiz${Date.now()}${Math.floor(Math.random() * 100)}`,
     ...quizData,
   };
-  quizzes = [...getQuizzes(), newQuiz];
+  quizzes = [...currentQuizzes, newQuiz];
   saveDataToStorage(QUIZZES_STORAGE_KEY, quizzes);
   return newQuiz;
 }
@@ -648,19 +677,31 @@ export function updateQuiz(updatedQuiz: Quiz): boolean {
         id: q.id || `q_updated_${Date.now()}${Math.random().toString(36).substring(2,7)}`,
       })),
     };
-    quizzes = currentQuizzes;
+    quizzes = currentQuizzes; // Update the in-memory array
     saveDataToStorage(QUIZZES_STORAGE_KEY, quizzes);
     return true;
   }
   return false;
 }
 
+export function deleteQuizById(quizId: string): boolean {
+  let currentQuizzes = getQuizzes();
+  const initialLength = currentQuizzes.length;
+  quizzes = currentQuizzes.filter(quiz => quiz.id !== quizId);
+  if (quizzes.length < initialLength) {
+    saveDataToStorage(QUIZZES_STORAGE_KEY, quizzes);
+    return true;
+  }
+  return false;
+}
+
+
 // --- School Profile Functions ---
 export function getSchoolProfile(): SchoolProfileData {
-  if (typeof window !== 'undefined' && (!schoolProfile || Object.keys(schoolProfile).length === 0) && localStorage.getItem(SCHOOL_PROFILE_STORAGE_KEY)) {
-    schoolProfile = loadDataFromStorage<SchoolProfileData>(SCHOOL_PROFILE_STORAGE_KEY, initialMockSchoolProfile, true);
+  if (typeof window !== 'undefined') {
+    schoolProfile = loadDataFromStorage<SchoolProfileData>(SCHOOL_PROFILE_STORAGE_KEY, [initialMockSchoolProfile], true) as SchoolProfileData;
   }
-  return schoolProfile || initialMockSchoolProfile; // Fallback if still null
+  return schoolProfile || initialMockSchoolProfile;
 }
 
 export function updateSchoolProfile(updatedProfile: SchoolProfileData): SchoolProfileData {
@@ -775,5 +816,3 @@ export const lessonStatusChartConfig: ChartConfig = {
   Dikerjakan: { label: 'Dikerjakan', color: 'hsl(var(--chart-2))' },
   'Belum Dimulai': { label: 'Belum Dimulai', color: 'hsl(var(--chart-3))' },
 } satisfies ChartConfig;
-
-    

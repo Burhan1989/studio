@@ -9,17 +9,30 @@ import { useToast } from "@/hooks/use-toast";
 import { FileQuestion, PlusCircle, Edit, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useAuth } from "@/contexts/AuthContext";
-import { getQuizzesByTeacherId, getQuizzes, getClasses } from "@/lib/mockData"; 
+import { getQuizzesByTeacherId, getQuizzes, getClasses, deleteQuizById } from "@/lib/mockData"; 
 import type { Quiz, ClassData } from "@/lib/types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+
 
 export default function TeacherQuizzesPage() {
   const { toast } = useToast();
   const { user } = useAuth();
   const [teacherQuizzes, setTeacherQuizzes] = useState<Quiz[]>([]);
   const [classesMap, setClassesMap] = useState<Record<string, string>>({});
+  const [quizToDelete, setQuizToDelete] = useState<Quiz | null>(null);
 
-  useEffect(() => {
-    const classData = getClasses(); // Use getter function
+  const fetchQuizzesAndClasses = () => {
+    const classData = getClasses(); 
     const classIdToNameMap: Record<string, string> = {};
     classData.forEach(cls => {
       classIdToNameMap[cls.ID_Kelas] = `${cls.Nama_Kelas} (${cls.jurusan})`;
@@ -30,18 +43,34 @@ export default function TeacherQuizzesPage() {
       const quizzes = getQuizzesByTeacherId(user.id); 
       setTeacherQuizzes(quizzes);
     } else {
-      // Fallback for non-teacher users or when user is not yet loaded (though ideally this page is protected)
-      // Displaying first 2 mock quizzes as a generic placeholder if needed.
       setTeacherQuizzes(getQuizzes().slice(0,2)); 
     }
-  }, [user]); // Re-run when user object changes
-
-  const handleActionPlaceholder = (action: string, itemName: string) => {
-    toast({
-      title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas "${action} untuk ${itemName}" akan segera hadir.`,
-    });
   };
+
+  useEffect(() => {
+    fetchQuizzesAndClasses();
+  }, [user]); 
+
+  const handleDeleteQuiz = () => {
+    if (quizToDelete) {
+      const success = deleteQuizById(quizToDelete.id);
+      if (success) {
+        toast({
+          title: "Kuis Dihapus",
+          description: `Kuis "${quizToDelete.title}" telah berhasil dihapus.`,
+        });
+        fetchQuizzesAndClasses(); // Refresh the list
+      } else {
+        toast({
+          title: "Gagal Menghapus",
+          description: `Kuis "${quizToDelete.title}" tidak ditemukan atau gagal dihapus.`,
+          variant: "destructive",
+        });
+      }
+      setQuizToDelete(null);
+    }
+  };
+
 
   const getTotalPoints = (questions: Quiz['questions']): number => {
     return questions.reduce((total, q) => total + (q.points || 0), 0);
@@ -103,13 +132,25 @@ export default function TeacherQuizzesPage() {
                         <Edit className="w-4 h-4" />
                       </Link>
                     </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={() => handleActionPlaceholder("Hapus", quiz.title)}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" onClick={() => setQuizToDelete(quiz)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Apakah Anda yakin ingin menghapus kuis "{quizToDelete?.title}"? Tindakan ini tidak dapat diurungkan.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel onClick={() => setQuizToDelete(null)}>Batal</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteQuiz}>Hapus</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}
