@@ -21,7 +21,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger, 
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { format, parseISO } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
@@ -48,7 +48,7 @@ export default function AdminStudentsPage() {
           title: "Siswa Dihapus",
           description: `Siswa "${studentToDelete.Nama_Lengkap}" telah berhasil dihapus.`,
         });
-        fetchStudents(); 
+        fetchStudents();
       } else {
         toast({
           title: "Gagal Menghapus",
@@ -56,15 +56,8 @@ export default function AdminStudentsPage() {
           variant: "destructive",
         });
       }
-      setStudentToDelete(null); 
+      setStudentToDelete(null);
     }
-  };
-
-  const handleActionPlaceholder = (action: string, item: string) => {
-    toast({
-      title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas "${action} ${item}" akan segera hadir.`,
-    });
   };
 
   const handleResetPassword = (student: StudentData) => {
@@ -93,9 +86,9 @@ export default function AdminStudentsPage() {
     }
 
     const header = [
-      "ID_Siswa", "NISN", "Nomor_Induk", "Username", "Nama_Lengkap", 
-      "Nama_Panggilan", "Jenis_Kelamin", "Tanggal_Lahir", "Alamat", 
-      "Email", "Nomor_Telepon", "Program_Studi", "Kelas", 
+      "ID_Siswa", "NISN", "Nomor_Induk", "Username", "Nama_Lengkap",
+      "Nama_Panggilan", "Jenis_Kelamin", "Tanggal_Lahir", "Alamat",
+      "Email", "Nomor_Telepon", "Program_Studi", "Kelas",
       "Tanggal_Daftar", "Status_Aktif", "Profil_Foto_URL"
     ].join("\t") + "\n";
 
@@ -116,9 +109,11 @@ export default function AdminStudentsPage() {
         student.Tanggal_Daftar ? format(parseISO(student.Tanggal_Daftar), 'yyyy-MM-dd', { locale: LocaleID }) : '',
         String(student.Status_Aktif),
         student.Profil_Foto || ''
-      ].join("\t") 
+      ].map(field => String(field).replace(/\t|\n|\r/g, ' ')) // Ensure fields are strings and replace tabs/newlines
+       .join("\t")
     ).join("\n");
-    const tsvString = header + tsvRows;
+
+    const tsvString = "\uFEFF" + header + tsvRows; // Add BOM
 
     const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
@@ -173,12 +168,12 @@ export default function AdminStudentsPage() {
 
   return (
     <div className="space-y-8">
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        style={{ display: 'none' }} 
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
         onChange={handleFileSelected}
-        accept=".xlsx,.xls,.tsv,.csv" 
+        accept=".xlsx,.xls,.tsv,.csv"
       />
        <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Siswa</h1>
@@ -215,7 +210,7 @@ export default function AdminStudentsPage() {
               <Button onClick={handleMassPasswordGenerate} variant="outline">
                 <RefreshCw className="w-4 h-4 mr-2" /> Generate Password Massal (Tgl. Lahir)
               </Button>
-              <Button onClick={() => handleActionPlaceholder("Tambah", "Siswa Baru (Form belum dibuat)")}>
+              <Button onClick={() => toast({title: "Fitur Dalam Pengembangan", description:"Form tambah siswa baru akan segera hadir."})}>
                 <UserPlus className="w-4 h-4 mr-2" /> Tambah Siswa Baru
               </Button>
             </div>

@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRef, type ChangeEvent } from "react";
-import { getSchedules } from "@/lib/mockData"; 
+import { getSchedules } from "@/lib/mockData";
 import { format, parseISO } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
 
@@ -45,7 +45,7 @@ export default function AdminCoursesPage() {
       title: "Memulai Ekspor Jadwal Pelajaran",
       description: "Sedang mempersiapkan file Excel (TSV)...",
     });
-    const dataToExport = getSchedules(); 
+    const dataToExport = getSchedules();
     if (dataToExport.length === 0) {
       toast({
         title: "Ekspor Dibatalkan",
@@ -69,9 +69,10 @@ export default function AdminCoursesPage() {
         schedule.quizId || '',
         schedule.description || '',
         schedule.category
-      ].join("\t")
+      ].map(field => String(field).replace(/\t|\n|\r/g, ' ')) // Ensure fields are strings and replace tabs/newlines
+       .join("\t")
     ).join("\n");
-    const tsvString = header + tsvRows;
+    const tsvString = "\uFEFF" + header + tsvRows; // Add BOM
 
     const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
@@ -122,10 +123,10 @@ export default function AdminCoursesPage() {
 
   return (
     <div className="space-y-8">
-       <input 
-        type="file" 
-        ref={fileInputRef} 
-        style={{ display: 'none' }} 
+       <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
         onChange={handleFileSelectedJadwal}
         accept=".xlsx,.xls,.tsv,.csv"
       />
@@ -216,7 +217,7 @@ export default function AdminCoursesPage() {
                 <FileUp className="w-6 h-6 text-primary" /> Pengelolaan Materi untuk Pelajaran (Contoh)
             </CardTitle>
             <CardDescription>
-                Ini adalah placeholder UI untuk menunjukkan bagaimana materi pelajaran dapat dikelola. 
+                Ini adalah placeholder UI untuk menunjukkan bagaimana materi pelajaran dapat dikelola.
                 Pilih pelajaran dari tabel di atas untuk "mengedit" materinya di sini (simulasi).
             </CardDescription>
         </CardHeader>

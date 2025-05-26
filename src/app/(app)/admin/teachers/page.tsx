@@ -48,7 +48,7 @@ export default function AdminTeachersPage() {
           title: "Guru Dihapus",
           description: `Guru "${teacherToDelete.Nama_Lengkap}" telah berhasil dihapus.`,
         });
-        fetchTeachers(); 
+        fetchTeachers();
       } else {
         toast({
           title: "Gagal Menghapus",
@@ -56,7 +56,7 @@ export default function AdminTeachersPage() {
           variant: "destructive",
         });
       }
-      setTeacherToDelete(null); 
+      setTeacherToDelete(null);
     }
   };
 
@@ -75,7 +75,7 @@ export default function AdminTeachersPage() {
       title: "Memulai Ekspor Data Guru",
       description: "Sedang mempersiapkan file Excel (TSV)...",
     });
-    
+
     const dataToExport = getTeachers();
     if (dataToExport.length === 0) {
       toast({
@@ -85,7 +85,7 @@ export default function AdminTeachersPage() {
       });
       return;
     }
-    
+
     const header = "ID_Guru\tNama_Lengkap\tUsername\tEmail\tJenis_Kelamin\tTanggal_Lahir\tAlamat\tNomor_Telepon\tMata_Pelajaran\tKelas_Ajar\tJabatan\tStatus_Aktif\tTanggal_Pendaftaran\tisAdmin\n";
     const tsvRows = dataToExport.map(teacher => {
       const kelasAjarTsv = Array.isArray(teacher.Kelas_Ajar) ? teacher.Kelas_Ajar.join('; ') : teacher.Kelas_Ajar;
@@ -95,18 +95,19 @@ export default function AdminTeachersPage() {
         teacher.Username,
         teacher.Email,
         teacher.Jenis_Kelamin,
-        teacher.Tanggal_Lahir ? format(parseISO(teacher.Tanggal_Lahir), 'yyyy-MM-dd') : '',
+        teacher.Tanggal_Lahir ? format(parseISO(teacher.Tanggal_Lahir), 'yyyy-MM-dd', { locale: LocaleID }) : '',
         teacher.Alamat || '',
         teacher.Nomor_Telepon || '',
         teacher.Mata_Pelajaran,
         kelasAjarTsv,
         teacher.Jabatan || '',
-        teacher.Status_Aktif,
-        teacher.Tanggal_Pendaftaran ? format(parseISO(teacher.Tanggal_Pendaftaran), 'yyyy-MM-dd') : '',
-        teacher.isAdmin || false
-      ].join("\t");
+        String(teacher.Status_Aktif),
+        teacher.Tanggal_Pendaftaran ? format(parseISO(teacher.Tanggal_Pendaftaran), 'yyyy-MM-dd', { locale: LocaleID }) : '',
+        String(teacher.isAdmin || false)
+      ].map(field => String(field).replace(/\t|\n|\r/g, ' ')) // Ensure fields are strings and replace tabs/newlines
+       .join("\t");
     }).join("\n");
-    const tsvString = header + tsvRows;
+    const tsvString = "\uFEFF" + header + tsvRows; // Add BOM
 
     const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
@@ -159,12 +160,12 @@ export default function AdminTeachersPage() {
 
   return (
     <div className="space-y-8">
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        style={{ display: 'none' }} 
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
         onChange={handleFileSelected}
-        accept=".xlsx,.xls,.tsv,.csv" 
+        accept=".xlsx,.xls,.tsv,.csv"
       />
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Guru</h1>

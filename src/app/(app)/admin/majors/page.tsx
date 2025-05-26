@@ -42,7 +42,7 @@ export default function AdminMajorsPage() {
 
   const refreshMajors = () => {
     setMajors(getMajors());
-    router.refresh(); 
+    router.refresh();
   };
 
   const handleAddMajor = (e: FormEvent<HTMLFormElement>) => {
@@ -75,7 +75,7 @@ export default function AdminMajorsPage() {
       }
     }
   };
-  
+
   const handleExportData = () => {
     toast({
       title: "Memulai Ekspor Data Jurusan",
@@ -97,9 +97,10 @@ export default function AdminMajorsPage() {
         major.Nama_Jurusan,
         major.Deskripsi_Jurusan || '',
         major.Nama_Kepala_Program || ''
-      ].join("\t")
+      ].map(field => String(field).replace(/\t|\n|\r/g, ' ')) // Ensure fields are strings and replace tabs/newlines
+       .join("\t")
     ).join("\n");
-    const tsvString = header + tsvRows;
+    const tsvString = "\uFEFF" + header + tsvRows; // Add BOM
 
     const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
@@ -143,10 +144,10 @@ export default function AdminMajorsPage() {
 
   return (
     <div className="space-y-8">
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        style={{ display: 'none' }} 
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
         onChange={handleFileSelected}
         accept=".xlsx,.xls,.tsv,.csv"
       />

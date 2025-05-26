@@ -21,17 +21,17 @@ export default function AdminParentsPage() {
     setParentsList(getParents());
   }, []);
 
-  const handleActionPlaceholder = (action: string, item: string) => {
-    toast({
-      title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas "${action} ${item}" akan segera hadir.`,
-    });
-  };
-
   const handleEditAction = (itemName: string) => {
     toast({
       title: `Edit ${itemName}`,
       description: `Membuka form edit untuk ${itemName}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
+    });
+  };
+
+    const handleActionPlaceholder = (action: string, item: string) => {
+    toast({
+      title: "Fitur Dalam Pengembangan",
+      description: `Fungsionalitas "${action} untuk ${item}" akan segera hadir.`,
     });
   };
 
@@ -58,11 +58,12 @@ export default function AdminParentsPage() {
         parent.Username,
         parent.Email,
         parent.Nomor_Telepon || '',
-        parent.Status_Aktif,
+        String(parent.Status_Aktif),
         anakTerkaitTsv
-      ].join("\t");
+      ].map(field => String(field).replace(/\t|\n|\r/g, ' ')) // Ensure fields are strings and replace tabs/newlines
+       .join("\t");
     }).join("\n");
-    const tsvString = header + tsvRows;
+    const tsvString = "\uFEFF" + header + tsvRows; // Add BOM
 
     const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
@@ -106,10 +107,10 @@ export default function AdminParentsPage() {
 
   return (
     <div className="space-y-8">
-      <input 
-        type="file" 
-        ref={fileInputRef} 
-        style={{ display: 'none' }} 
+      <input
+        type="file"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
         onChange={handleFileSelected}
         accept=".xlsx,.xls,.tsv,.csv"
       />
