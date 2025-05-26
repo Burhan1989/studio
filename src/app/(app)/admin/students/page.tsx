@@ -28,11 +28,8 @@ import { id as LocaleID } from 'date-fns/locale';
 
 function escapeCsvField(field: any): string {
   const fieldStr = String(field === null || field === undefined ? '' : field);
-  if (fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n') || fieldStr.includes('\r')) {
-    const escapedStr = fieldStr.replace(/"/g, '""');
-    return `"${escapedStr}"`;
-  }
-  return fieldStr;
+  // Selalu apit dengan tanda kutip ganda, dan gandakan tanda kutip ganda internal
+  return `"${fieldStr.replace(/"/g, '""')}"`;
 }
 
 export default function AdminStudentsPage() {
@@ -82,7 +79,7 @@ export default function AdminStudentsPage() {
   const handleExportData = () => {
     toast({
       title: "Memulai Ekspor Data Siswa",
-      description: "Sedang mempersiapkan file Excel (format CSV)...",
+      description: "Sedang mempersiapkan file CSV (dipisahkan titik koma)...",
     });
     const dataToExport = getStudents();
     if (dataToExport.length === 0) {
@@ -99,7 +96,9 @@ export default function AdminStudentsPage() {
       "Nama_Panggilan", "Jenis_Kelamin", "Tanggal_Lahir", "Alamat",
       "Email", "Nomor_Telepon", "Program_Studi", "Kelas",
       "Tanggal_Daftar", "Status_Aktif", "Profil_Foto_URL"
-    ].map(escapeCsvField).join(",") + "\n";
+    ];
+
+    const csvHeaderString = header.map(escapeCsvField).join(";") + "\r\n";
 
     const csvRows = dataToExport.map(student => [
         student.ID_Siswa,
@@ -116,18 +115,18 @@ export default function AdminStudentsPage() {
         student.Program_Studi,
         student.Kelas,
         student.Tanggal_Daftar ? format(parseISO(student.Tanggal_Daftar), 'yyyy-MM-dd', { locale: LocaleID }) : '',
-        String(student.Status_Aktif),
+        student.Status_Aktif ? "Aktif" : "Tidak Aktif",
         student.Profil_Foto || ''
-      ].map(escapeCsvField).join(",")
-    ).join("\n");
+      ].map(escapeCsvField).join(";")
+    ).join("\r\n");
 
-    const csvString = "\uFEFF" + header + csvRows; // Add BOM
+    const csvString = "\uFEFF" + csvHeaderString + csvRows; // Add BOM
 
-    const blob = new Blob([csvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
+    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", "data_siswa.xlsx");
+    link.setAttribute("download", "data_siswa.csv");
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -135,8 +134,8 @@ export default function AdminStudentsPage() {
     URL.revokeObjectURL(url);
 
     toast({
-      title: "Ekspor Berhasil",
-      description: "Data siswa telah berhasil diekspor sebagai data_siswa.xlsx (format CSV).",
+      title: "Ekspor Berhasil (CSV)",
+      description: "Data siswa telah berhasil diekspor sebagai data_siswa.csv.",
     });
   };
 
@@ -191,9 +190,9 @@ export default function AdminStudentsPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <Users className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Data Siswa (Excel/CSV)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Data Siswa (CSV)</CardTitle>
           </div>
-          <CardDescription>Impor dan ekspor data siswa menggunakan file Excel atau format CSV.</CardDescription>
+          <CardDescription>Impor dan ekspor data siswa menggunakan file CSV (dipisahkan titik koma untuk kompatibilitas Excel).</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -201,10 +200,10 @@ export default function AdminStudentsPage() {
               <Upload className="w-4 h-4 mr-2" /> Import Siswa
             </Button>
             <Button onClick={handleExportData} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Export Siswa (Excel - Format CSV)
+              <Download className="w-4 h-4 mr-2" /> Export Siswa (CSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data CSV.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .csv yang dipisahkan titik koma.</p>
         </CardContent>
       </Card>
 
