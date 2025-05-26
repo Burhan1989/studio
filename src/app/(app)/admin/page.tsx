@@ -264,7 +264,7 @@ export default function AdminPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-            <CardTitle>Ringkasan Cepat & Alat Admin</CardTitle>
+            <CardTitle>Ringkasan Cepat &amp; Alat Admin</CardTitle>
             <CardDescription>Akses cepat ke berbagai modul manajemen.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
@@ -303,7 +303,7 @@ export default function AdminPage() {
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button variant="outline" className="w-full justify-between">
-                        Alat & Laporan <ChevronDown className="w-4 h-4 ml-2" />
+                        Alat &amp; Laporan <ChevronDown className="w-4 h-4 ml-2" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
@@ -320,3 +320,4 @@ export default function AdminPage() {
     </div>
   );
 }
+
