@@ -24,11 +24,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { format, parseISO } from 'date-fns';
-import { id as LocaleID } from 'date-fns/locale';
+// Locale ID sengaja tidak digunakan untuk format tanggal di CSV agar lebih standar
+// import { id as LocaleID } from 'date-fns/locale'; 
 
+// Fungsi untuk escaping field CSV yang benar
 function escapeCsvField(field: any): string {
   const fieldStr = String(field === null || field === undefined ? '' : field);
-  if (fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n') || fieldStr.includes('\r')) {
+  // Jika field mengandung koma, tanda kutip ganda, atau newline, bungkus dengan tanda kutip ganda
+  if (/[,"\r\n]/.test(fieldStr)) {
+    // Ganti setiap tanda kutip ganda internal dengan dua tanda kutip ganda
     const escapedStr = fieldStr.replace(/"/g, '""');
     return `"${escapedStr}"`;
   }
@@ -100,36 +104,40 @@ export default function AdminTeachersPage() {
       "ID_Guru", "Nama_Lengkap", "Username", "Email", "Jenis_Kelamin",
       "Tanggal_Lahir", "Alamat", "Nomor_Telepon", "Mata_Pelajaran",
       "Kelas_Ajar", "Jabatan", "Status_Aktif", "Tanggal_Pendaftaran", "isAdmin", "Profil_Foto"
-    ].map(escapeCsvField).join(",") + "\n";
+    ];
+
+    const csvHeaderString = header.map(escapeCsvField).join(",") + "\n";
 
     const csvRows = dataToExport.map(teacher => {
-      const kelasAjarCsv = Array.isArray(teacher.Kelas_Ajar) ? teacher.Kelas_Ajar.join('; ') : teacher.Kelas_Ajar;
+      const kelasAjarArray = Array.isArray(teacher.Kelas_Ajar) ? teacher.Kelas_Ajar : (teacher.Kelas_Ajar ? [teacher.Kelas_Ajar] : []);
+      const kelasAjarCsv = kelasAjarArray.join('; '); // Gabung kelas ajar dengan titik koma
+
       return [
         teacher.ID_Guru,
         teacher.Nama_Lengkap,
         teacher.Username,
         teacher.Email,
         teacher.Jenis_Kelamin,
-        teacher.Tanggal_Lahir ? format(parseISO(teacher.Tanggal_Lahir), 'yyyy-MM-dd', { locale: LocaleID }) : '',
+        teacher.Tanggal_Lahir ? format(parseISO(teacher.Tanggal_Lahir), 'yyyy-MM-dd') : '', // Format tanggal standar
         teacher.Alamat || '',
         teacher.Nomor_Telepon || '',
         teacher.Mata_Pelajaran,
-        kelasAjarCsv,
+        kelasAjarCsv, // String yang sudah digabung
         teacher.Jabatan || '',
         String(teacher.Status_Aktif),
-        teacher.Tanggal_Pendaftaran ? format(parseISO(teacher.Tanggal_Pendaftaran), 'yyyy-MM-dd', { locale: LocaleID }) : '',
+        teacher.Tanggal_Pendaftaran ? format(parseISO(teacher.Tanggal_Pendaftaran), 'yyyy-MM-dd') : '', // Format tanggal standar
         String(teacher.isAdmin || false),
         teacher.Profil_Foto || ''
-      ].map(escapeCsvField).join(",");
+      ].map(escapeCsvField).join(","); // Escape setiap field dan gabung dengan koma
     }).join("\n");
 
-    const csvString = "\uFEFF" + header + csvRows; // Add BOM
+    const csvString = "\uFEFF" + csvHeaderString + csvRows; // Tambahkan BOM untuk UTF-8
 
     const blob = new Blob([csvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
-    link.setAttribute("download", "data_guru.xlsx");
+    link.setAttribute("download", "data_guru.xlsx"); // Ekstensi .xlsx
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -181,7 +189,7 @@ export default function AdminTeachersPage() {
         ref={fileInputRef}
         style={{ display: 'none' }}
         onChange={handleFileSelected}
-        accept=".csv,.xlsx,.xls"
+        accept=".csv,.xlsx,.xls" // Tetap terima xlsx untuk UI
       />
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Kelola Data Guru</h1>
@@ -204,7 +212,7 @@ export default function AdminTeachersPage() {
               <Download className="w-4 h-4 mr-2" /> Export Guru (Excel - Format CSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data CSV.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data CSV yang diformat dengan benar.</p>
         </CardContent>
       </Card>
 
@@ -305,5 +313,4 @@ export default function AdminTeachersPage() {
     </div>
   );
 }
-
     
