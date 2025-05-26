@@ -94,13 +94,6 @@ export default function AdminPage() {
     parent: "Orang Tua",
   };
 
-  const handleEditClassAction = (itemName: string) => {
-    toast({
-      title: `Edit ${itemName}`,
-      description: `Membuka form edit untuk ${itemName}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
-    });
-  };
-
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-4 p-6 mb-8 rounded-lg shadow bg-gradient-to-r from-primary to-blue-400 text-primary-foreground">
