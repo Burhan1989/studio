@@ -25,9 +25,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
 
-function escapeTsvField(field: any): string {
+function escapeCsvField(field: any): string {
   const fieldStr = String(field === null || field === undefined ? '' : field);
-  return fieldStr.replace(/\t/g, ' ').replace(/\n/g, ' ').replace(/\r/g, ' ');
+  if (fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n') || fieldStr.includes('\r')) {
+    const escapedStr = fieldStr.replace(/"/g, '""');
+    return `"${escapedStr}"`;
+  }
+  return fieldStr;
 }
 
 export default function AdminMajorsPage() {
@@ -47,7 +51,7 @@ export default function AdminMajorsPage() {
 
   const refreshMajors = () => {
     setMajors(getMajors());
-    router.refresh();
+    // router.refresh(); // router.refresh() bisa menyebabkan reload penuh, mungkin tidak diperlukan jika state dikelola dengan baik
   };
 
   const handleAddMajor = (e: FormEvent<HTMLFormElement>) => {
@@ -84,7 +88,7 @@ export default function AdminMajorsPage() {
   const handleExportData = () => {
     toast({
       title: "Memulai Ekspor Data Jurusan",
-      description: "Sedang mempersiapkan file Excel (format TSV)...",
+      description: "Sedang mempersiapkan file Excel (format CSV)...",
     });
     const dataToExport = getMajors();
     if (dataToExport.length === 0) {
@@ -97,20 +101,20 @@ export default function AdminMajorsPage() {
     }
     const header = [
         "ID_Jurusan", "Nama_Jurusan", "Deskripsi_Jurusan", "Nama_Kepala_Program"
-    ].map(escapeTsvField).join("\t") + "\n";
+    ].map(escapeCsvField).join(",") + "\n";
 
-    const tsvRows = dataToExport.map(major =>
+    const csvRows = dataToExport.map(major =>
       [
         major.ID_Jurusan,
         major.Nama_Jurusan,
         major.Deskripsi_Jurusan || '',
         major.Nama_Kepala_Program || ''
-      ].map(escapeTsvField).join("\t")
+      ].map(escapeCsvField).join(",")
     ).join("\n");
 
-    const tsvString = "\uFEFF" + header + tsvRows; // Add BOM
+    const csvString = "\uFEFF" + header + csvRows; // Add BOM
 
-    const blob = new Blob([tsvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
+    const blob = new Blob([csvString], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
@@ -123,7 +127,7 @@ export default function AdminMajorsPage() {
 
     toast({
       title: "Ekspor Berhasil",
-      description: "Data jurusan telah berhasil diekspor sebagai data_jurusan.xlsx (format TSV).",
+      description: "Data jurusan telah berhasil diekspor sebagai data_jurusan.xlsx (format CSV).",
     });
   };
 
@@ -157,7 +161,7 @@ export default function AdminMajorsPage() {
         ref={fileInputRef}
         style={{ display: 'none' }}
         onChange={handleFileSelected}
-        accept=".xlsx,.xls,.tsv,.csv"
+        accept=".csv,.xlsx,.xls"
       />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -170,9 +174,9 @@ export default function AdminMajorsPage() {
         <CardHeader>
           <div className="flex items-center gap-3 mb-2">
             <Network className="w-8 h-8 text-primary" />
-            <CardTitle className="text-xl">Manajemen Data Jurusan (Excel/TSV)</CardTitle>
+            <CardTitle className="text-xl">Manajemen Data Jurusan (Excel/CSV)</CardTitle>
           </div>
-          <CardDescription>Impor dan ekspor data jurusan menggunakan file Excel atau format TSV.</CardDescription>
+          <CardDescription>Impor dan ekspor data jurusan menggunakan file Excel atau format CSV.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -180,10 +184,10 @@ export default function AdminMajorsPage() {
               <Upload className="w-4 h-4 mr-2" /> Impor Data Jurusan
             </Button>
             <Button onClick={handleExportData} variant="outline" className="flex-1">
-              <Download className="w-4 h-4 mr-2" /> Ekspor Data Jurusan (Excel - Format TSV)
+              <Download className="w-4 h-4 mr-2" /> Ekspor Data Jurusan (Excel - Format CSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data TSV.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .xlsx dengan data CSV.</p>
         </CardContent>
       </Card>
 
