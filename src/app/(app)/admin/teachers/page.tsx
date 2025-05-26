@@ -80,7 +80,7 @@ export default function AdminTeachersPage() {
   const handleExportData = () => {
     toast({
       title: "Memulai Ekspor Data Guru",
-      description: "Sedang mempersiapkan file CSV...",
+      description: "Sedang mempersiapkan file CSV (dipisahkan titik koma)...",
     });
 
     const dataToExport = getTeachers();
@@ -99,11 +99,11 @@ export default function AdminTeachersPage() {
       "Kelas_Ajar", "Jabatan", "Status_Aktif", "Tanggal_Pendaftaran", "isAdmin", "Profil_Foto"
     ];
 
-    const csvHeaderString = header.map(escapeCsvField).join(",") + "\r\n";
+    const csvHeaderString = header.map(escapeCsvField).join(";") + "\r\n"; // Menggunakan titik koma
 
     const csvRows = dataToExport.map(teacher => {
       const kelasAjarArray = Array.isArray(teacher.Kelas_Ajar) ? teacher.Kelas_Ajar : (teacher.Kelas_Ajar ? [teacher.Kelas_Ajar] : []);
-      const kelasAjarCsv = kelasAjarArray.join('; '); 
+      const kelasAjarCsv = kelasAjarArray.join('; '); // Jika ada array di dalam data, ini juga perlu di-handle
 
       return [
         teacher.ID_Guru,
@@ -115,13 +115,13 @@ export default function AdminTeachersPage() {
         teacher.Alamat || '',
         teacher.Nomor_Telepon || '',
         teacher.Mata_Pelajaran,
-        kelasAjarCsv,
+        kelasAjarCsv, // Ini sudah menjadi string
         teacher.Jabatan || '',
         String(teacher.Status_Aktif), 
         teacher.Tanggal_Pendaftaran ? format(parseISO(teacher.Tanggal_Pendaftaran), 'yyyy-MM-dd') : '',
         String(teacher.isAdmin || false),
         teacher.Profil_Foto || ''
-      ].map(escapeCsvField).join(","); 
+      ].map(escapeCsvField).join(";"); // Menggunakan titik koma
     }).join("\r\n"); 
 
     const csvString = "\uFEFF" + csvHeaderString + csvRows; // Add BOM
@@ -139,7 +139,7 @@ export default function AdminTeachersPage() {
 
     toast({
       title: "Ekspor Berhasil (CSV)",
-      description: "Data guru telah berhasil diekspor sebagai data_guru.csv.",
+      description: "Data guru telah berhasil diekspor sebagai data_guru.csv. Coba buka dengan Excel.",
     });
   };
 
@@ -194,7 +194,7 @@ export default function AdminTeachersPage() {
             <UserCog className="w-8 h-8 text-primary" />
             <CardTitle className="text-xl">Manajemen Data Guru (CSV)</CardTitle>
           </div>
-          <CardDescription>Impor dan ekspor data guru menggunakan file CSV.</CardDescription>
+          <CardDescription>Impor dan ekspor data guru menggunakan file CSV (dipisahkan titik koma untuk kompatibilitas Excel).</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row">
@@ -205,7 +205,7 @@ export default function AdminTeachersPage() {
               <Download className="w-4 h-4 mr-2" /> Export Guru (CSV)
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .csv.</p>
+          <p className="text-xs text-muted-foreground">Catatan: Fitur impor saat ini adalah simulasi. Ekspor menghasilkan file .csv yang dipisahkan titik koma.</p>
         </CardContent>
       </Card>
 
