@@ -52,14 +52,14 @@ interface NavItem {
   general?: boolean; // Item ini umum untuk semua peran non-spesifik
 }
 
+// "Profil Sekolah" dipisahkan agar menjadi item top-level untuk admin
 const baseNavItems: NavItem[] = [
-  // General items (potentially visible to Student, Teacher, Admin)
+  // General items
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard, general: true },
   { href: '/schedule', label: 'Jadwal Pembelajaran', icon: CalendarDays, general: true },
   { href: '/lessons', label: 'Pelajaran', icon: BookOpen, general: true },
   { href: '/quizzes', label: 'Kuis', icon: ClipboardCheck, general: true },
   { href: '/reports', label: 'Laporan', icon: BarChart3, general: true },
-  // Profil & Pengaturan selalu general untuk semua yang login
   { href: '/profile', label: 'Profil', icon: UserCircle, general: true },
   { href: '/settings', label: 'Pengaturan', icon: Settings, general: true },
 
@@ -69,13 +69,15 @@ const baseNavItems: NavItem[] = [
   // Teacher specific
   { href: '/teacher/materials', label: 'Materi Saya', icon: UploadCloud, teacherOnly: true },
   { href: '/teacher/quizzes', label: 'Kuis Saya', icon: FileQuestion, teacherOnly: true },
-
+  
   // Parent specific
   { href: '/parent/dashboard', label: 'Dasbor Anak', icon: ParentIcon, parentOnly: true },
 
-  // Admin Specific - Ini akan dikelompokkan
-  { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true }, // Item utama Admin
+  // Admin Specific - Top Level
+  { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
   { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building, adminOnly: true },
+
+  // Admin Specific - For Accordion
   { href: '/admin/admins', label: 'Kelola Admin', icon: ShieldCheck, adminOnly: true },
   { href: '/admin/teachers', label: 'Kelola Guru', icon: UserCog, adminOnly: true },
   { href: '/admin/students', label: 'Kelola Siswa', icon: Users, adminOnly: true },
@@ -111,10 +113,9 @@ const adminMenuGroups = {
     ]
   },
   toolsAndReports: {
-    label: "Alat & Laporan",
+    label: "Alat & Laporan", // Profil Sekolah dihapus dari sini
     icon: Settings,
     items: [
-      { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building },
       { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart },
       { href: '/admin/notifications', label: 'Notifikasi Guru', icon: MessageSquare },
       { href: '/admin/contacts/class-contacts', label: 'Kontak Siswa', icon: Contact },
@@ -144,11 +145,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
     let items = baseNavItems.filter(item => {
       const isGeneralItem = item.general || (!item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly);
       const isProfileOrSettings = item.href === '/profile' || item.href === '/settings';
+      // Cek apakah item ini adalah salah satu item admin yang akan masuk ke accordion
+      const isAdminAccordionItem = Object.values(adminMenuGroups).some(group => group.items.some(gi => gi.href === item.href));
 
       if (user.isAdmin) {
-        // Admin melihat item adminOnly dan item general.
-        // Item spesifik admin akan dirender dalam accordion, jadi kita kecualikan mereka dari daftar datar utama, kecuali dasbor admin.
-        return item.href === '/admin' || (isGeneralItem && !item.adminOnly);
+        // Tampilkan item adminOnly yang BUKAN bagian dari accordion, atau item general
+        return (item.adminOnly && !isAdminAccordionItem) || (isGeneralItem && !item.adminOnly);
       }
       if (userRole === 'teacher') {
         return (item.teacherOnly || (isGeneralItem && !item.studentOnly && !item.adminOnly && !item.parentOnly));
@@ -157,22 +159,34 @@ export default function AppShell({ children }: { children: ReactNode }) {
         return (item.studentOnly || (isGeneralItem && !item.teacherOnly && !item.adminOnly && !item.parentOnly));
       }
       if (userRole === 'parent') {
+         // Orang tua hanya melihat item parentOnly dan item general tertentu (Profil & Pengaturan)
         return item.parentOnly || isProfileOrSettings;
       }
-      return isGeneralItem; // Fallback untuk peran lain jika ada
+      return isGeneralItem; 
     });
 
-     // Pengurutan dasar
      items.sort((a, b) => {
-        const order = ['/dashboard', '/admin', '/parent/dashboard', '/schedule', '/lessons', '/teacher/materials', '/learning-path', '/quizzes', '/teacher/quizzes', '/reports'];
+        const order = [
+          '/admin', 
+          '/admin/school-profile', // "Profil Sekolah" akan muncul setelah "Dasbor Admin"
+          '/dashboard', 
+          '/parent/dashboard', 
+          '/schedule', 
+          '/lessons', 
+          '/teacher/materials', 
+          '/learning-path', 
+          '/quizzes', 
+          '/teacher/quizzes', 
+          '/reports',
+          // Item admin lain akan ada di accordion, item general sisanya akan mengikuti
+        ];
         const indexA = order.indexOf(a.href);
         const indexB = order.indexOf(b.href);
 
         if (indexA !== -1 && indexB !== -1) return indexA - indexB;
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
-
-        // Profil dan Pengaturan selalu di akhir
+        
         if (a.href === '/profile') return 1;
         if (b.href === '/profile') return -1;
         if (a.href === '/settings') return 1;
@@ -184,7 +198,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, [user]);
 
   if (!user) {
-    // Handled by AuthProvider redirect
     return null;
   }
 
@@ -194,22 +207,22 @@ export default function AppShell({ children }: { children: ReactNode }) {
          <SidebarHeader className="p-2 border-b flex flex-col items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
             <Link
                 href={user?.isAdmin ? "/admin" : (user?.role === 'parent' ? "/parent/dashboard" : "/dashboard")}
-                className="flex flex-col items-center gap-1 text-center mb-2 group-data-[collapsible=icon]:hidden"
+                className="flex flex-row items-center gap-2 mb-2 group-data-[collapsible=icon]:hidden"
             >
             {schoolLogoUrl ? (
               <Image
                 src={schoolLogoUrl}
                 alt={`${schoolName} Logo`}
-                width={80}
-                height={20}
-                className="h-7 w-auto object-contain mb-1"
+                width={24}
+                height={24}
+                className="h-7 w-7 object-contain"
                 data-ai-hint="school logo"
                 priority
               />
             ) : (
-              <GraduationCap className="w-8 h-8 text-primary mb-1" />
+              <GraduationCap className="w-7 h-7 text-primary" />
             )}
-            <span className="text-xs font-semibold text-sidebar-foreground truncate max-w-[120px]">
+            <span className="text-sm font-semibold text-sidebar-foreground truncate max-w-[120px]">
               {schoolName}
             </span>
           </Link>
@@ -239,7 +252,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} legacyBehavior passHref>
                   <SidebarMenuButton
-                    isActive={pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href + '/') && item.href.length > 1)}
+                    isActive={pathname === item.href || (item.href !== '/' && item.href.length > 1 && pathname.startsWith(item.href + '/'))}
                     tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
                     className="justify-start"
                   >
@@ -254,32 +267,34 @@ export default function AppShell({ children }: { children: ReactNode }) {
           {user.isAdmin && (
             <Accordion type="multiple" className="w-full group-data-[collapsible=icon]:hidden">
               {Object.entries(adminMenuGroups).map(([key, group]) => (
-                <AccordionItem value={key} key={key} className="border-b-0">
-                  <AccordionTrigger className="px-2 py-1.5 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md hover:no-underline [&[data-state=open]>svg]:text-sidebar-accent-foreground">
-                     <div className="flex items-center gap-2">
-                        <group.icon className="w-5 h-5" />
-                        <span className="font-medium">{group.label}</span>
-                     </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="pt-1 pb-0 pl-2">
-                    <SidebarMenu className="ml-3 border-l border-sidebar-border pl-3">
-                      {group.items.map((item) => (
-                        <SidebarMenuItem key={item.href}>
-                          <Link href={item.href} legacyBehavior passHref>
-                            <SidebarMenuButton
-                              isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
-                              className="justify-start h-8 text-xs"
-                              variant="ghost"
-                            >
-                              <item.icon className="w-4 h-4" />
-                              <span>{item.label}</span>
-                            </SidebarMenuButton>
-                          </Link>
-                        </SidebarMenuItem>
-                      ))}
-                    </SidebarMenu>
-                  </AccordionContent>
-                </AccordionItem>
+                 group.items.length > 0 && ( // Hanya render jika ada item
+                  <AccordionItem value={key} key={key} className="border-b-0">
+                    <AccordionTrigger className="px-2 py-1.5 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md hover:no-underline [&[data-state=open]>svg]:text-sidebar-accent-foreground">
+                      <div className="flex items-center gap-2">
+                          <group.icon className="w-5 h-5" />
+                          <span className="font-medium">{group.label}</span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-1 pb-0 pl-2">
+                      <SidebarMenu className="ml-3 border-l border-sidebar-border pl-3">
+                        {group.items.map((item) => (
+                          <SidebarMenuItem key={item.href}>
+                            <Link href={item.href} legacyBehavior passHref>
+                              <SidebarMenuButton
+                                isActive={pathname === item.href || pathname.startsWith(item.href + '/')}
+                                className="justify-start h-8 text-xs"
+                                variant="ghost"
+                              >
+                                <item.icon className="w-4 h-4" />
+                                <span>{item.label}</span>
+                              </SidebarMenuButton>
+                            </Link>
+                          </SidebarMenuItem>
+                        ))}
+                      </SidebarMenu>
+                    </AccordionContent>
+                  </AccordionItem>
+                 )
               ))}
             </Accordion>
           )}
