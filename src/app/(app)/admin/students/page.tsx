@@ -7,8 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { UserPlus, Edit, Trash2, Users, KeyRound, Upload, Download, RefreshCw } from "lucide-react";
-import type { StudentData } from "@/lib/types";
-import { getStudents, deleteStudentById, addStudent } from "@/lib/mockData";
+import type { StudentData, ParentData } from "@/lib/types"; // Tambahkan ParentData
+import { getStudents, deleteStudentById, addStudent, getParents } from "@/lib/mockData"; // Tambahkan getParents
 import Link from "next/link";
 import { useState, useEffect, useRef, type ChangeEvent, type FormEvent } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,8 +21,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from "@/components/ui/alert-dialog"; // AlertDialogTrigger dihapus karena tidak digunakan langsung di sini, tapi di dalam loop
 import {
   Dialog,
   DialogContent,
@@ -47,6 +46,7 @@ function escapeCsvField(field: any): string {
 export default function AdminStudentsPage() {
   const { toast } = useToast();
   const [students, setStudents] = useState<StudentData[]>([]);
+  const [allParents, setAllParents] = useState<ParentData[]>([]); // State untuk menyimpan data orang tua
   const [studentToDelete, setStudentToDelete] = useState<StudentData | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isAddStudentDialogOpen, setIsAddStudentDialogOpen] = useState(false);
@@ -62,13 +62,15 @@ export default function AdminStudentsPage() {
   const [newStudentTanggalLahir, setNewStudentTanggalLahir] = useState("");
   const [newStudentKelas, setNewStudentKelas] = useState("");
   const [newStudentProgramStudi, setNewStudentProgramStudi] = useState("");
+  const [newStudentParentId, setNewStudentParentId] = useState<string | undefined>(undefined); // State untuk ID Orang Tua Terkait
 
-  const fetchStudents = () => {
+  const fetchStudentsAndParents = () => {
     setStudents(getStudents());
+    setAllParents(getParents()); // Muat data orang tua
   };
 
   useEffect(() => {
-    fetchStudents();
+    fetchStudentsAndParents();
   }, []);
 
   const handleDeleteStudent = () => {
@@ -79,7 +81,7 @@ export default function AdminStudentsPage() {
           title: "Siswa Dihapus",
           description: `Siswa "${studentToDelete.Nama_Lengkap}" telah berhasil dihapus.`,
         });
-        fetchStudents();
+        fetchStudentsAndParents();
       } else {
         toast({
           title: "Gagal Menghapus",
@@ -93,7 +95,6 @@ export default function AdminStudentsPage() {
 
   const handleAddStudent = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // Validasi sederhana, bisa diperluas dengan Zod jika perlu
     if (!newStudentNamaLengkap || !newStudentUsername || !newStudentEmail || !newStudentPassword || !newStudentNISN || !newStudentNomorInduk || !newStudentJenisKelamin || !newStudentTanggalLahir || !newStudentKelas || !newStudentProgramStudi) {
         toast({ title: "Input Tidak Lengkap", description: "Mohon isi semua field yang wajib.", variant: "destructive" });
         return;
@@ -114,13 +115,13 @@ export default function AdminStudentsPage() {
         Tanggal_Lahir: newStudentTanggalLahir,
         Kelas: newStudentKelas,
         Program_Studi: newStudentProgramStudi,
-        Alamat: "", // Opsional, bisa ditambahkan field
-        Nomor_Telepon: "", // Opsional
-        Status_Aktif: true, // Default
+        Alamat: "", 
+        Nomor_Telepon: "", 
+        ID_OrangTua_Terkait: newStudentParentId === "_NO_PARENT_" ? undefined : newStudentParentId,
     });
 
     toast({ title: "Siswa Ditambahkan", description: `Siswa "${newStudentNamaLengkap}" berhasil ditambahkan.` });
-    fetchStudents();
+    fetchStudentsAndParents();
     setIsAddStudentDialogOpen(false);
     // Reset form fields
     setNewStudentNamaLengkap("");
@@ -133,6 +134,7 @@ export default function AdminStudentsPage() {
     setNewStudentTanggalLahir("");
     setNewStudentKelas("");
     setNewStudentProgramStudi("");
+    setNewStudentParentId(undefined);
   };
 
 
@@ -152,6 +154,7 @@ export default function AdminStudentsPage() {
       description: "Sedang mempersiapkan file CSV (dipisahkan titik koma)...",
     });
     const dataToExport = getStudents();
+    const parentsData = getParents(); // Ambil data orang tua
     if (dataToExport.length === 0) {
       toast({
         title: "Ekspor Dibatalkan",
@@ -165,29 +168,35 @@ export default function AdminStudentsPage() {
       "ID_Siswa", "NISN", "Nomor_Induk", "Username", "Nama_Lengkap",
       "Nama_Panggilan", "Jenis_Kelamin", "Tanggal_Lahir", "Alamat",
       "Email", "Nomor_Telepon", "Program_Studi", "Kelas",
+      "ID_OrangTua_Terkait", "Nama_OrangTua_Terkait", // Kolom baru
       "Tanggal_Daftar", "Status_Aktif", "Profil_Foto_URL"
     ];
 
     const csvHeaderString = header.map(escapeCsvField).join(";") + "\r\n";
 
-    const csvRows = dataToExport.map(student => [
-        student.ID_Siswa,
-        student.NISN,
-        student.Nomor_Induk,
-        student.Username,
-        student.Nama_Lengkap,
-        student.Nama_Panggilan || '',
-        student.Jenis_Kelamin,
-        student.Tanggal_Lahir ? format(parseISO(student.Tanggal_Lahir), 'yyyy-MM-dd', { locale: LocaleID }) : '',
-        student.Alamat || '',
-        student.Email,
-        student.Nomor_Telepon || '',
-        student.Program_Studi,
-        student.Kelas,
-        student.Tanggal_Daftar ? format(parseISO(student.Tanggal_Daftar), 'yyyy-MM-dd', { locale: LocaleID }) : '',
-        student.Status_Aktif ? "Aktif" : "Tidak Aktif",
-        student.Profil_Foto || ''
-      ].map(escapeCsvField).join(";")
+    const csvRows = dataToExport.map(student => {
+        const parent = student.ID_OrangTua_Terkait ? parentsData.find(p => p.ID_OrangTua === student.ID_OrangTua_Terkait) : null;
+        return [
+          student.ID_Siswa,
+          student.NISN,
+          student.Nomor_Induk,
+          student.Username,
+          student.Nama_Lengkap,
+          student.Nama_Panggilan || '',
+          student.Jenis_Kelamin,
+          student.Tanggal_Lahir ? format(parseISO(student.Tanggal_Lahir), 'yyyy-MM-dd', { locale: LocaleID }) : '',
+          student.Alamat || '',
+          student.Email,
+          student.Nomor_Telepon || '',
+          student.Program_Studi,
+          student.Kelas,
+          student.ID_OrangTua_Terkait || '',
+          parent ? parent.Nama_Lengkap : '', // Nama orang tua
+          student.Tanggal_Daftar ? format(parseISO(student.Tanggal_Daftar), 'yyyy-MM-dd', { locale: LocaleID }) : '',
+          student.Status_Aktif ? "Aktif" : "Tidak Aktif",
+          student.Profil_Foto || ''
+        ].map(escapeCsvField).join(";");
+      }
     ).join("\r\n");
 
     const csvString = "\uFEFF" + csvHeaderString + csvRows; 
@@ -239,6 +248,12 @@ export default function AdminStudentsPage() {
       variant: "default",
       duration: 5000,
     });
+  };
+
+  const getParentName = (parentId?: string) => {
+    if (!parentId) return '-';
+    const parent = allParents.find(p => p.ID_OrangTua === parentId);
+    return parent ? parent.Nama_Lengkap : 'Tidak Ditemukan';
   };
 
   return (
@@ -346,6 +361,22 @@ export default function AdminStudentsPage() {
                             <Label htmlFor="new-student-jurusan">Jurusan</Label>
                             <Input id="new-student-jurusan" value={newStudentProgramStudi} onChange={(e) => setNewStudentProgramStudi(e.target.value)} placeholder="cth. IPA" required />
                         </div>
+                         <div className="space-y-1 md:col-span-2">
+                            <Label htmlFor="new-student-parent">Orang Tua Terkait (Opsional)</Label>
+                             <Select value={newStudentParentId || "_NO_PARENT_"} onValueChange={(value) => setNewStudentParentId(value === "_NO_PARENT_" ? undefined : value)}>
+                                <SelectTrigger id="new-student-parent">
+                                    <SelectValue placeholder="Pilih Orang Tua" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="_NO_PARENT_">Tidak Ada</SelectItem>
+                                    {allParents.map(parent => (
+                                        <SelectItem key={parent.ID_OrangTua} value={parent.ID_OrangTua}>
+                                            {parent.Nama_Lengkap} ({parent.Email})
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                     <DialogFooter className="pt-4">
                         <DialogClose asChild><Button type="button" variant="outline">Batal</Button></DialogClose>
@@ -364,12 +395,11 @@ export default function AdminStudentsPage() {
               <TableRow>
                 <TableHead>Foto</TableHead>
                 <TableHead>Nama Siswa</TableHead>
-                <TableHead>Username</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>NISN</TableHead>
-                <TableHead>No. Induk</TableHead>
                 <TableHead>Kelas</TableHead>
                 <TableHead>Jurusan</TableHead>
+                <TableHead>Orang Tua Terkait</TableHead> {/* Kolom Baru */}
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
@@ -384,12 +414,11 @@ export default function AdminStudentsPage() {
                     </Avatar>
                   </TableCell>
                   <TableCell className="font-medium">{student.Nama_Lengkap}</TableCell>
-                  <TableCell>{student.Username}</TableCell>
                   <TableCell>{student.Email}</TableCell>
                   <TableCell>{student.NISN}</TableCell>
-                  <TableCell>{student.Nomor_Induk}</TableCell>
                   <TableCell>{student.Kelas}</TableCell>
                   <TableCell>{student.Program_Studi}</TableCell>
+                  <TableCell>{getParentName(student.ID_OrangTua_Terkait)}</TableCell> {/* Tampilkan Nama Orang Tua */}
                   <TableCell>
                     <Badge variant={student.Status_Aktif ? "default" : "destructive"}>
                       {student.Status_Aktif ? "Aktif" : "Tidak Aktif"}
@@ -401,13 +430,13 @@ export default function AdminStudentsPage() {
                         <Edit className="w-4 h-4" /> Edit
                       </Link>
                     </Button>
-                     <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm" onClick={() => setStudentToDelete(student)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                             <Button variant="destructive" size="sm" onClick={() => setStudentToDelete(student)}>
+                                <Trash2 className="w-4 h-4" />
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
                           <AlertDialogDescription>
@@ -428,7 +457,7 @@ export default function AdminStudentsPage() {
               ))}
               {students.length === 0 && (
                  <TableRow>
-                  <TableCell colSpan={10} className="text-center text-muted-foreground">Belum ada data siswa. Silakan tambahkan siswa baru.</TableCell>
+                  <TableCell colSpan={9} className="text-center text-muted-foreground">Belum ada data siswa. Silakan tambahkan siswa baru.</TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -438,3 +467,4 @@ export default function AdminStudentsPage() {
     </div>
   );
 }
+

@@ -21,17 +21,14 @@ function loadDataFromStorage<T>(key: string, initialData: T[], isSingleObject = 
         return JSON.parse(storedData);
       } catch (e) {
         console.error(`Gagal memparsing data dari localStorage (key: ${key}):`, e);
-        // Jika gagal parse, gunakan initialData dan simpan ke localStorage
         localStorage.setItem(key, JSON.stringify(isSingleObject ? initialData[0] : initialData));
         return isSingleObject ? initialData[0] : initialData;
       }
     } else {
-      // Jika tidak ada data, gunakan initialData dan simpan ke localStorage
       localStorage.setItem(key, JSON.stringify(isSingleObject ? initialData[0] : initialData));
       return isSingleObject ? initialData[0] : initialData;
     }
   }
-  // Fallback untuk SSR atau lingkungan non-browser
   return isSingleObject ? initialData[0] : initialData;
 }
 
@@ -60,7 +57,8 @@ const initialMockStudents: StudentData[] = [
     Tanggal_Daftar: "2023-08-01",
     Status_Aktif: true,
     Password_Hash: "password",
-    Profil_Foto: "https://placehold.co/100x100.png?text=SR"
+    Profil_Foto: "https://placehold.co/100x100.png?text=SR",
+    ID_OrangTua_Terkait: "parent001" // Terhubung ke Orang Tua Bijak
   },
   {
     ID_Siswa: "siswa1",
@@ -331,7 +329,20 @@ export function addStudent(studentData: Omit<StudentData, 'ID_Siswa' | 'Tanggal_
   const currentStudents = getStudents();
   const newStudent: StudentData = {
     ID_Siswa: `siswa${Date.now()}${Math.floor(Math.random() * 100)}`,
-    ...studentData,
+    Nama_Lengkap: studentData.Nama_Lengkap,
+    Nama_Panggilan: studentData.Nama_Panggilan,
+    Jenis_Kelamin: studentData.Jenis_Kelamin,
+    Tanggal_Lahir: studentData.Tanggal_Lahir,
+    Alamat: studentData.Alamat,
+    Email: studentData.Email,
+    Nomor_Telepon: studentData.Nomor_Telepon,
+    Program_Studi: studentData.Program_Studi,
+    Kelas: studentData.Kelas,
+    Username: studentData.Username,
+    Password_Hash: studentData.Password_Hash,
+    NISN: studentData.NISN,
+    Nomor_Induk: studentData.Nomor_Induk,
+    ID_OrangTua_Terkait: studentData.ID_OrangTua_Terkait,
     Profil_Foto: `https://placehold.co/100x100.png?text=${studentData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
     Tanggal_Daftar: new Date().toISOString().split('T')[0],
     Status_Aktif: true,
@@ -458,7 +469,7 @@ export function addParent(parentData: Omit<ParentData, 'ID_OrangTua' | 'Profil_F
     ID_OrangTua: `parent${Date.now()}${Math.floor(Math.random() * 100)}`,
     ...parentData,
     Status_Aktif: true,
-    Anak_Terkait: [], // Default to empty, can be managed later
+    Anak_Terkait: [], 
     Profil_Foto: `https://placehold.co/100x100.png?text=${parentData.Nama_Lengkap.substring(0,2).toUpperCase()}`,
   };
   parents = [...currentParents, newParent];
@@ -583,7 +594,7 @@ export function deleteClassById(classId: string): boolean {
 
 // --- Schedule Data Functions ---
 export function getSchedules(): ScheduleItem[] {
-  if (typeof window !== 'undefined') {
+   if (typeof window !== 'undefined') {
     schedules = loadDataFromStorage<ScheduleItem>(SCHEDULES_STORAGE_KEY, initialMockSchedules) as ScheduleItem[];
   }
   const allCls = getClasses();
@@ -600,7 +611,6 @@ export function getSchedules(): ScheduleItem[] {
 }
 
 export function getScheduleById(id: string): ScheduleItem | undefined {
-  // Need to load from storage first if doing this client-side and want latest
    if (typeof window !== 'undefined') {
     schedules = loadDataFromStorage<ScheduleItem>(SCHEDULES_STORAGE_KEY, initialMockSchedules) as ScheduleItem[];
   }
@@ -611,7 +621,7 @@ export function updateSchedule(updatedSchedule: ScheduleItem): boolean {
   let currentSchedules = loadDataFromStorage<ScheduleItem>(SCHEDULES_STORAGE_KEY, initialMockSchedules) as ScheduleItem[];
   const index = currentSchedules.findIndex(schedule => schedule.id === updatedSchedule.id);
   if (index !== -1) {
-    const { className, teacherName, ...dataToSave } = updatedSchedule; // Exclude enriched fields
+    const { className, teacherName, ...dataToSave } = updatedSchedule; 
     currentSchedules[index] = dataToSave;
     schedules = currentSchedules;
     saveDataToStorage(SCHEDULES_STORAGE_KEY, schedules);
@@ -718,7 +728,7 @@ export function getSchoolProfile(): SchoolProfileData {
   if (typeof window !== 'undefined') {
     schoolProfile = loadDataFromStorage<SchoolProfileData>(SCHOOL_PROFILE_STORAGE_KEY, [initialMockSchoolProfile], true) as SchoolProfileData;
   }
-  return schoolProfile || initialMockSchoolProfile; // Ensure fallback if localStorage returns null unexpectedly
+  return schoolProfile || initialMockSchoolProfile; 
 }
 
 export function updateSchoolProfile(updatedProfile: SchoolProfileData): SchoolProfileData {
@@ -728,7 +738,7 @@ export function updateSchoolProfile(updatedProfile: SchoolProfileData): SchoolPr
 }
 
 
-// --- Lesson Data (Still Static, not using localStorage for now) ---
+// --- Lesson Data (Static) ---
 export const mockLessons: Lesson[] = [
   {
     id: '1',
@@ -796,7 +806,7 @@ export function getLessonById(id: string): Lesson | undefined {
 }
 
 
-// --- User Progress & Chart Data (Masih statis, karena biasanya sangat dinamis dari backend) ---
+// --- User Progress & Chart Data (Static) ---
 export const mockUserProgress: UserProgress = {
   userId: 'student001',
   completedLessons: ['1', '2'],

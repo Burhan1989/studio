@@ -23,8 +23,8 @@ import { Users, Save, Loader2, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import type { StudentData } from "@/lib/types";
-import { getStudentById, updateStudent } from "@/lib/mockData";
+import type { StudentData, ParentData } from "@/lib/types"; // Tambahkan ParentData
+import { getStudentById, updateStudent, getParents } from "@/lib/mockData"; // Tambahkan getParents
 import { Switch } from "@/components/ui/switch";
 
 const editStudentSchema = z.object({
@@ -43,6 +43,7 @@ const editStudentSchema = z.object({
   Status_Aktif: z.boolean().default(true),
   newPassword: z.string().min(6, "Password baru minimal 6 karakter.").optional().or(z.literal("")),
   confirmNewPassword: z.string().optional().or(z.literal("")),
+  ID_OrangTua_Terkait: z.string().optional(), // Field baru
 }).refine(data => {
   if (data.newPassword && data.newPassword !== data.confirmNewPassword) {
     return false;
@@ -63,6 +64,7 @@ export default function AdminEditStudentPage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [initialData, setInitialData] = useState<StudentData | null>(null);
+  const [allParents, setAllParents] = useState<ParentData[]>([]); // State untuk menyimpan data orang tua
 
   const form = useForm<EditStudentFormData>({
     resolver: zodResolver(editStudentSchema),
@@ -82,10 +84,12 @@ export default function AdminEditStudentPage() {
       Status_Aktif: true,
       newPassword: "",
       confirmNewPassword: "",
+      ID_OrangTua_Terkait: undefined,
     },
   });
 
   useEffect(() => {
+    setAllParents(getParents()); // Muat data orang tua saat komponen dimuat
     if (studentId) {
       const studentData = getStudentById(studentId);
       if (studentData) {
@@ -104,6 +108,7 @@ export default function AdminEditStudentPage() {
           Program_Studi: studentData.Program_Studi,
           Kelas: studentData.Kelas,
           Status_Aktif: studentData.Status_Aktif,
+          ID_OrangTua_Terkait: studentData.ID_OrangTua_Terkait || undefined,
           newPassword: "", 
           confirmNewPassword: "", 
         });
@@ -126,10 +131,10 @@ export default function AdminEditStudentPage() {
       ...initialData, 
       Nama_Lengkap: values.Nama_Lengkap,
       Nama_Panggilan: values.Nama_Panggilan,
-      Username: values.Username, // Username can be updated by admin
-      Email: values.Email, // Email can be updated by admin
-      NISN: values.NISN, // NISN can be updated by admin
-      Nomor_Induk: values.Nomor_Induk, // Nomor Induk can be updated by admin
+      Username: values.Username,
+      Email: values.Email,
+      NISN: values.NISN,
+      Nomor_Induk: values.Nomor_Induk,
       Jenis_Kelamin: values.Jenis_Kelamin,
       Tanggal_Lahir: values.Tanggal_Lahir,
       Alamat: values.Alamat,
@@ -137,6 +142,7 @@ export default function AdminEditStudentPage() {
       Program_Studi: values.Program_Studi,
       Kelas: values.Kelas,
       Status_Aktif: values.Status_Aktif,
+      ID_OrangTua_Terkait: values.ID_OrangTua_Terkait === "_NO_PARENT_" ? undefined : values.ID_OrangTua_Terkait,
       Password_Hash: values.newPassword ? values.newPassword : initialData.Password_Hash, 
     };
 
@@ -228,8 +234,9 @@ export default function AdminEditStudentPage() {
                   <FormItem>
                     <FormLabel>Username</FormLabel>
                     <FormControl>
-                      <Input placeholder="cth. budisanjaya" {...field} />
+                      <Input placeholder="cth. budisanjaya" {...field} readOnly className="bg-muted/50 cursor-not-allowed" />
                     </FormControl>
+                    <FormDescription>Username tidak dapat diubah.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -241,8 +248,9 @@ export default function AdminEditStudentPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="cth. budi.s@example.com" {...field} />
+                      <Input type="email" placeholder="cth. budi.s@example.com" {...field} readOnly className="bg-muted/50 cursor-not-allowed" />
                     </FormControl>
+                     <FormDescription>Email tidak dapat diubah.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -280,7 +288,7 @@ export default function AdminEditStudentPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Jenis Kelamin</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih jenis kelamin" />
@@ -357,6 +365,31 @@ export default function AdminEditStudentPage() {
                     <FormControl>
                       <Textarea placeholder="Masukkan alamat lengkap siswa" {...field} className="min-h-[80px]" />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+               <FormField
+                control={form.control}
+                name="ID_OrangTua_Terkait"
+                render={({ field }) => (
+                  <FormItem className="md:col-span-2">
+                    <FormLabel>Orang Tua Terkait (Opsional)</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || "_NO_PARENT_"} defaultValue={field.value || "_NO_PARENT_"}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih Orang Tua" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="_NO_PARENT_">Tidak Ada</SelectItem>
+                        {allParents.map((parent) => (
+                          <SelectItem key={parent.ID_OrangTua} value={parent.ID_OrangTua}>
+                            {parent.Nama_Lengkap} ({parent.Email})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

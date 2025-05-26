@@ -91,6 +91,7 @@ export interface StudentData {
   Password_Hash: string;
   NISN: string;
   Nomor_Induk: string;
+  ID_OrangTua_Terkait?: string; // Field baru
 }
 
 export interface TeacherData {
@@ -121,7 +122,7 @@ export interface ParentData {
   Status_Aktif: boolean;
   Password_Hash: string;
   Profil_Foto?: string;
-  Anak_Terkait?: Array<{ ID_Siswa: string, Nama_Siswa: string }>;
+  Anak_Terkait?: Array<{ ID_Siswa: string, Nama_Siswa: string }>; // Tetap ada, tapi dashboard akan utamakan ID_OrangTua_Terkait dari StudentData
 }
 
 
@@ -172,16 +173,26 @@ export interface MajorData {
 
 export interface ScheduleItem {
   id: string;
-  title: string; // Judul kegiatan, e.g., "Pelajaran Matematika Bab 1", "Kuis Fisika Semester 1"
-  date: string; // Format YYYY-MM-DD
-  time: string; // Format HH:MM - HH:MM atau deskripsi waktu
-  classId?: string; // ID kelas yang terkait
-  className?: string; // Nama kelas (untuk tampilan mudah)
-  lessonId?: string; // Opsional, jika terkait langsung dengan pelajaran
-  quizId?: string; // Opsional, jika terkait langsung dengan kuis
-  teacherId?: string; // ID guru yang bertanggung jawab (jika relevan)
-  teacherName?: string; // Nama guru (untuk tampilan mudah)
-  description?: string; // Catatan tambahan
-  category: 'Pelajaran' | 'Kuis' | 'Tugas' | 'Diskusi' | 'Lainnya'; // Kategori jadwal
+  title: string; 
+  date: string; 
+  time: string; 
+  classId?: string; 
+  className?: string; 
+  lessonId?: string; 
+  quizId?: string; 
+  teacherId?: string; 
+  teacherName?: string; 
+  description?: string; 
+  category: 'Pelajaran' | 'Kuis' | 'Tugas' | 'Diskusi' | 'Lainnya'; 
 }
 
+export interface ChartConfig {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: {
+    label?: React.ReactNode;
+    icon?: React.ComponentType;
+  } & (
+    | { color?: string; theme?: never }
+    | { color?: never; theme: Record<string, string> }
+  );
+}
