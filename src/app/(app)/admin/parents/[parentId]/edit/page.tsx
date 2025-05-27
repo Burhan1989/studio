@@ -123,7 +123,8 @@ export default function AdminEditParentPage() {
 
     console.log("Data orang tua yang akan diperbarui (simulasi):", updatedParentData);
     
-    await new Promise(resolve => setTimeout(resolve, 1000)); 
+    // Simulate API call for localStorage interaction
+    await new Promise(resolve => setTimeout(resolve, 500)); 
     
     const success = updateParent(updatedParentData); 
 
@@ -328,5 +329,7 @@ export default function AdminEditParentPage() {
     </div>
   );
 }
+
+    
 
     
