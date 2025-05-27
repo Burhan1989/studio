@@ -1,6 +1,7 @@
 
 "use client";
 
+import * as React from "react"; // Added React import for useMemo
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
@@ -19,12 +20,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Building, Save, Loader2, Image as ImageIcon, PlusCircle, Trash2 } from "lucide-react";
+import { Building, Save, Loader2, Image as ImageIcon } from "lucide-react"; // PlusCircle, Trash2 removed as they are not used in this specific file
 import { useState, useEffect } from "react";
 import type { SchoolProfileData, LandingPageSlide } from "@/lib/types";
 import { getSchoolProfile, updateSchoolProfile } from "@/lib/mockData";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 
 const landingPageSlideSchema = z.object({
@@ -50,54 +50,56 @@ const schoolProfileSchema = z.object({
   misi: z.string().max(2000, "Misi maksimal 2000 karakter.").optional(),
   logo: z.any().optional(),
   landingPageSlides: z.array(landingPageSlideSchema).optional().default([{ imageUrl: "", description: "" }, { imageUrl: "", description: "" }, { imageUrl: "", description: "" }]),
-  landingPageImageUrl: z.string().url("URL Gambar tidak valid.").optional().or(z.literal("")), // Masih ada jika diperlukan untuk kompatibilitas
+  landingPageImageUrl: z.string().url("URL Gambar tidak valid.").optional().or(z.literal("")),
 });
 
 export default function AdminSchoolProfilePage() {
   const { toast } = useToast();
-  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [landingPageImagePreview, setLandingPageImagePreview] = useState<string | null>(null);
   const [slideImagePreviews, setSlideImagePreviews] = useState<Array<string | null>>([null, null, null]);
 
+  // Memoize initialSchoolProfileData to prevent re-creation on every render
+  const initialSchoolProfileData = React.useMemo(() => getSchoolProfile(), []);
+
   const form = useForm<z.infer<typeof schoolProfileSchema>>({
     resolver: zodResolver(schoolProfileSchema),
     defaultValues: {
-      namaSekolah: "",
-      npsn: "",
-      jenjang: "",
-      statusSekolah: "",
-      akreditasi: "",
-      namaKepalaSekolah: "",
-      alamatJalan: "",
-      kota: "",
-      provinsi: "",
-      kodePos: "",
-      nomorTelepon: "",
-      emailSekolah: "",
-      websiteSekolah: "",
-      visi: "",
-      misi: "",
-      logo: undefined,
-      landingPageImageUrl: "",
-      landingPageSlides: [
-        { imageUrl: "", description: "" },
-        { imageUrl: "", description: "" },
-        { imageUrl: "", description: "" },
-      ],
+      namaSekolah: initialSchoolProfileData.namaSekolah || "",
+      npsn: initialSchoolProfileData.npsn || "",
+      jenjang: initialSchoolProfileData.jenjang || "",
+      statusSekolah: initialSchoolProfileData.statusSekolah || "",
+      akreditasi: initialSchoolProfileData.akreditasi || "",
+      namaKepalaSekolah: initialSchoolProfileData.namaKepalaSekolah || "",
+      alamatJalan: initialSchoolProfileData.alamatJalan || "",
+      kota: initialSchoolProfileData.kota || "",
+      provinsi: initialSchoolProfileData.provinsi || "",
+      kodePos: initialSchoolProfileData.kodePos || "",
+      nomorTelepon: initialSchoolProfileData.nomorTelepon || "",
+      emailSekolah: initialSchoolProfileData.emailSekolah || "",
+      websiteSekolah: initialSchoolProfileData.websiteSekolah || "",
+      visi: initialSchoolProfileData.visi || "",
+      misi: initialSchoolProfileData.misi || "",
+      logo: typeof initialSchoolProfileData.logo === 'string' ? initialSchoolProfileData.logo : undefined,
+      landingPageImageUrl: initialSchoolProfileData.landingPageImageUrl || "",
+      landingPageSlides: (initialSchoolProfileData.landingPageSlides && initialSchoolProfileData.landingPageSlides.length > 0)
+        ? initialSchoolProfileData.landingPageSlides.slice(0, 3).concat(Array(Math.max(0, 3 - initialSchoolProfileData.landingPageSlides.length)).fill({ imageUrl: "", description: "" })).slice(0,3)
+        : [
+            { imageUrl: "", description: "" },
+            { imageUrl: "", description: "" },
+            { imageUrl: "", description: "" },
+          ],
     },
   });
-  
-  const { fields, append, remove } = useFieldArray({
+
+  const { fields } = useFieldArray({ // append and remove are not used but defined by the hook
     control: form.control,
     name: "landingPageSlides",
   });
 
-  const initialSchoolProfileData = getSchoolProfile(); // Ambil sekali di luar useEffect
-
   useEffect(() => {
-    const currentProfile = initialSchoolProfileData; // Gunakan data yang sudah diambil
+    const currentProfile = initialSchoolProfileData;
     if (currentProfile) {
         form.reset({
             namaSekolah: currentProfile.namaSekolah || "",
@@ -117,7 +119,7 @@ export default function AdminSchoolProfilePage() {
             misi: currentProfile.misi || "",
             logo: typeof currentProfile.logo === 'string' ? currentProfile.logo : undefined,
             landingPageImageUrl: currentProfile.landingPageImageUrl || "",
-            landingPageSlides: (currentProfile.landingPageSlides && currentProfile.landingPageSlides.length > 0) 
+            landingPageSlides: (currentProfile.landingPageSlides && currentProfile.landingPageSlides.length > 0)
               ? currentProfile.landingPageSlides.slice(0, 3).concat(Array(Math.max(0, 3 - currentProfile.landingPageSlides.length)).fill({ imageUrl: "", description: "" })).slice(0,3)
               : [
                   { imageUrl: "", description: "" },
@@ -127,12 +129,16 @@ export default function AdminSchoolProfilePage() {
         });
         if (typeof currentProfile.logo === 'string' && currentProfile.logo.trim() !== '') {
           setLogoPreview(currentProfile.logo);
+        } else {
+          setLogoPreview(null);
         }
         if (currentProfile.landingPageImageUrl && currentProfile.landingPageImageUrl.trim() !== '') {
           setLandingPageImagePreview(currentProfile.landingPageImageUrl);
+        } else {
+          setLandingPageImagePreview(null);
         }
          const newPreviews = (currentProfile.landingPageSlides || []).slice(0, 3).map(slide => slide.imageUrl || null);
-         setSlideImagePreviews(newPreviews.concat(Array(3 - newPreviews.length).fill(null)));
+         setSlideImagePreviews(newPreviews.concat(Array(Math.max(0, 3 - newPreviews.length)).fill(null)).slice(0,3));
     }
   }, [form, initialSchoolProfileData]);
 
@@ -161,7 +167,7 @@ export default function AdminSchoolProfilePage() {
         setLandingPageImagePreview(null);
     }
   };
-  
+
   const handleSlideImageUrlChange = (index: number, url: string) => {
     form.setValue(`landingPageSlides.${index}.imageUrl`, url);
     const newPreviews = [...slideImagePreviews];
@@ -180,13 +186,12 @@ export default function AdminSchoolProfilePage() {
     let logoToSave: string | undefined = typeof initialSchoolProfileData.logo === 'string' ? initialSchoolProfileData.logo : undefined;
 
     if (values.logo instanceof File) {
-      // Simulasi unggah: di aplikasi nyata, unggah file dan dapatkan URL
-      logoToSave = logoPreview || undefined; 
+      logoToSave = logoPreview || undefined;
       console.log("Simulasi unggah logo baru:", values.logo.name, "URL Baru (Simulasi):", logoToSave);
     } else if (typeof values.logo === 'string') {
       logoToSave = values.logo;
     }
-    
+
     const slidesToSave = (values.landingPageSlides || [])
       .map(slide => ({
         imageUrl: slide.imageUrl || "",
@@ -195,7 +200,7 @@ export default function AdminSchoolProfilePage() {
       .filter(slide => (slide.imageUrl || "").trim() !== "" || (slide.description || "").trim() !== "");
 
     const profileToUpdate: SchoolProfileData = {
-        ...initialSchoolProfileData, // Ambil data awal untuk mempertahankan ID atau field lain yang tidak ada di form
+        ...initialSchoolProfileData,
         namaSekolah: values.namaSekolah,
         npsn: values.npsn || "",
         jenjang: values.jenjang || "",
@@ -213,7 +218,7 @@ export default function AdminSchoolProfilePage() {
         misi: values.misi,
         logo: logoToSave,
         landingPageImageUrl: values.landingPageImageUrl || "",
-        landingPageSlides: slidesToSave.length > 0 ? slidesToSave : initialMockSchoolProfile.landingPageSlides,
+        landingPageSlides: slidesToSave.length > 0 ? slidesToSave : initialSchoolProfileData.landingPageSlides,
     };
 
     updateSchoolProfile(profileToUpdate);
@@ -223,7 +228,6 @@ export default function AdminSchoolProfilePage() {
       description: "Informasi profil sekolah telah berhasil diperbarui.",
     });
     setIsLoading(false);
-    // Tidak perlu router.refresh() karena kita menggunakan localStorage untuk state global mock
   }
 
   return (
@@ -273,7 +277,7 @@ export default function AdminSchoolProfilePage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Jenjang Pendidikan</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih jenjang" />
@@ -297,7 +301,7 @@ export default function AdminSchoolProfilePage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Status Sekolah</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih status" />
@@ -486,7 +490,7 @@ export default function AdminSchoolProfilePage() {
               <FormField
                 control={form.control}
                 name="logo"
-                render={() => ( 
+                render={() => (
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
                       <ImageIcon className="w-5 h-5" /> Unggah Logo Sekolah (Opsional)
@@ -509,7 +513,7 @@ export default function AdminSchoolProfilePage() {
                   <Image src={logoPreview} alt="Pratinjau Logo Sekolah" width={160} height={40} className="object-contain w-auto h-10 p-1 border rounded-md bg-muted" data-ai-hint="school logo"/>
                 </div>
               )}
-              
+
               <Separator />
                <FormField
                 control={form.control}
@@ -518,13 +522,13 @@ export default function AdminSchoolProfilePage() {
                   <FormItem>
                     <FormLabel>URL Gambar Halaman Utama (Carousel Slide Tunggal)</FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="https://contoh.com/gambar-utama.jpg" 
-                        {...field} 
+                      <Input
+                        placeholder="https://contoh.com/gambar-utama.jpg"
+                        {...field}
                         value={field.value || ""}
                         onChange={(e) => {
-                            field.onChange(e); // Update react-hook-form state
-                            handleLandingPageImageChange(e); // Update preview
+                            field.onChange(e);
+                            handleLandingPageImageChange(e);
                         }}
                       />
                     </FormControl>
@@ -542,7 +546,7 @@ export default function AdminSchoolProfilePage() {
               <Separator />
               <h3 className="text-lg font-semibold">Slide Gambar Halaman Utama (Carousel)</h3>
               <FormDescription>Kelola hingga 3 slide untuk carousel di halaman utama. Jika diisi, ini akan menggantikan "URL Gambar Halaman Utama" di atas.</FormDescription>
-              
+
               {fields.slice(0, 3).map((fieldItem, index) => (
                 <Card key={fieldItem.id} className="p-4 border">
                   <CardHeader className="p-0 pb-2">
@@ -556,9 +560,9 @@ export default function AdminSchoolProfilePage() {
                         <FormItem>
                           <FormLabel>URL Gambar Slide {index + 1}</FormLabel>
                           <FormControl>
-                            <Input 
-                              placeholder="https://contoh.com/gambar.jpg" 
-                              {...slideField} 
+                            <Input
+                              placeholder="https://contoh.com/gambar.jpg"
+                              {...slideField}
                               value={slideField.value || ""}
                               onChange={(e) => handleSlideImageUrlChange(index, e.target.value)}
                             />
