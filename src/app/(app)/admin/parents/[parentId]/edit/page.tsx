@@ -17,11 +17,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Users, Save, Loader2, ArrowLeft } from "lucide-react"; // Menggunakan ikon Users
+import { Users, Save, Loader2, ArrowLeft } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useParams } from "next/navigation";
-import type { ParentData, StudentData } from "@/lib/types"; // StudentData untuk anak terkait
+import type { ParentData, StudentData } from "@/lib/types";
 import { getParentById, updateParent, getStudents } from "@/lib/mockData";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -34,7 +34,7 @@ const editParentSchema = z.object({
   Email: z.string().email("Format email tidak valid."),
   Nomor_Telepon: z.string().regex(/^[0-9\\-\\+\\(\\)\\s]*$/, "Format nomor telepon tidak valid.").optional().or(z.literal("")),
   Status_Aktif: z.boolean().default(true),
-  Anak_Terkait_IDs: z.array(z.string()).optional(), // Untuk menyimpan ID siswa yang dipilih
+  Anak_Terkait_IDs: z.array(z.string()).optional(),
   newPassword: z.string().min(6, "Password baru minimal 6 karakter.").optional().or(z.literal("")),
   confirmNewPassword: z.string().optional().or(z.literal("")),
 }).refine(data => {
@@ -114,17 +114,11 @@ export default function AdminEditParentPage() {
     const updatedParentData: ParentData = {
       ...initialData, 
       Nama_Lengkap: values.Nama_Lengkap,
-      // Username & Email tidak diubah setelah dibuat (umumnya)
       Nomor_Telepon: values.Nomor_Telepon,
       Status_Aktif: values.Status_Aktif,
       Anak_Terkait: anakTerkaitData,
       Password_Hash: values.newPassword ? values.newPassword : initialData.Password_Hash, 
     };
-
-    console.log("Data orang tua yang akan diperbarui (simulasi):", updatedParentData);
-    
-    // Simulate API call for localStorage interaction
-    await new Promise(resolve => setTimeout(resolve, 500)); 
     
     const success = updateParent(updatedParentData); 
 
@@ -329,7 +323,4 @@ export default function AdminEditParentPage() {
     </div>
   );
 }
-
-    
-
     
