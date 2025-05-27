@@ -11,7 +11,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const storedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
     const htmlEl = document.documentElement;
 
-    // Clear existing theme classes
+    // Hapus semua kelas tema spesifik terlebih dahulu
     htmlEl.classList.remove("dark", "theme-ocean", "theme-forest");
 
     if (storedTheme) {
@@ -22,8 +22,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       } else if (storedTheme === "forest") {
         htmlEl.classList.add("theme-forest");
       }
-      // "default" theme means no extra theme-specific class, and no "dark" class (unless "dark" is the default)
+      // Jika tema adalah "default", tidak ada kelas spesifik yang ditambahkan,
+      // mengandalkan variabel CSS :root.
+      console.log(`ThemeProvider: Tema dari localStorage ('${storedTheme}') diterapkan.`);
+    } else {
+      console.log("ThemeProvider: Tidak ada tema di localStorage, menggunakan tema default.");
     }
+    // Dependensi kosong agar hanya berjalan sekali saat komponen dimuat.
   }, []);
 
   return <>{children}</>;

@@ -20,18 +20,12 @@ export default function SettingsPage() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [currentTheme, setCurrentTheme] = useState<Theme>("default");
 
-  useEffect(() => {
-    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
-    if (storedTheme) {
-      applyThemeClasses(storedTheme);
-      setCurrentTheme(storedTheme);
-    }
-  }, []);
-
   const applyThemeClasses = (themeName: Theme) => {
     const htmlEl = document.documentElement;
+    // Hapus semua kelas tema spesifik terlebih dahulu
     htmlEl.classList.remove("dark", "theme-ocean", "theme-forest");
 
+    // Tambahkan kelas tema yang dipilih
     if (themeName === "dark") {
       htmlEl.classList.add("dark");
     } else if (themeName === "ocean") {
@@ -39,8 +33,19 @@ export default function SettingsPage() {
     } else if (themeName === "forest") {
       htmlEl.classList.add("theme-forest");
     }
-    // "default" theme means no extra classes beyond potentially "dark" if that's a separate toggle in future
+    // Jika themeName adalah "default", tidak ada kelas tambahan yang diterapkan,
+    // mengandalkan variabel CSS di :root.
+    console.log(`Tema diterapkan: ${themeName}`);
   };
+  
+  useEffect(() => {
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
+    if (storedTheme) {
+      setCurrentTheme(storedTheme);
+      // Tidak perlu memanggil applyThemeClasses di sini karena ThemeProvider sudah menanganinya saat mount awal
+    }
+  }, []);
+
 
   const handleThemeChange = (themeName: Theme) => {
     applyThemeClasses(themeName);
