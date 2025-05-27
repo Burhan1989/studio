@@ -9,42 +9,63 @@ import { BookCopy, PlusCircle, Edit, Trash2, Eye, Upload, Download, Link2, FileU
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useRef, type ChangeEvent } from "react";
-import { getSchedules } from "@/lib/mockData";
+import { useRef, type ChangeEvent, useState, useEffect } from "react";
+import { getSchedules, getLessons, deleteLesson } from "@/lib/mockData"; // Updated to getLessons
+import type { Lesson } from "@/lib/types"; // Import Lesson type
 import { format, parseISO } from 'date-fns';
-import { id as LocaleID } from 'date-fns/locale';
-
-// Mock Data (Sementara)
-const mockCourses = [
-  { id: "course1", title: "Dasar-Dasar Pemrograman Python", category: "Pemrograman", modules: 10, status: "Dipublikasikan" },
-  { id: "course2", title: "Sejarah Dunia Modern", category: "Sejarah", modules: 8, status: "Dipublikasikan" },
-  { id: "course3", title: "Pengantar Desain Grafis", category: "Desain", modules: 12, status: "Draft" },
-  { id: "course4", title: "Aljabar Linear untuk Ilmu Data", category: "Matematika", modules: 15, status: "Dipublikasikan" },
-];
+import Link from "next/link"; // Import Link
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 function escapeCsvField(field: any): string {
   const fieldStr = String(field === null || field === undefined ? '' : field);
-  // Selalu apit dengan tanda kutip ganda, dan gandakan tanda kutip ganda internal
   return `"${fieldStr.replace(/"/g, '""')}"`;
 }
 
 export default function AdminCoursesPage() {
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [lessonToDelete, setLessonToDelete] = useState<Lesson | null>(null);
 
-  const handleActionPlaceholder = (action: string, item: string) => {
-    toast({
-      title: "Fitur Dalam Pengembangan",
-      description: `Fungsionalitas "${action} ${item}" akan segera hadir.`,
-    });
+  const fetchLessons = () => {
+    setLessons(getLessons());
   };
 
-  const handleEditAction = (itemName: string) => {
+  useEffect(() => {
+    fetchLessons();
+  }, []);
+
+  const handleEditAction = (lessonId: string, lessonTitle: string) => {
     toast({
-      title: `Edit ${itemName}`,
-      description: `Membuka form edit untuk ${itemName}. Implementasi form akan dilakukan pada iterasi berikutnya.`,
+      title: `Edit Pelajaran ${lessonTitle}`,
+      description: `Membuka form edit untuk pelajaran (ID: ${lessonId}). Implementasi form akan dilakukan pada iterasi berikutnya.`,
     });
+    // router.push(`/admin/courses/${lessonId}/edit`); // Uncomment when edit page is ready
   };
+  
+  const handleDeleteLesson = () => {
+    if (lessonToDelete) {
+      const success = deleteLesson(lessonToDelete.id);
+      if (success) {
+        toast({ title: "Pelajaran Dihapus", description: `Pelajaran "${lessonToDelete.title}" telah berhasil dihapus.` });
+        fetchLessons();
+      } else {
+        toast({ title: "Gagal Menghapus", description: `Pelajaran "${lessonToDelete.title}" tidak ditemukan.`, variant: "destructive" });
+      }
+      setLessonToDelete(null);
+    }
+  };
+
 
   const handleExportJadwal = () => {
     toast({
@@ -83,7 +104,7 @@ export default function AdminCoursesPage() {
         schedule.category
       ].map(escapeCsvField).join(";")
     ).join("\r\n");
-    const csvString = "\uFEFF" + csvHeaderString + csvRows; // Add BOM
+    const csvString = "\uFEFF" + csvHeaderString + csvRows; 
 
     const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
@@ -146,8 +167,10 @@ export default function AdminCoursesPage() {
             <BookCopy className="w-10 h-10 text-primary" />
             <h1 className="text-3xl font-bold">Kelola Pelajaran</h1>
         </div>
-        <Button onClick={() => handleActionPlaceholder("Tambah", "Pelajaran Baru")}>
-          <PlusCircle className="w-4 h-4 mr-2" /> Tambah Pelajaran Baru
+        <Button asChild>
+          <Link href="/admin/courses/new">
+            <PlusCircle className="w-4 h-4 mr-2" /> Tambah Pelajaran Baru
+          </Link>
         </Button>
       </div>
 
@@ -182,37 +205,57 @@ export default function AdminCoursesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Judul Pelajaran</TableHead>
-                <TableHead>Kategori</TableHead>
-                <TableHead>Jumlah Modul</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Perkiraan Waktu</TableHead>
+                <TableHead>Kesulitan</TableHead>
+                <TableHead>ID Kuis Terkait</TableHead>
                 <TableHead className="text-right">Aksi</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockCourses.map((course) => (
-                <TableRow key={course.id}>
-                  <TableCell className="font-medium">{course.title}</TableCell>
-                  <TableCell>{course.category}</TableCell>
-                  <TableCell>{course.modules}</TableCell>
+              {lessons.map((lesson) => (
+                <TableRow key={lesson.id}>
+                  <TableCell className="font-medium">{lesson.title}</TableCell>
+                  <TableCell>{lesson.estimatedTime}</TableCell>
                   <TableCell>
-                    <Badge variant={course.status === "Dipublikasikan" ? "default" : "secondary"}>
-                      {course.status}
+                    <Badge variant={lesson.difficulty === "Pemula" ? "secondary" : lesson.difficulty === "Menengah" ? "default" : "outline"}>
+                        {lesson.difficulty}
                     </Badge>
                   </TableCell>
+                  <TableCell>{lesson.quizId || "-"}</TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="outline" size="sm" onClick={() => handleActionPlaceholder("Lihat Modul", course.title)}>
-                      <Eye className="w-4 h-4" />
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/lessons/${lesson.id}`} target="_blank">
+                        <Eye className="w-4 h-4" />
+                      </Link>
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleEditAction(`Pelajaran ${course.title}`)}>
-                      <Edit className="w-4 h-4" />
+                    <Button variant="outline" size="sm" asChild>
+                       <Link href={`/admin/courses/${lesson.id}/edit`}>
+                        <Edit className="w-4 h-4" />
+                      </Link>
                     </Button>
-                    <Button variant="destructive" size="sm" onClick={() => handleActionPlaceholder("Hapus", course.title)}>
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" onClick={() => setLessonToDelete(lesson)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Konfirmasi Penghapusan</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Apakah Anda yakin ingin menghapus pelajaran "{lessonToDelete?.title}"? Tindakan ini tidak dapat diurungkan.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel onClick={() => setLessonToDelete(null)}>Batal</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteLesson}>Hapus</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}
-              {mockCourses.length === 0 && (
+              {lessons.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">Belum ada data pelajaran.</TableCell>
                 </TableRow>

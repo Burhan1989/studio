@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '@/contexts/AuthContext';
-import { getStudents, getTeachers } from '@/lib/mockData'; // Changed import
+import { getStudents, getTeachers, updateStudent, updateTeacher } from '@/lib/mockData'; 
 import type { StudentData, TeacherData, User } from '@/lib/types';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -26,8 +26,8 @@ const profileFormSchema = z.object({
   Email: z.string().email("Email tidak valid.").readonly(),
   Nomor_Telepon: z.string().optional(),
   Alamat: z.string().optional(),
-  Profil_Foto_File: z.any().optional(), // For file input
-  Profil_Foto_Url: z.string().url().optional().or(z.literal("")), // For existing URL
+  Profil_Foto_File: z.any().optional(), 
+  Profil_Foto_Url: z.string().url().optional().or(z.literal("")), 
   Nama_Panggilan: z.string().optional(),
   Jenis_Kelamin: z.enum(["Laki-laki", "Perempuan", ""]).optional(),
   Tanggal_Lahir: z.string().optional(),
@@ -56,6 +56,18 @@ export default function ProfilePage() {
       Nama_Lengkap: "",
       Email: "",
       Profil_Foto_Url: "",
+      Nomor_Telepon: "",
+      Alamat: "",
+      Nama_Panggilan: "",
+      Jenis_Kelamin: "",
+      Tanggal_Lahir: "",
+      NISN: "",
+      Nomor_Induk: "",
+      Kelas: "",
+      Program_Studi: "",
+      Mata_Pelajaran: "",
+      Kelas_Ajar: [],
+      Jabatan: "",
     },
   });
 
@@ -71,7 +83,7 @@ export default function ProfilePage() {
         setPhotoPreview(user.Profil_Foto);
       }
 
-      const students = getStudents(); // Call getter function
+      const students = getStudents(); 
       const studentMatch = students.find(s => s.Email === user.email);
       if (studentMatch) {
         setIsStudent(true);
@@ -92,7 +104,7 @@ export default function ProfilePage() {
         };
         if (studentMatch.Profil_Foto) setPhotoPreview(studentMatch.Profil_Foto);
       } else {
-        const teachers = getTeachers(); // Call getter function
+        const teachers = getTeachers(); 
         const teacherMatch = teachers.find(t => t.Email === user.email);
         if (teacherMatch) {
           setIsTeacher(true);
@@ -117,7 +129,7 @@ export default function ProfilePage() {
       }
       const formDataForReset = {
         ...baseProfileData,
-        Kelas_Ajar: Array.isArray(baseProfileData.Kelas_Ajar) ? (baseProfileData.Kelas_Ajar as string[]).join(', ') : undefined,
+        Kelas_Ajar: Array.isArray(baseProfileData.Kelas_Ajar) ? (baseProfileData.Kelas_Ajar as string[]).join(', ') : baseProfileData.Kelas_Ajar,
       };
       form.reset(formDataForReset as ProfileFormData);
     }
@@ -140,27 +152,71 @@ export default function ProfilePage() {
   };
 
   async function onSubmit(data: ProfileFormData) {
+    if (!user) return;
     setIsLoading(true);
-    console.log("Data profil yang akan disimpan (simulasi):", data);
     
     let newPhotoUrl = data.Profil_Foto_Url;
     if (data.Profil_Foto_File instanceof File) {
-      // Simulate upload and get new URL
-      newPhotoUrl = photoPreview || data.Profil_Foto_Url; // Use preview as new URL for simulation
+      newPhotoUrl = photoPreview || data.Profil_Foto_Url; 
       console.log("Simulasi unggah foto baru:", data.Profil_Foto_File.name);
     }
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    let success = false;
+    if (isStudent) {
+      const studentData = getStudents().find(s => s.Email === user.email);
+      if (studentData) {
+        const updatedStudentData: StudentData = {
+          ...studentData,
+          Nama_Lengkap: data.Nama_Lengkap,
+          Nama_Panggilan: data.Nama_Panggilan,
+          Jenis_Kelamin: data.Jenis_Kelamin || studentData.Jenis_Kelamin,
+          Tanggal_Lahir: data.Tanggal_Lahir || studentData.Tanggal_Lahir,
+          Alamat: data.Alamat || studentData.Alamat,
+          Nomor_Telepon: data.Nomor_Telepon || studentData.Nomor_Telepon,
+          Profil_Foto: newPhotoUrl || studentData.Profil_Foto,
+          // NISN, Nomor_Induk, Kelas, Program_Studi tidak diubah oleh siswa
+        };
+        success = updateStudent(updatedStudentData);
+      }
+    } else if (isTeacher) {
+      const teacherData = getTeachers().find(t => t.Email === user.email);
+      if (teacherData) {
+        const updatedTeacherData: TeacherData = {
+          ...teacherData,
+          Nama_Lengkap: data.Nama_Lengkap,
+          Jenis_Kelamin: data.Jenis_Kelamin || teacherData.Jenis_Kelamin,
+          Tanggal_Lahir: data.Tanggal_Lahir || teacherData.Tanggal_Lahir,
+          Alamat: data.Alamat || teacherData.Alamat,
+          Nomor_Telepon: data.Nomor_Telepon || teacherData.Nomor_Telepon,
+          Mata_Pelajaran: data.Mata_Pelajaran || teacherData.Mata_Pelajaran,
+          Kelas_Ajar: Array.isArray(data.Kelas_Ajar) && data.Kelas_Ajar.length > 0 && data.Kelas_Ajar[0] !== '' ? data.Kelas_Ajar : teacherData.Kelas_Ajar,
+          Profil_Foto: newPhotoUrl || teacherData.Profil_Foto,
+          // Jabatan tidak diubah oleh guru
+        };
+        success = updateTeacher(updatedTeacherData);
+      }
+    } else { // General user (neither student nor teacher, e.g. parent or new user without detailed profile yet)
+        // Only update name and photo in AuthContext for now
+        success = true; 
+    }
 
     if (user && (data.Nama_Lengkap !== user.name || newPhotoUrl !== user.Profil_Foto)) {
-      const updatedUser: User = { ...user, name: data.Nama_Lengkap, Profil_Foto: newPhotoUrl };
-      login(updatedUser); // This updates AuthContext and localStorage
+      const updatedUserAuth: User = { ...user, name: data.Nama_Lengkap, Profil_Foto: newPhotoUrl };
+      login(updatedUserAuth); 
     }
     
-    toast({
-      title: "Profil Disimpan (Simulasi)",
-      description: "Informasi profil Anda telah berhasil diperbarui (simulasi). Perubahan foto mungkin memerlukan login ulang untuk terlihat di semua tempat.",
-    });
+    if(success){
+        toast({
+            title: "Profil Disimpan",
+            description: "Informasi profil Anda telah berhasil diperbarui.",
+        });
+    } else {
+        toast({
+            title: "Gagal Menyimpan",
+            description: "Terjadi kesalahan saat menyimpan profil Anda.",
+            variant: "destructive"
+        });
+    }
     setIsLoading(false);
   }
 
@@ -202,7 +258,7 @@ export default function ProfilePage() {
               <FormField
                 control={form.control}
                 name="Profil_Foto_File"
-                render={({ field }) => ( 
+                render={() => ( 
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
                       <ImageIcon className="w-5 h-5" /> Ganti Foto Profil (Opsional)
@@ -426,6 +482,7 @@ export default function ProfilePage() {
                               placeholder="Pisahkan dengan koma, cth: Kelas 10A, Kelas 11B"
                               {...field}
                               value={displayValue}
+                              onChange={e => field.onChange(e.target.value.split(',').map(s => s.trim()))}
                             />
                           </FormControl>
                           <p className="text-xs text-muted-foreground">Pisahkan beberapa kelas dengan koma.</p>
@@ -470,3 +527,4 @@ export default function ProfilePage() {
   );
 }
 
+    
