@@ -53,7 +53,7 @@ export interface Quiz {
   id: string;
   title: string;
   lessonId?: string;
-  teacherId?: string;
+  teacherId?: string; // Bisa ID guru atau string khusus seperti "admin-created"
   questions: Question[];
   description?: string;
   assignedClassIds?: string[];
@@ -91,7 +91,7 @@ export interface StudentData {
   Password_Hash: string;
   NISN: string;
   Nomor_Induk: string;
-  ID_OrangTua_Terkait?: string; // Field baru
+  ID_OrangTua_Terkait?: string;
 }
 
 export interface TeacherData {
@@ -122,7 +122,7 @@ export interface ParentData {
   Status_Aktif: boolean;
   Password_Hash: string;
   Profil_Foto?: string;
-  Anak_Terkait?: Array<{ ID_Siswa: string, Nama_Siswa: string }>; // Tetap ada, tapi dashboard akan utamakan ID_OrangTua_Terkait dari StudentData
+  Anak_Terkait?: Array<{ ID_Siswa: string, Nama_Siswa: string }>;
 }
 
 
@@ -162,6 +162,7 @@ export interface SchoolProfileData {
   visi?: string;
   misi?: string;
   logo?: File | string;
+  landingPageImageUrl?: string; // Field baru untuk URL gambar landing page
 }
 
 export interface MajorData {
@@ -173,17 +174,17 @@ export interface MajorData {
 
 export interface ScheduleItem {
   id: string;
-  title: string; 
-  date: string; 
-  time: string; 
-  classId?: string; 
-  className?: string; 
-  lessonId?: string; 
-  quizId?: string; 
-  teacherId?: string; 
-  teacherName?: string; 
-  description?: string; 
-  category: 'Pelajaran' | 'Kuis' | 'Tugas' | 'Diskusi' | 'Lainnya'; 
+  title: string;
+  date: string;
+  time: string;
+  classId?: string;
+  className?: string;
+  lessonId?: string;
+  quizId?: string;
+  teacherId?: string;
+  teacherName?: string;
+  description?: string;
+  category: 'Pelajaran' | 'Kuis' | 'Tugas' | 'Diskusi' | 'Lainnya';
 }
 
 export interface ChartConfig {

@@ -22,7 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Building, Save, Loader2, Image as ImageIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import type { SchoolProfileData } from "@/lib/types";
-import { getSchoolProfile, updateSchoolProfile } from "@/lib/mockData"; // Menggunakan getter dan updater
+import { getSchoolProfile, updateSchoolProfile } from "@/lib/mockData";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
@@ -42,7 +42,8 @@ const schoolProfileSchema = z.object({
   websiteSekolah: z.string().url("Format URL website tidak valid.").optional().or(z.literal("")),
   visi: z.string().max(1000, "Visi maksimal 1000 karakter.").optional(),
   misi: z.string().max(2000, "Misi maksimal 2000 karakter.").optional(),
-  logo: z.any().optional(), 
+  logo: z.any().optional(),
+  landingPageImageUrl: z.string().url("Format URL tidak valid.").optional().or(z.literal("")),
 });
 
 export default function AdminSchoolProfilePage() {
@@ -50,6 +51,7 @@ export default function AdminSchoolProfilePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [landingImagePreview, setLandingImagePreview] = useState<string | null>(null);
   const [initialData, setInitialData] = useState<SchoolProfileData>(getSchoolProfile());
 
   const form = useForm<z.infer<typeof schoolProfileSchema>>({
@@ -57,6 +59,7 @@ export default function AdminSchoolProfilePage() {
     defaultValues: {
       ...initialData,
       logo: typeof initialData.logo === 'string' ? initialData.logo : undefined,
+      landingPageImageUrl: initialData.landingPageImageUrl || "",
     },
   });
 
@@ -66,9 +69,13 @@ export default function AdminSchoolProfilePage() {
     form.reset({
         ...currentProfile,
         logo: typeof currentProfile.logo === 'string' ? currentProfile.logo : undefined,
+        landingPageImageUrl: currentProfile.landingPageImageUrl || "",
     });
     if (typeof currentProfile.logo === 'string' && currentProfile.logo.trim() !== '') {
       setLogoPreview(currentProfile.logo);
+    }
+    if (typeof currentProfile.landingPageImageUrl === 'string' && currentProfile.landingPageImageUrl.trim() !== '') {
+      setLandingImagePreview(currentProfile.landingPageImageUrl);
     }
   }, [form]);
 
@@ -76,10 +83,10 @@ export default function AdminSchoolProfilePage() {
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      form.setValue("logo", file); 
+      form.setValue("logo", file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setLogoPreview(reader.result as string); 
+        setLogoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
     } else {
@@ -88,17 +95,30 @@ export default function AdminSchoolProfilePage() {
     }
   };
 
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'landingPageImageUrl') {
+        const url = value.landingPageImageUrl;
+        if (url && url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+          setLandingImagePreview(url);
+        } else {
+          setLandingImagePreview(null);
+        }
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
+
   async function onSubmit(values: z.infer<typeof schoolProfileSchema>) {
     setIsLoading(true);
-    
+
     let logoToSave: string | undefined = typeof initialData.logo === 'string' ? initialData.logo : undefined;
 
     if (values.logo instanceof File) {
-      // Simulate file upload and get a new URL (using the preview URL for simulation)
       logoToSave = logoPreview || undefined;
       console.log("Simulasi unggah logo baru:", values.logo.name, "URL Baru (Simulasi):", logoToSave);
     } else if (typeof values.logo === 'string') {
-      logoToSave = values.logo; // Use the existing URL if no new file
+      logoToSave = values.logo;
     }
 
 
@@ -119,17 +139,18 @@ export default function AdminSchoolProfilePage() {
         visi: values.visi,
         misi: values.misi,
         logo: logoToSave,
+        landingPageImageUrl: values.landingPageImageUrl,
     };
-    
-    updateSchoolProfile(profileToUpdate); // This will save to localStorage
-    
+
+    updateSchoolProfile(profileToUpdate);
+
     toast({
       title: "Data Sekolah Disimpan",
-      description: "Informasi profil sekolah telah berhasil diperbarui dan disimpan di localStorage.",
+      description: "Informasi profil sekolah telah berhasil diperbarui.",
     });
     setIsLoading(false);
-    setInitialData(profileToUpdate); // Update local initialData to reflect changes
-    router.refresh(); // Refresh to ensure other components (like header) pick up new profile data
+    setInitialData(profileToUpdate);
+    router.refresh();
   }
 
   return (
@@ -139,7 +160,7 @@ export default function AdminSchoolProfilePage() {
         <h1 className="text-3xl font-bold">Profil Sekolah</h1>
       </div>
       <CardDescription>Kelola informasi detail mengenai institusi sekolah Anda.</CardDescription>
-      
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <Card className="shadow-lg">
@@ -383,28 +404,28 @@ export default function AdminSchoolProfilePage() {
               />
             </CardContent>
           </Card>
-          
+
           <Card className="shadow-lg">
             <CardHeader>
-              <CardTitle className="text-xl">Logo Sekolah</CardTitle>
+              <CardTitle className="text-xl">Kustomisasi Tampilan</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-6">
               <FormField
                 control={form.control}
                 name="logo"
-                render={() => ( 
+                render={() => (
                   <FormItem>
                     <FormLabel className="flex items-center gap-2">
                       <ImageIcon className="w-5 h-5" /> Unggah Logo Sekolah (Opsional)
                     </FormLabel>
                     <FormControl>
-                      <Input 
-                        type="file" 
+                      <Input
+                        type="file"
                         accept="image/png, image/jpeg, image/svg+xml"
                         onChange={handleLogoChange}
                       />
                     </FormControl>
-                    <FormDescription>Format yang didukung: PNG, JPG, SVG. Maksimal 2MB (Contoh). Jika logo baru diunggah, URL lama akan diganti.</FormDescription>
+                    <FormDescription>Format yang didukung: PNG, JPG, SVG. Ganti URL di bawah jika Anda tidak mengunggah file. Pratinjau akan menggunakan URL jika file tidak dipilih.</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -413,6 +434,26 @@ export default function AdminSchoolProfilePage() {
                 <div className="mt-4">
                   <p className="mb-2 text-sm font-medium">Pratinjau Logo:</p>
                   <Image src={logoPreview} alt="Pratinjau Logo Sekolah" width={160} height={40} className="h-10 w-auto border rounded-md object-contain bg-muted p-1" data-ai-hint="school logo"/>
+                </div>
+              )}
+               <FormField
+                control={form.control}
+                name="landingPageImageUrl"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL Gambar Halaman Utama</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://contoh.com/gambar-landing.jpg" {...field} value={field.value || ""} />
+                    </FormControl>
+                    <FormDescription>Masukkan URL gambar yang akan ditampilkan di halaman utama.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {landingImagePreview && (
+                <div className="mt-4">
+                  <p className="mb-2 text-sm font-medium">Pratinjau Gambar Halaman Utama:</p>
+                  <Image src={landingImagePreview} alt="Pratinjau Gambar Landing Page" width={300} height={200} className="w-auto rounded-md border object-contain bg-muted p-1 max-h-48" data-ai-hint="education learning"/>
                 </div>
               )}
             </CardContent>
