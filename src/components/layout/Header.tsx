@@ -2,7 +2,7 @@
 "use client";
 
 import Link from 'next/link';
-import { GraduationCap, LogIn, UserPlus, LogOut, Settings, UserCircle } from 'lucide-react';
+import { GraduationCap, LogIn, UserPlus, LogOut, Settings, UserCircle, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import {
@@ -19,18 +19,55 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation'; 
 import { useEffect, useState } from 'react';
 import type { SchoolProfileData } from '@/lib/types';
+import { useToast } from "@/hooks/use-toast";
+
+const THEME_STORAGE_KEY = "adeptlearn-theme";
+type Theme = "default" | "ocean" | "forest" | "dark";
 
 export default function Header() {
   const { user, logout } = useAuth();
   const router = useRouter(); 
+  const { toast } = useToast();
   const [currentSchoolProfile, setCurrentSchoolProfile] = useState<SchoolProfileData | null>(null);
+  const [currentTheme, setCurrentTheme] = useState<Theme>("default");
 
   useEffect(() => {
     setCurrentSchoolProfile(getSchoolProfile());
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
+    if (storedTheme) {
+      setCurrentTheme(storedTheme);
+      // ThemeProvider akan menerapkan tema saat mount awal, jadi tidak perlu applyThemeClasses di sini
+      // kecuali jika kita ingin memaksa perubahan tema dari sini.
+    }
   }, []);
-
+  
   const schoolLogoUrl = (typeof currentSchoolProfile?.logo === 'string' && currentSchoolProfile.logo.trim() !== '') ? currentSchoolProfile.logo : null;
   const schoolName = currentSchoolProfile?.namaSekolah || 'AdeptLearn';
+
+  const applyThemeClasses = (themeName: Theme) => {
+    const htmlEl = document.documentElement;
+    htmlEl.classList.remove("dark", "theme-ocean", "theme-forest");
+
+    if (themeName === "dark") {
+      htmlEl.classList.add("dark");
+    } else if (themeName === "ocean") {
+      htmlEl.classList.add("theme-ocean");
+    } else if (themeName === "forest") {
+      htmlEl.classList.add("theme-forest");
+    }
+    console.log(`Header: Tema diterapkan: ${themeName}`);
+  };
+
+  const handleThemeChange = (themeName: Theme) => {
+    applyThemeClasses(themeName);
+    localStorage.setItem(THEME_STORAGE_KEY, themeName);
+    setCurrentTheme(themeName);
+    toast({
+      title: "Tema Diubah",
+      description: `Tema aplikasi diubah menjadi ${themeName.charAt(0).toUpperCase() + themeName.slice(1)}.`,
+    });
+  };
+
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -40,11 +77,11 @@ export default function Header() {
             <Image
               src={schoolLogoUrl}
               alt={`${schoolName} Logo`}
-              width={120} 
-              height={30} 
-              className="h-8 w-auto object-contain" 
+              width={24} 
+              height={24} 
+              className="h-7 w-7 object-contain" 
               data-ai-hint="school logo"
-              priority // Prioritaskan memuat logo
+              priority 
             />
           ) : (
             <GraduationCap className="w-7 h-7 text-primary" /> 
@@ -79,6 +116,28 @@ export default function Header() {
             </>
           )}
         </nav>
+        
+        <div className="flex items-center gap-2 mr-4">
+          <Button 
+            variant={currentTheme === "default" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => handleThemeChange("default")}
+            title="Tema Bawaan"
+            className="p-2"
+          >
+            <Sun className="w-4 h-4" />
+          </Button>
+          <Button 
+            variant={currentTheme === "dark" ? "default" : "outline"} 
+            size="sm"
+            onClick={() => handleThemeChange("dark")}
+            title="Tema Gelap"
+            className="p-2"
+          >
+            <Moon className="w-4 h-4" />
+          </Button>
+        </div>
+
 
         <div className="flex items-center gap-4">
           {user ? (
