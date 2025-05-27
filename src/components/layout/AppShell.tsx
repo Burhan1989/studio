@@ -146,12 +146,11 @@ export default function AppShell({ children }: { children: ReactNode }) {
     const adminGroupHrefs = Object.values(adminMenuGroups).flatMap(group => group.items.map(item => item.href));
 
     let items = baseNavItems.filter(item => {
-      const isGeneralItem = !!item.general;
+      const isGeneralItem = item.general || (!item.adminOnly && !item.teacherOnly && !item.studentOnly && !item.parentOnly);
       const isProfileOrSettings = item.href === '/profile' || item.href === '/settings';
       
       if (user.isAdmin) {
-        return (item.adminOnly && !adminGroupHrefs.includes(item.href)) || 
-               (isGeneralItem && !item.studentOnly && !item.teacherOnly && !item.parentOnly);
+        return (item.adminOnly && !adminGroupHrefs.includes(item.href)) || isGeneralItem;
       }
       if (userRole === 'teacher') {
         return item.teacherOnly || (isGeneralItem && !item.studentOnly && !item.adminOnly && !item.parentOnly);
@@ -162,7 +161,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
       if (userRole === 'parent') {
          return item.parentOnly || isProfileOrSettings;
       }
-      return isGeneralItem && !item.adminOnly && !item.teacherOnly && !item.studentOnly && !item.parentOnly; 
+      return isGeneralItem; 
     });
 
     items.sort((a, b) => {
@@ -183,23 +182,30 @@ export default function AppShell({ children }: { children: ReactNode }) {
         let indexA = order.indexOf(a.href);
         let indexB = order.indexOf(b.href);
 
-        // Make profile and settings appear last for non-admin roles if not explicitly ordered
-        const isGeneralA = a.general || a.href === '/profile' || a.href === '/settings';
-        const isGeneralB = b.general || b.href === '/profile' || b.href === '/settings';
+        const isProfileA = a.href === '/profile';
+        const isSettingsA = a.href === '/settings';
+        const isProfileB = b.href === '/profile';
+        const isSettingsB = b.href === '/settings';
+        
+        // Admin items not in accordion should come first for admin
+        if(user.isAdmin){
+            if (a.adminOnly && !adminGroupHrefs.includes(a.href) && !(b.adminOnly && !adminGroupHrefs.includes(b.href))) return -1;
+            if (!(a.adminOnly && !adminGroupHrefs.includes(a.href)) && b.adminOnly && !adminGroupHrefs.includes(b.href)) return 1;
+        }
+
 
         if (!user.isAdmin) {
-            if (a.href === '/profile') indexA = 100;
-            if (b.href === '/profile') indexB = 100;
-            if (a.href === '/settings') indexA = 101;
-            if (b.href === '/settings') indexB = 101;
+            if (isProfileA) indexA = 100;
+            if (isSettingsA) indexA = 101;
+            if (isProfileB) indexB = 100;
+            if (isSettingsB) indexB = 101;
         }
 
 
         if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-        if (indexA !== -1) return -1; // a comes first if ordered
-        if (indexB !== -1) return 1;  // b comes first if ordered
+        if (indexA !== -1) return -1; 
+        if (indexB !== -1) return 1;  
         
-        // Fallback for items not in explicit order (e.g. new admin items not in accordion)
         if (a.adminOnly && !b.adminOnly) return -1;
         if (!a.adminOnly && b.adminOnly) return 1;
 
@@ -209,53 +215,19 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, [user]);
 
   if (!user) {
-    return null;
+    // This should ideally not be reached if AuthProvider handles redirection correctly
+    // but as a safeguard:
+    if (typeof window !== 'undefined' && !['/login', '/register', '/'].includes(pathname)) {
+      router.replace('/login');
+    }
+    return null; 
   }
 
   return (
     <SidebarProvider defaultOpen>
       <Sidebar className="bg-sidebar border-r" collapsible="icon">
          <SidebarHeader className="p-2 border-b flex flex-col items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
-            <div className="w-full mb-2 group-data-[collapsible=icon]:hidden">
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center justify-start w-full gap-2 p-1.5 h-auto rounded-md hover:bg-sidebar-accent">
-                        <Avatar className="w-8 h-8">
-                        <AvatarImage src={user.Profil_Foto || `https://avatar.vercel.sh/${user.name || user.email}.png`} alt={user.name || "Pengguna"} />
-                        <AvatarFallback>{user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col items-start">
-                            <span className="text-sm font-medium truncate max-w-[120px] text-sidebar-foreground">{user.name || "Pengguna"}</span>
-                            <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
-                        </div>
-                    </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent side="bottom" align="start" className="w-56 mt-1">
-                    <DropdownMenuLabel className="font-normal">
-                        <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.name || "Pengguna"}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                            {user.email}
-                        </p>
-                        </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => router.push('/profile')}>
-                        <UserCircle className="w-4 h-4 mr-2" />
-                        Profil
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/settings')}>
-                        <Settings className="w-4 h-4 mr-2" />
-                        Pengaturan
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout}>
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Keluar
-                    </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
+            {/* Menu Pengguna di SidebarHeader telah dihapus */}
             <Link
                 href={user?.isAdmin ? "/admin" : (user?.role === 'parent' ? "/parent/dashboard" : "/dashboard")}
                 className="flex flex-col items-center gap-1 group-data-[collapsible=icon]:hidden"
@@ -407,3 +379,4 @@ export default function AppShell({ children }: { children: ReactNode }) {
     </SidebarProvider>
   );
 }
+
