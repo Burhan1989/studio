@@ -32,6 +32,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger, // Added AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 
 export default function AdminClassesPage() {
@@ -236,3 +237,4 @@ export default function AdminClassesPage() {
     </div>
   );
 }
+
