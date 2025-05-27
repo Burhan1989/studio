@@ -3,12 +3,16 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, Edit, PlusCircle, Activity, TrendingUp, MessageSquare, Clock, Contact, ChevronDown, Megaphone } from 'lucide-react';
+import { 
+  Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, 
+  Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, 
+  Edit, PlusCircle, Activity, TrendingUp, MessageSquare, Clock, Contact, 
+  ChevronDown, Megaphone, DatabaseBackup
+} from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter, usePathname } from 'next/navigation'; // Ditambahkan usePathname
+import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useToast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getSchedules, getClasses, getTeachers, getStudents } from "@/lib/mockData"; 
 import type { ScheduleItem, LoginHistoryEntry, UserRole } from "@/lib/types";
@@ -30,8 +34,7 @@ const LOGIN_HISTORY_KEY = 'adeptlearn-login-history';
 export default function AdminPage() {
   const { user, isLoading: authIsLoading } = useAuth();
   const router = useRouter();
-  const pathname = usePathname(); // Digunakan untuk dependensi useEffect
-  const { toast } = useToast();
+  const pathname = usePathname();
   const [recentSchedules, setRecentSchedules] = useState<ScheduleItem[]>([]);
   const [activeTeachersCount, setActiveTeachersCount] = useState(0);
   const [activeStudentsCount, setActiveStudentsCount] = useState(0);
@@ -70,7 +73,7 @@ export default function AdminPage() {
         setLoginHistory(JSON.parse(historyString));
       }
     }
-  }, [pathname]); // Dependensi ditambahkan untuk re-fetch saat navigasi
+  }, [pathname]); 
 
 
   if (authIsLoading || !user || !user.isAdmin) {
@@ -128,12 +131,12 @@ export default function AdminPage() {
         </Card>
         <Card className="shadow-md">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Pelajaran Tersedia</CardTitle>
-            <BookCopy className="w-5 h-5 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Total Jadwal</CardTitle>
+            <CalendarDays className="w-5 h-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{getSchedules().length}</div> {/* Ganti dengan jumlah pelajaran jika ada */}
-            <p className="text-xs text-muted-foreground">Jumlah pelajaran yang aktif (contoh).</p>
+            <div className="text-2xl font-bold">{getSchedules().length}</div>
+            <p className="text-xs text-muted-foreground">Jumlah jadwal pelajaran yang aktif.</p>
           </CardContent>
         </Card>
       </div>
@@ -315,6 +318,7 @@ export default function AdminPage() {
                     <DropdownMenuItem asChild><Link href="/admin/stats" className="flex items-center w-full gap-2"><LineChart className="w-4 h-4" /> Statistik Situs</Link></DropdownMenuItem>
                     <DropdownMenuItem asChild><Link href="/admin/notifications" className="flex items-center w-full gap-2"><MessageSquare className="w-4 h-4" /> Notifikasi Guru</Link></DropdownMenuItem>
                     <DropdownMenuItem asChild><Link href="/admin/contacts/class-contacts" className="flex items-center w-full gap-2"><Contact className="w-4 h-4" /> Kontak Siswa</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/backup-restore" className="flex items-center w-full gap-2"><DatabaseBackup className="w-4 h-4" /> Backup & Restore</Link></DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </CardContent>

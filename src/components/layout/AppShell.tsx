@@ -15,14 +15,19 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarInset,
-  SidebarSeparator,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud, Network, ShieldCheck, CalendarDays, MessageSquare, Contact,ChevronDown, Megaphone } from 'lucide-react';
+import { 
+  GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, 
+  BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, 
+  FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, 
+  UploadCloud, Network, ShieldCheck, CalendarDays, MessageSquare, Contact,
+  ChevronDown, Megaphone, DatabaseBackup
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import type { UserRole, SchoolProfileData } from '@/lib/types';
+import type { SchoolProfileData } from '@/lib/types';
 import { getSchoolProfile } from '@/lib/mockData';
 import Image from 'next/image';
 import {
@@ -49,12 +54,12 @@ interface NavItem {
   parentOnly?: boolean;
   teacherOnly?: boolean;
   studentOnly?: boolean;
-  general?: boolean; 
+  general?: boolean; // General items visible to student, teacher, admin (if not adminOnly)
 }
 
 
 const baseNavItems: NavItem[] = [
-  // General items
+  // General items (order matters for display)
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard, general: true },
   { href: '/schedule', label: 'Jadwal Pembelajaran', icon: CalendarDays, general: true },
   { href: '/lessons', label: 'Pelajaran', icon: BookOpen, general: true },
@@ -73,7 +78,7 @@ const baseNavItems: NavItem[] = [
   // Parent specific
   { href: '/parent/dashboard', label: 'Dasbor Anak', icon: ParentIcon, parentOnly: true },
 
-  // Admin Specific - Top Level
+  // Admin Specific - Top Level (Order here defines their appearance)
   { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
   { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building, adminOnly: true },
   { href: '/admin/announcements', label: 'Pengumuman', icon: Megaphone, adminOnly: true },
@@ -90,6 +95,7 @@ const baseNavItems: NavItem[] = [
   { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart, adminOnly: true },
   { href: '/admin/notifications', label: 'Notifikasi Guru', icon: MessageSquare, adminOnly: true },
   { href: '/admin/contacts/class-contacts', label: 'Kontak Siswa', icon: Contact, adminOnly: true },
+  { href: '/admin/backup-restore', label: 'Backup & Restore', icon: DatabaseBackup, adminOnly: true },
 ];
 
 const adminMenuGroups = {
@@ -113,13 +119,14 @@ const adminMenuGroups = {
       { href: '/admin/quizzes', label: 'Kelola Kuis Admin', icon: FileQuestion },
     ]
   },
-  toolsAndReports: {
+  toolsAndReports: { // "Profil Sekolah" telah dipindahkan ke level atas
     label: "Alat & Lainnya", 
     icon: Settings,
     items: [
       { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart },
       { href: '/admin/notifications', label: 'Notifikasi Guru', icon: MessageSquare },
       { href: '/admin/contacts/class-contacts', label: 'Kontak Siswa', icon: Contact },
+      { href: '/admin/backup-restore', label: 'Backup & Restore', icon: DatabaseBackup },
     ]
   }
 };
@@ -146,11 +153,12 @@ export default function AppShell({ children }: { children: ReactNode }) {
     const adminGroupHrefs = Object.values(adminMenuGroups).flatMap(group => group.items.map(item => item.href));
 
     let items = baseNavItems.filter(item => {
-      const isGeneralItem = item.general || (!item.adminOnly && !item.teacherOnly && !item.studentOnly && !item.parentOnly);
+      const isGeneralItem = item.general;
       const isProfileOrSettings = item.href === '/profile' || item.href === '/settings';
       
       if (user.isAdmin) {
-        return (item.adminOnly && !adminGroupHrefs.includes(item.href)) || isGeneralItem;
+        // Admin sees adminOnly items (whether in groups or top-level) AND general items.
+        return item.adminOnly || isGeneralItem;
       }
       if (userRole === 'teacher') {
         return item.teacherOnly || (isGeneralItem && !item.studentOnly && !item.adminOnly && !item.parentOnly);
@@ -159,16 +167,24 @@ export default function AppShell({ children }: { children: ReactNode }) {
         return item.studentOnly || (isGeneralItem && !item.teacherOnly && !item.adminOnly && !item.parentOnly);
       }
       if (userRole === 'parent') {
-         return item.parentOnly || isProfileOrSettings;
+         return item.parentOnly || (isGeneralItem && (isProfileOrSettings || item.href === '/dashboard')); // Parent only sees their dashboard, profile, settings from general
       }
-      return isGeneralItem; 
+      return false; // Default deny if no role matches known logic
     });
+
+    // Filter out items that are meant to be in admin groups from the top-level list for admin
+    if (user.isAdmin) {
+      items = items.filter(item => !(item.adminOnly && adminGroupHrefs.includes(item.href)));
+    }
+
 
     items.sort((a, b) => {
         const order = [
+          // Admin top-level
           '/admin', 
           '/admin/school-profile',
           '/admin/announcements',
+          // General (also for admin if no specific admin dashboard)
           '/dashboard', 
           '/parent/dashboard', 
           '/schedule', 
@@ -178,27 +194,19 @@ export default function AppShell({ children }: { children: ReactNode }) {
           '/quizzes', 
           '/teacher/quizzes', 
           '/reports',
+          // Settings & Profile last for non-admins
         ];
+        
         let indexA = order.indexOf(a.href);
         let indexB = order.indexOf(b.href);
 
-        const isProfileA = a.href === '/profile';
-        const isSettingsA = a.href === '/settings';
-        const isProfileB = b.href === '/profile';
-        const isSettingsB = b.href === '/settings';
-        
-        // Admin items not in accordion should come first for admin
-        if(user.isAdmin){
-            if (a.adminOnly && !adminGroupHrefs.includes(a.href) && !(b.adminOnly && !adminGroupHrefs.includes(b.href))) return -1;
-            if (!(a.adminOnly && !adminGroupHrefs.includes(a.href)) && b.adminOnly && !adminGroupHrefs.includes(b.href)) return 1;
-        }
-
-
+        // Push profile and settings to the bottom for non-admins, admin can have them ordered by `order`
         if (!user.isAdmin) {
-            if (isProfileA) indexA = 100;
-            if (isSettingsA) indexA = 101;
-            if (isProfileB) indexB = 100;
-            if (isSettingsB) indexB = 101;
+            if (a.href === '/profile') indexA = 100;
+            else if (a.href === '/settings') indexA = 101;
+
+            if (b.href === '/profile') indexB = 100;
+            else if (b.href === '/settings') indexB = 101;
         }
 
 
@@ -206,6 +214,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         if (indexA !== -1) return -1; 
         if (indexB !== -1) return 1;  
         
+        // Fallback for any items not in `order` (e.g., new admin items not yet in accordion but not top-level)
         if (a.adminOnly && !b.adminOnly) return -1;
         if (!a.adminOnly && b.adminOnly) return 1;
 
@@ -215,8 +224,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, [user]);
 
   if (!user) {
-    // This should ideally not be reached if AuthProvider handles redirection correctly
-    // but as a safeguard:
     if (typeof window !== 'undefined' && !['/login', '/register', '/'].includes(pathname)) {
       router.replace('/login');
     }
@@ -227,7 +234,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <SidebarProvider defaultOpen>
       <Sidebar className="bg-sidebar border-r" collapsible="icon">
          <SidebarHeader className="p-2 border-b flex flex-col items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
-            {/* Menu Pengguna di SidebarHeader telah dihapus */}
             <Link
                 href={user?.isAdmin ? "/admin" : (user?.role === 'parent' ? "/parent/dashboard" : "/dashboard")}
                 className="flex flex-col items-center gap-1 group-data-[collapsible=icon]:hidden"
@@ -341,7 +347,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
                                     <span className="text-sm font-medium truncate max-w-[120px]">{user.name || "Pengguna"}</span>
                                     <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
                                 </div>
-                                <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground group-data-[collapsible=icon]:hidden sm:hidden" />
+                                <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground hidden sm:inline-flex" />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -379,4 +385,3 @@ export default function AppShell({ children }: { children: ReactNode }) {
     </SidebarProvider>
   );
 }
-
