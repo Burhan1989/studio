@@ -54,7 +54,7 @@ interface NavItem {
 
 
 const baseNavItems: NavItem[] = [
-  // General items (non-admin, non-parent, non-teacher, non-student specific)
+  // General items
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard, general: true },
   { href: '/schedule', label: 'Jadwal Pembelajaran', icon: CalendarDays, general: true },
   { href: '/lessons', label: 'Pelajaran', icon: BookOpen, general: true },
@@ -78,10 +78,7 @@ const baseNavItems: NavItem[] = [
   { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building, adminOnly: true },
   { href: '/admin/announcements', label: 'Pengumuman', icon: Megaphone, adminOnly: true },
 
-
   // Admin Specific - Items for Accordion (will be filtered out if not in adminMenuGroups)
-  // These are duplicated here to be picked up by the main filter if adminMenuGroups isn't used,
-  // but they primarily exist to define the structure for the accordion.
   { href: '/admin/admins', label: 'Kelola Admin', icon: ShieldCheck, adminOnly: true },
   { href: '/admin/teachers', label: 'Kelola Guru', icon: UserCog, adminOnly: true },
   { href: '/admin/students', label: 'Kelola Siswa', icon: Users, adminOnly: true },
@@ -120,7 +117,6 @@ const adminMenuGroups = {
     label: "Alat & Lainnya", 
     icon: Settings,
     items: [
-      // "Pengumuman" is now a top-level item
       { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart },
       { href: '/admin/notifications', label: 'Notifikasi Guru', icon: MessageSquare },
       { href: '/admin/contacts/class-contacts', label: 'Kontak Siswa', icon: Contact },
@@ -154,28 +150,26 @@ export default function AppShell({ children }: { children: ReactNode }) {
       const isProfileOrSettings = item.href === '/profile' || item.href === '/settings';
       
       if (user.isAdmin) {
-        // Show adminOnly items that are NOT part of the accordion groups, or general items.
-        // Accordion group items will be handled separately.
         return (item.adminOnly && !adminGroupHrefs.includes(item.href)) || 
                (isGeneralItem && !item.studentOnly && !item.teacherOnly && !item.parentOnly);
       }
       if (userRole === 'teacher') {
-        return (item.teacherOnly || (isGeneralItem && !item.studentOnly && !item.adminOnly && !item.parentOnly));
+        return item.teacherOnly || (isGeneralItem && !item.studentOnly && !item.adminOnly && !item.parentOnly);
       }
       if (userRole === 'student') {
-        return (item.studentOnly || (isGeneralItem && !item.teacherOnly && !item.adminOnly && !item.parentOnly));
+        return item.studentOnly || (isGeneralItem && !item.teacherOnly && !item.adminOnly && !item.parentOnly);
       }
       if (userRole === 'parent') {
-        return item.parentOnly || isProfileOrSettings;
+         return item.parentOnly || isProfileOrSettings;
       }
       return isGeneralItem && !item.adminOnly && !item.teacherOnly && !item.studentOnly && !item.parentOnly; 
     });
 
-     items.sort((a, b) => {
+    items.sort((a, b) => {
         const order = [
           '/admin', 
           '/admin/school-profile',
-          '/admin/announcements', // Added Pengumuman here
+          '/admin/announcements',
           '/dashboard', 
           '/parent/dashboard', 
           '/schedule', 
@@ -185,20 +179,30 @@ export default function AppShell({ children }: { children: ReactNode }) {
           '/quizzes', 
           '/teacher/quizzes', 
           '/reports',
-          // General items like profile/settings come last
         ];
-        const indexA = order.indexOf(a.href);
-        const indexB = order.indexOf(b.href);
+        let indexA = order.indexOf(a.href);
+        let indexB = order.indexOf(b.href);
+
+        // Make profile and settings appear last for non-admin roles if not explicitly ordered
+        const isGeneralA = a.general || a.href === '/profile' || a.href === '/settings';
+        const isGeneralB = b.general || b.href === '/profile' || b.href === '/settings';
+
+        if (!user.isAdmin) {
+            if (a.href === '/profile') indexA = 100;
+            if (b.href === '/profile') indexB = 100;
+            if (a.href === '/settings') indexA = 101;
+            if (b.href === '/settings') indexB = 101;
+        }
+
 
         if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-        if (indexA !== -1) return -1;
-        if (indexB !== -1) return 1;
+        if (indexA !== -1) return -1; // a comes first if ordered
+        if (indexB !== -1) return 1;  // b comes first if ordered
         
-        if (a.href === '/profile') return 100;
-        if (b.href === '/profile') return -100;
-        if (a.href === '/settings') return 101;
-        if (b.href === '/settings') return -101;
-        
+        // Fallback for items not in explicit order (e.g. new admin items not in accordion)
+        if (a.adminOnly && !b.adminOnly) return -1;
+        if (!a.adminOnly && b.adminOnly) return 1;
+
         return a.label.localeCompare(b.label);
     });
     return items;
@@ -298,7 +302,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} legacyBehavior passHref>
                   <SidebarMenuButton
-                    isActive={pathname === item.href || (item.href !== '/' && item.href.length > 1 && pathname.startsWith(item.href + '/'))}
+                    isActive={pathname === item.href || (pathname.startsWith(item.href + '/') && item.href !== '/')}
                     tooltip={{ children: item.label, className:"bg-primary text-primary-foreground" }}
                     className="justify-start"
                   >
@@ -353,24 +357,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
                 <SidebarTrigger className="md:hidden" />
             </div>
              <div className="flex items-center gap-2">
-                 <Button 
-                    variant={currentTheme === "default" ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => handleThemeChange("default")}
-                    title="Tema Bawaan"
-                    className="p-2 hidden sm:inline-flex"
-                >
-                    <Sun className="w-4 h-4" />
-                </Button>
-                <Button 
-                    variant={currentTheme === "dark" ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => handleThemeChange("dark")}
-                    title="Tema Gelap"
-                    className="p-2 hidden sm:inline-flex"
-                >
-                    <Moon className="w-4 h-4" />
-                </Button>
                 {user && (
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -421,31 +407,3 @@ export default function AppShell({ children }: { children: ReactNode }) {
     </SidebarProvider>
   );
 }
-
-// These functions are defined inside Header.tsx and are not needed here,
-// but if theme switching logic is moved, they would be.
-// For now, this AppShell assumes theme is handled by Header or ThemeProvider.
-const THEME_STORAGE_KEY = "adeptlearn-theme";
-type Theme = "default" | "ocean" | "forest" | "dark";
-
-const applyThemeClasses = (themeName: Theme) => {
-    const htmlEl = document.documentElement;
-    htmlEl.classList.remove("dark", "theme-ocean", "theme-forest");
-
-    if (themeName === "dark") {
-      htmlEl.classList.add("dark");
-    } else if (themeName === "ocean") {
-      htmlEl.classList.add("theme-ocean");
-    } else if (themeName === "forest") {
-      htmlEl.classList.add("theme-forest");
-    }
-  };
-
-const handleThemeChange = (themeName: Theme) => {
-    applyThemeClasses(themeName);
-    localStorage.setItem(THEME_STORAGE_KEY, themeName);
-    // toast({ title: "Tema Diubah", description: `Tema aplikasi diubah menjadi ${themeName.charAt(0).toUpperCase() + themeName.slice(1)}.` });
-    // To use toast here, we'd need to import useToast and have ToasterProvider in the layout.
-    // For simplicity, the toast is currently handled in Header.tsx if theme buttons are there,
-    // or in Settings page if buttons are there.
-  };
