@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { getSchedules, getClasses, getTeachers, getStudents, mockLessons, getQuizzes } from '@/lib/mockData';
-import type { ScheduleItem, ClassData, StudentData } from '@/lib/types';
+import { getSchedules, getClasses, getTeachers, getStudents, getLessons, getQuizzes } from '@/lib/mockData';
+import type { ScheduleItem, ClassData, StudentData, Lesson, Quiz } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CalendarDays, Clock, Tag, Info, User, Link as LinkIcon, ChevronLeft, ChevronRight, PlusCircle } from 'lucide-react';
@@ -40,12 +40,12 @@ interface DayWithSchedules {
   schedules: ScheduleItem[];
 }
 
-// Helper function to get lesson (already in mockData.ts)
-function getLessonById(id: string) {
-  return mockLessons.find(lesson => lesson.id === id);
+// Helper function to get lesson
+function getLessonById(id: string): Lesson | undefined {
+  return getLessons().find(lesson => lesson.id === id);
 }
-// Helper function to get quiz (already in mockData.ts)
-function getQuizById(id: string) {
+// Helper function to get quiz
+function getQuizById(id: string): Quiz | undefined {
   return getQuizzes().find(quiz => quiz.id === id);
 }
 
@@ -65,17 +65,17 @@ export default function SchedulePage() {
   const [weeklyViewData, setWeeklyViewData] = useState<DayWithSchedules[]>([]);
 
   useEffect(() => {
-    const schedules = getSchedules();
-    const classes = getClasses();
-    const teachers = getTeachers();
+    const schedulesData = getSchedules();
+    const classesData = getClasses();
+    const teachersData = getTeachers();
 
-    const enrichedSchedules = schedules.map(schedule => {
-      const classInfo = classes.find(c => c.ID_Kelas === schedule.classId);
-      const teacherInfo = teachers.find(t => t.ID_Guru === schedule.teacherId);
+    const enrichedSchedules = schedulesData.map(schedule => {
+      const classInfo = classesData.find(c => c.ID_Kelas === schedule.classId);
+      const teacherInfo = teachersData.find(t => t.ID_Guru === schedule.teacherId);
       return {
         ...schedule,
-        className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : 'Umum (Semua Kelas)',
-        teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : 'Tidak Ditentukan',
+        className: classInfo ? `${classInfo.Nama_Kelas} - ${classInfo.jurusan}` : (schedule.classId ? schedule.className || 'Info Kelas Hilang' : 'Umum (Semua Kelas)'),
+        teacherName: teacherInfo ? teacherInfo.Nama_Lengkap : (schedule.teacherId ? schedule.teacherName || 'Info Guru Hilang' : 'Tidak Ditentukan'),
       };
     });
     setAllSchedules(enrichedSchedules);
@@ -83,11 +83,11 @@ export default function SchedulePage() {
 
   useEffect(() => {
     if (user?.role === 'student' && user.email) {
-        const students = getStudents();
-        const classes = getClasses();
-        const studentData = students.find(s => s.Email === user.email);
+        const studentsData = getStudents();
+        const classesData = getClasses();
+        const studentData = studentsData.find(s => s.Email === user.email);
         if (studentData) {
-            const classData = classes.find(c => c.Nama_Kelas === studentData.Kelas && c.jurusan === studentData.Program_Studi);
+            const classData = classesData.find(c => c.Nama_Kelas === studentData.Kelas && c.jurusan === studentData.Program_Studi);
             setStudentClassInfo(classData || null);
         } else {
             setStudentClassInfo(null);
