@@ -1,3 +1,4 @@
+
 "use client"; 
 
 import ProgressSummary from '@/components/reports/ProgressSummary';
@@ -8,12 +9,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { BookMarked, PieChart as PieChartIcon } from 'lucide-react'; // Renamed to avoid conflict
 import { ChartContainer, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { mockLessons } from '@/lib/mockData'; // To get total lessons for status
-
+import { getLessons } from '@/lib/mockData'; // Changed from mockLessons to getLessons
 
 // Mock user progress data
 const mockUserProgress: UserProgress = {
-  userId: '1', // Corresponds to the mock logged-in user
+  userId: 'student001', // Corresponds to the mock logged-in user
   completedLessons: ['1', '2'], // IDs of completed lessons from mockData.ts
   inProgressLessons: ['3'], // Example of lessons started but not finished
   quizScores: [
@@ -33,7 +33,8 @@ const mockUserProgress: UserProgress = {
 };
 
 // Calculate lesson status counts
-const totalMockLessons = mockLessons.length;
+const allLessons = getLessons(); // Use getLessons()
+const totalMockLessons = allLessons.length;
 const completedCount = mockUserProgress.completedLessons.length;
 const inProgressCount = mockUserProgress.inProgressLessons?.length || 0;
 const notStartedCount = totalMockLessons - completedCount - inProgressCount;
