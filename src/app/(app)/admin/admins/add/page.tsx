@@ -22,7 +22,7 @@ import { UserPlus, Save, Loader2, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { addAdminUser, mockTeachers } from "@/lib/mockData"; // Import fungsi simulasi
+import { addAdminUser, getTeachers } from "@/lib/mockData"; // Import fungsi simulasi dan getTeachers
 import type { TeacherData } from "@/lib/types";
 
 const newAdminSchema = z.object({
@@ -55,33 +55,31 @@ export default function AdminAddAdminPage() {
 
   async function onSubmit(values: NewAdminFormData) {
     setIsLoading(true);
+    const currentAdmins = getTeachers().filter(t => t.isAdmin);
     
-    const newAdminData: TeacherData = {
-        ID_Guru: `admin${mockTeachers.length + 1 + Date.now()}`, // ID unik sederhana
+    const newAdminData: Omit<TeacherData, 'ID_Guru' | 'Tanggal_Pendaftaran' | 'Profil_Foto'> = {
         ...values,
         isAdmin: true,
-        Jenis_Kelamin: '', // Default atau bisa ditambahkan ke form jika perlu
-        Tanggal_Lahir: new Date().toISOString().split('T')[0], // Default atau bisa ditambahkan
-        Alamat: '', // Default
-        Nomor_Telepon: '', // Default
-        Mata_Pelajaran: 'Administrasi Sistem', // Default
-        Kelas_Ajar: [], // Default
-        Tanggal_Pendaftaran: new Date().toISOString().split('T')[0],
-        Profil_Foto: `https://placehold.co/100x100.png?text=${values.Nama_Lengkap.substring(0,2).toUpperCase()}`
+        Jenis_Kelamin: '', 
+        Tanggal_Lahir: new Date().toISOString().split('T')[0], 
+        Alamat: '', 
+        Nomor_Telepon: '', 
+        Mata_Pelajaran: 'Administrasi Sistem', 
+        Kelas_Ajar: [], 
     };
 
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    const success = addAdminUser(newAdminData); // Menggunakan fungsi simulasi
+    const addedAdmin = addAdminUser(newAdminData); 
 
-    if (success) {
+    if (addedAdmin) {
         toast({
-            title: "Admin Baru Ditambahkan (Simulasi)",
-            description: `Pengguna admin "${values.Nama_Lengkap}" telah berhasil ditambahkan (simulasi).`,
+            title: "Admin Baru Ditambahkan",
+            description: `Pengguna admin "${values.Nama_Lengkap}" telah berhasil ditambahkan.`,
         });
         router.push("/admin/admins");
-        router.refresh(); // Untuk memuat ulang data di halaman daftar (jika menggunakan state)
+        router.refresh(); 
     } else {
         toast({
             title: "Gagal Menambahkan Admin",
@@ -157,8 +155,8 @@ export default function AdminAddAdminPage() {
               />
               <FormField
                 control={form.control}
-                name="Password_Hash" // Nama field di Zod schema
-                render={({ field }) => ( // `field` akan memiliki nama "Password_Hash"
+                name="Password_Hash" 
+                render={({ field }) => ( 
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
