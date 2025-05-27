@@ -54,7 +54,7 @@ interface NavItem {
 
 
 const baseNavItems: NavItem[] = [
-  // General items
+  // General items (non-admin, non-parent, non-teacher, non-student specific)
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard, general: true },
   { href: '/schedule', label: 'Jadwal Pembelajaran', icon: CalendarDays, general: true },
   { href: '/lessons', label: 'Pelajaran', icon: BookOpen, general: true },
@@ -76,8 +76,12 @@ const baseNavItems: NavItem[] = [
   // Admin Specific - Top Level
   { href: '/admin', label: 'Dasbor Admin', icon: Shield, adminOnly: true },
   { href: '/admin/school-profile', label: 'Profil Sekolah', icon: Building, adminOnly: true },
+  { href: '/admin/announcements', label: 'Pengumuman', icon: Megaphone, adminOnly: true },
 
-  // Admin Specific - For Accordion
+
+  // Admin Specific - Items for Accordion (will be filtered out if not in adminMenuGroups)
+  // These are duplicated here to be picked up by the main filter if adminMenuGroups isn't used,
+  // but they primarily exist to define the structure for the accordion.
   { href: '/admin/admins', label: 'Kelola Admin', icon: ShieldCheck, adminOnly: true },
   { href: '/admin/teachers', label: 'Kelola Guru', icon: UserCog, adminOnly: true },
   { href: '/admin/students', label: 'Kelola Siswa', icon: Users, adminOnly: true },
@@ -89,7 +93,6 @@ const baseNavItems: NavItem[] = [
   { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart, adminOnly: true },
   { href: '/admin/notifications', label: 'Notifikasi Guru', icon: MessageSquare, adminOnly: true },
   { href: '/admin/contacts/class-contacts', label: 'Kontak Siswa', icon: Contact, adminOnly: true },
-  { href: '/admin/announcements', label: 'Pengumuman', icon: Megaphone, adminOnly: true },
 ];
 
 const adminMenuGroups = {
@@ -117,7 +120,7 @@ const adminMenuGroups = {
     label: "Alat & Lainnya", 
     icon: Settings,
     items: [
-      { href: '/admin/announcements', label: 'Pengumuman', icon: Megaphone },
+      // "Pengumuman" is now a top-level item
       { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart },
       { href: '/admin/notifications', label: 'Notifikasi Guru', icon: MessageSquare },
       { href: '/admin/contacts/class-contacts', label: 'Kontak Siswa', icon: Contact },
@@ -144,14 +147,17 @@ export default function AppShell({ children }: { children: ReactNode }) {
     if (!user) return [];
     const userRole = user.role;
 
+    const adminGroupHrefs = Object.values(adminMenuGroups).flatMap(group => group.items.map(item => item.href));
+
     let items = baseNavItems.filter(item => {
       const isGeneralItem = !!item.general;
       const isProfileOrSettings = item.href === '/profile' || item.href === '/settings';
-      const isAdminAccordionItem = Object.values(adminMenuGroups).some(group => group.items.some(gi => gi.href === item.href));
-
+      
       if (user.isAdmin) {
-        // Tampilkan item adminOnly yang BUKAN bagian dari accordion, atau item general
-        return (item.adminOnly && !isAdminAccordionItem) || (isGeneralItem && !item.studentOnly && !item.teacherOnly && !item.parentOnly);
+        // Show adminOnly items that are NOT part of the accordion groups, or general items.
+        // Accordion group items will be handled separately.
+        return (item.adminOnly && !adminGroupHrefs.includes(item.href)) || 
+               (isGeneralItem && !item.studentOnly && !item.teacherOnly && !item.parentOnly);
       }
       if (userRole === 'teacher') {
         return (item.teacherOnly || (isGeneralItem && !item.studentOnly && !item.adminOnly && !item.parentOnly));
@@ -169,6 +175,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         const order = [
           '/admin', 
           '/admin/school-profile',
+          '/admin/announcements', // Added Pengumuman here
           '/dashboard', 
           '/parent/dashboard', 
           '/schedule', 
@@ -178,6 +185,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           '/quizzes', 
           '/teacher/quizzes', 
           '/reports',
+          // General items like profile/settings come last
         ];
         const indexA = order.indexOf(a.href);
         const indexB = order.indexOf(b.href);
@@ -186,7 +194,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
         
-        if (a.href === '/profile') return 100; // Urutkan Profil dan Pengaturan ke bawah
+        if (a.href === '/profile') return 100;
         if (b.href === '/profile') return -100;
         if (a.href === '/settings') return 101;
         if (b.href === '/settings') return -101;
@@ -204,7 +212,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <SidebarProvider defaultOpen>
       <Sidebar className="bg-sidebar border-r" collapsible="icon">
          <SidebarHeader className="p-2 border-b flex flex-col items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
-            {/* Menu Pengguna di atas */}
             <div className="w-full mb-2 group-data-[collapsible=icon]:hidden">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -245,7 +252,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
-            {/* Logo dan Nama Sekolah */}
             <Link
                 href={user?.isAdmin ? "/admin" : (user?.role === 'parent' ? "/parent/dashboard" : "/dashboard")}
                 className="flex flex-col items-center gap-1 group-data-[collapsible=icon]:hidden"
@@ -346,8 +352,67 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <div className="flex items-center">
                 <SidebarTrigger className="md:hidden" />
             </div>
-             {/* Menu pengguna dipindahkan ke SidebarHeader */}
-             <div></div> 
+             <div className="flex items-center gap-2">
+                 <Button 
+                    variant={currentTheme === "default" ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleThemeChange("default")}
+                    title="Tema Bawaan"
+                    className="p-2 hidden sm:inline-flex"
+                >
+                    <Sun className="w-4 h-4" />
+                </Button>
+                <Button 
+                    variant={currentTheme === "dark" ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleThemeChange("dark")}
+                    title="Tema Gelap"
+                    className="p-2 hidden sm:inline-flex"
+                >
+                    <Moon className="w-4 h-4" />
+                </Button>
+                {user && (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="flex items-center justify-start gap-2 p-1.5 h-auto rounded-full">
+                                <Avatar className="w-8 h-8">
+                                <AvatarImage src={user.Profil_Foto || `https://avatar.vercel.sh/${user.name || user.email}.png`} alt={user.name || "Pengguna"} />
+                                <AvatarFallback>{user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-col items-start hidden sm:flex">
+                                    <span className="text-sm font-medium truncate max-w-[120px]">{user.name || "Pengguna"}</span>
+                                    <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
+                                </div>
+                                <ChevronDown className="w-4 h-4 ml-1 text-muted-foreground group-data-[collapsible=icon]:hidden sm:hidden" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-56" align="end" forceMount>
+                            <DropdownMenuLabel className="font-normal">
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">{user.name || "Pengguna"}</p>
+                                <p className="text-xs leading-none text-muted-foreground">
+                                {user.email}
+                                </p>
+                            </div>
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => router.push('/profile')}>
+                            <UserCircle className="w-4 h-4 mr-2" />
+                            Profil
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push('/settings')}>
+                            <Settings className="w-4 h-4 mr-2" />
+                            Pengaturan
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={logout}>
+                            <LogOut className="w-4 h-4 mr-2" />
+                            Keluar
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
+             </div>
         </header>
         <main className="flex-1 p-4 overflow-auto md:p-6">
           {children}
@@ -356,3 +421,31 @@ export default function AppShell({ children }: { children: ReactNode }) {
     </SidebarProvider>
   );
 }
+
+// These functions are defined inside Header.tsx and are not needed here,
+// but if theme switching logic is moved, they would be.
+// For now, this AppShell assumes theme is handled by Header or ThemeProvider.
+const THEME_STORAGE_KEY = "adeptlearn-theme";
+type Theme = "default" | "ocean" | "forest" | "dark";
+
+const applyThemeClasses = (themeName: Theme) => {
+    const htmlEl = document.documentElement;
+    htmlEl.classList.remove("dark", "theme-ocean", "theme-forest");
+
+    if (themeName === "dark") {
+      htmlEl.classList.add("dark");
+    } else if (themeName === "ocean") {
+      htmlEl.classList.add("theme-ocean");
+    } else if (themeName === "forest") {
+      htmlEl.classList.add("theme-forest");
+    }
+  };
+
+const handleThemeChange = (themeName: Theme) => {
+    applyThemeClasses(themeName);
+    localStorage.setItem(THEME_STORAGE_KEY, themeName);
+    // toast({ title: "Tema Diubah", description: `Tema aplikasi diubah menjadi ${themeName.charAt(0).toUpperCase() + themeName.slice(1)}.` });
+    // To use toast here, we'd need to import useToast and have ToasterProvider in the layout.
+    // For simplicity, the toast is currently handled in Header.tsx if theme buttons are there,
+    // or in Settings page if buttons are there.
+  };
