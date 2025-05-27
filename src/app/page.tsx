@@ -1,5 +1,5 @@
 
-"use client"; // Diubah menjadi Client Component
+"use client"; 
 
 import { useState, useEffect } from 'react';
 import Header from '@/components/layout/Header';
@@ -8,7 +8,14 @@ import { GraduationCap, ArrowRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getSchoolProfile } from '@/lib/mockData';
-import type { SchoolProfileData } from '@/lib/types';
+import type { SchoolProfileData, LandingPageSlide } from '@/lib/types';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"; // Impor komponen Carousel
 
 export default function LandingPage() {
   const [schoolProfile, setSchoolProfile] = useState<SchoolProfileData | null>(null);
@@ -17,14 +24,16 @@ export default function LandingPage() {
     setSchoolProfile(getSchoolProfile());
   }, []);
 
-  const imageUrl = schoolProfile?.landingPageImageUrl || "https://placehold.co/600x400.png";
+  const slides: LandingPageSlide[] = schoolProfile?.landingPageSlides?.filter(slide => slide.imageUrl) || [
+    { imageUrl: "https://placehold.co/1200x600.png?text=Slide+Default+1", description: "Selamat Datang di Platform Kami." },
+  ];
   const schoolName = schoolProfile?.namaSekolah || "AdeptLearn";
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
       <main className="flex-1">
-        <section className="container grid items-center gap-6 pt-6 pb-8 md:py-10 lg:grid-cols-2 lg:py-24">
+        <section className="container grid items-center gap-6 pt-6 pb-8 md:py-10 lg:grid-cols-2 lg:py-12">
           <div className="flex flex-col items-start gap-4">
             <div className="inline-flex items-center px-3 py-1 text-sm font-medium rounded-full text-primary bg-primary/10">
               <GraduationCap className="w-4 h-4 mr-2" /> Selamat Datang di {schoolName}
@@ -43,22 +52,50 @@ export default function LandingPage() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/login">
+                <Link href="/login"> {/* Mengarahkan ke login jika ingin "Jelajahi Fitur" memerlukan autentikasi */}
                   Jelajahi Fitur
                 </Link>
               </Button>
             </div>
           </div>
           <div className="hidden lg:block">
-            <Image
-              src={imageUrl}
-              alt="Ilustrasi Pembelajaran Adaptif"
-              width={600}
-              height={400}
-              className="rounded-lg shadow-2xl object-cover" // Added object-cover
-              data-ai-hint="education technology"
-              priority // Consider adding priority if it's LCP
-            />
+            {slides.length > 0 ? (
+              <Carousel className="w-full max-w-xl mx-auto shadow-2xl rounded-lg overflow-hidden" opts={{ loop: true }}>
+                <CarouselContent>
+                  {slides.map((slide, index) => (
+                    <CarouselItem key={index}>
+                      <div className="relative aspect-[16/9] w-full">
+                        <Image
+                          src={slide.imageUrl}
+                          alt={slide.description || `Slide ${index + 1}`}
+                          fill // Menggunakan fill untuk mengisi container
+                          className="object-cover"
+                          data-ai-hint="education technology learning"
+                          priority={index === 0}
+                        />
+                        {slide.description && (
+                          <div className="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+                            <p className="text-sm text-center text-white md:text-base">{slide.description}</p>
+                          </div>
+                        )}
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="absolute left-2 top-1/2 -translate-y-1/2 text-white bg-black/30 hover:bg-black/50" />
+                <CarouselNext className="absolute right-2 top-1/2 -translate-y-1/2 text-white bg-black/30 hover:bg-black/50" />
+              </Carousel>
+            ) : (
+              <Image
+                src="https://placehold.co/600x400.png?text=Gambar+Utama"
+                alt="Gambar Halaman Utama Default"
+                width={600}
+                height={400}
+                className="rounded-lg shadow-2xl object-cover"
+                data-ai-hint="education technology"
+                priority
+              />
+            )}
           </div>
         </section>
 

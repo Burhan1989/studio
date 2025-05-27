@@ -2,7 +2,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,12 +19,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { Building, Save, Loader2, Image as ImageIcon } from "lucide-react";
+import { Building, Save, Loader2, Image as ImageIcon, PlusCircle, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
-import type { SchoolProfileData } from "@/lib/types";
+import type { SchoolProfileData, LandingPageSlide } from "@/lib/types";
 import { getSchoolProfile, updateSchoolProfile } from "@/lib/mockData";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Separator } from "@/components/ui/separator";
+
+const landingPageSlideSchema = z.object({
+  imageUrl: z.string().url("URL Gambar tidak valid.").or(z.literal("")),
+  description: z.string().max(200, "Deskripsi maksimal 200 karakter.").or(z.literal("")),
+});
 
 const schoolProfileSchema = z.object({
   namaSekolah: z.string().min(3, "Nama sekolah minimal 3 karakter."),
@@ -43,7 +49,7 @@ const schoolProfileSchema = z.object({
   visi: z.string().max(1000, "Visi maksimal 1000 karakter.").optional(),
   misi: z.string().max(2000, "Misi maksimal 2000 karakter.").optional(),
   logo: z.any().optional(),
-  landingPageImageUrl: z.string().url("Format URL tidak valid.").optional().or(z.literal("")),
+  landingPageSlides: z.array(landingPageSlideSchema).optional().default([]),
 });
 
 export default function AdminSchoolProfilePage() {
@@ -51,34 +57,64 @@ export default function AdminSchoolProfilePage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [landingImagePreview, setLandingImagePreview] = useState<string | null>(null);
-  const [initialData, setInitialData] = useState<SchoolProfileData>(getSchoolProfile());
+  
+  // State to hold previews for each slide image URL
+  const [slideImagePreviews, setSlideImagePreviews] = useState<Array<string | null>>([null, null, null]);
 
   const form = useForm<z.infer<typeof schoolProfileSchema>>({
     resolver: zodResolver(schoolProfileSchema),
     defaultValues: {
-      ...initialData,
-      logo: typeof initialData.logo === 'string' ? initialData.logo : undefined,
-      landingPageImageUrl: initialData.landingPageImageUrl || "",
+      namaSekolah: "",
+      npsn: "",
+      jenjang: "",
+      statusSekolah: "",
+      akreditasi: "",
+      namaKepalaSekolah: "",
+      alamatJalan: "",
+      kota: "",
+      provinsi: "",
+      kodePos: "",
+      nomorTelepon: "",
+      emailSekolah: "",
+      websiteSekolah: "",
+      visi: "",
+      misi: "",
+      logo: undefined,
+      landingPageSlides: [
+        { imageUrl: "", description: "" },
+        { imageUrl: "", description: "" },
+        { imageUrl: "", description: "" },
+      ],
     },
   });
+  
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "landingPageSlides",
+  });
+
+  const initialSchoolProfileData = getSchoolProfile();
 
   useEffect(() => {
     const currentProfile = getSchoolProfile();
-    setInitialData(currentProfile);
     form.reset({
         ...currentProfile,
         logo: typeof currentProfile.logo === 'string' ? currentProfile.logo : undefined,
-        landingPageImageUrl: currentProfile.landingPageImageUrl || "",
+        landingPageSlides: (currentProfile.landingPageSlides && currentProfile.landingPageSlides.length > 0) 
+          ? currentProfile.landingPageSlides.slice(0, 3) // Ensure we only take up to 3
+          : [ // Default to 3 empty slides if none exist or array is empty
+              { imageUrl: "", description: "" },
+              { imageUrl: "", description: "" },
+              { imageUrl: "", description: "" },
+            ],
     });
     if (typeof currentProfile.logo === 'string' && currentProfile.logo.trim() !== '') {
       setLogoPreview(currentProfile.logo);
     }
-    if (typeof currentProfile.landingPageImageUrl === 'string' && currentProfile.landingPageImageUrl.trim() !== '') {
-      setLandingImagePreview(currentProfile.landingPageImageUrl);
-    }
-  }, [form]);
+    const newPreviews = (currentProfile.landingPageSlides || []).slice(0, 3).map(slide => slide.imageUrl || null);
+    setSlideImagePreviews(newPreviews.concat(Array(3 - newPreviews.length).fill(null)));
 
+  }, [form, initialSchoolProfileData]); // Rerun if initialSchoolProfileData reference changes
 
   const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -91,28 +127,26 @@ export default function AdminSchoolProfilePage() {
       reader.readAsDataURL(file);
     } else {
       form.setValue("logo", undefined);
-      setLogoPreview(typeof initialData.logo === 'string' ? initialData.logo : null);
+      setLogoPreview(typeof initialSchoolProfileData.logo === 'string' ? initialSchoolProfileData.logo : null);
     }
   };
+  
+  const handleSlideImageUrlChange = (index: number, url: string) => {
+    const newPreviews = [...slideImagePreviews];
+    if (url && url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+      newPreviews[index] = url;
+    } else {
+      newPreviews[index] = null;
+    }
+    setSlideImagePreviews(newPreviews);
+    form.setValue(`landingPageSlides.${index}.imageUrl`, url);
+  };
 
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'landingPageImageUrl') {
-        const url = value.landingPageImageUrl;
-        if (url && url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
-          setLandingImagePreview(url);
-        } else {
-          setLandingImagePreview(null);
-        }
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form.watch]);
 
   async function onSubmit(values: z.infer<typeof schoolProfileSchema>) {
     setIsLoading(true);
 
-    let logoToSave: string | undefined = typeof initialData.logo === 'string' ? initialData.logo : undefined;
+    let logoToSave: string | undefined = typeof initialSchoolProfileData.logo === 'string' ? initialSchoolProfileData.logo : undefined;
 
     if (values.logo instanceof File) {
       logoToSave = logoPreview || undefined;
@@ -120,7 +154,13 @@ export default function AdminSchoolProfilePage() {
     } else if (typeof values.logo === 'string') {
       logoToSave = values.logo;
     }
-
+    
+    const slidesToSave = (values.landingPageSlides || [])
+      .map(slide => ({
+        imageUrl: slide.imageUrl || "",
+        description: slide.description || ""
+      }))
+      .filter(slide => slide.imageUrl.trim() !== "" || slide.description.trim() !== ""); // Filter out truly empty slides
 
     const profileToUpdate: SchoolProfileData = {
         namaSekolah: values.namaSekolah,
@@ -139,7 +179,7 @@ export default function AdminSchoolProfilePage() {
         visi: values.visi,
         misi: values.misi,
         logo: logoToSave,
-        landingPageImageUrl: values.landingPageImageUrl,
+        landingPageSlides: slidesToSave.length > 0 ? slidesToSave : initialLandingPageSlides, // Fallback to initial if all are empty
     };
 
     updateSchoolProfile(profileToUpdate);
@@ -149,7 +189,6 @@ export default function AdminSchoolProfilePage() {
       description: "Informasi profil sekolah telah berhasil diperbarui.",
     });
     setIsLoading(false);
-    setInitialData(profileToUpdate);
     router.refresh();
   }
 
@@ -436,26 +475,56 @@ export default function AdminSchoolProfilePage() {
                   <Image src={logoPreview} alt="Pratinjau Logo Sekolah" width={160} height={40} className="h-10 w-auto border rounded-md object-contain bg-muted p-1" data-ai-hint="school logo"/>
                 </div>
               )}
-               <FormField
-                control={form.control}
-                name="landingPageImageUrl"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL Gambar Halaman Utama</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://contoh.com/gambar-landing.jpg" {...field} value={field.value || ""} />
-                    </FormControl>
-                    <FormDescription>Masukkan URL gambar yang akan ditampilkan di halaman utama.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              {landingImagePreview && (
-                <div className="mt-4">
-                  <p className="mb-2 text-sm font-medium">Pratinjau Gambar Halaman Utama:</p>
-                  <Image src={landingImagePreview} alt="Pratinjau Gambar Landing Page" width={300} height={200} className="w-auto rounded-md border object-contain bg-muted p-1 max-h-48" data-ai-hint="education learning"/>
-                </div>
-              )}
+              
+              <Separator />
+              <h3 className="text-lg font-semibold">Slide Gambar Halaman Utama</h3>
+              <FormDescription>Kelola hingga 3 slide untuk carousel di halaman utama.</FormDescription>
+              
+              {fields.slice(0, 3).map((field, index) => ( // Batasi hingga 3 slide
+                <Card key={field.id} className="p-4 border">
+                  <CardHeader className="p-0 pb-2">
+                    <CardTitle className="text-md">Slide {index + 1}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0 space-y-3">
+                    <FormField
+                      control={form.control}
+                      name={`landingPageSlides.${index}.imageUrl`}
+                      render={({ field: slideField }) => (
+                        <FormItem>
+                          <FormLabel>URL Gambar Slide {index + 1}</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="https://contoh.com/gambar.jpg" 
+                              {...slideField} 
+                              value={slideField.value || ""}
+                              onChange={(e) => handleSlideImageUrlChange(index, e.target.value)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {slideImagePreviews[index] && (
+                      <div className="mt-2">
+                         <Image src={slideImagePreviews[index]!} alt={`Pratinjau Slide ${index + 1}`} width={200} height={100} className="rounded-md border object-contain bg-muted p-1 max-h-24" data-ai-hint="presentation abstract"/>
+                      </div>
+                    )}
+                    <FormField
+                      control={form.control}
+                      name={`landingPageSlides.${index}.description`}
+                      render={({ field: slideField }) => (
+                        <FormItem>
+                          <FormLabel>Deskripsi Slide {index + 1}</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Deskripsi singkat untuk slide ini..." className="min-h-[60px]" {...slideField} value={slideField.value || ""} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                </Card>
+              ))}
             </CardContent>
           </Card>
 

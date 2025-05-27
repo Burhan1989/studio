@@ -145,6 +145,11 @@ export interface GradeData {
   Nilai_Akhir?: number;
 }
 
+export interface LandingPageSlide {
+  imageUrl: string;
+  description: string;
+}
+
 export interface SchoolProfileData {
   namaSekolah: string;
   npsn: string;
@@ -162,7 +167,7 @@ export interface SchoolProfileData {
   visi?: string;
   misi?: string;
   logo?: File | string;
-  landingPageImageUrl?: string; // Field baru untuk URL gambar landing page
+  landingPageSlides?: LandingPageSlide[]; // Diubah dari landingPageImageUrl
 }
 
 export interface MajorData {
