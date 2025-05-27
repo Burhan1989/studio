@@ -5,14 +5,62 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { BookOpen, BrainCircuit, Target, CheckCircle, ListChecks } from 'lucide-react';
+import { BookOpen, BrainCircuit, Target, CheckCircle, ListChecks, Megaphone } from 'lucide-react'; // Ditambahkan Megaphone
 import Link from 'next/link';
 import Image from 'next/image';
-import { getSchoolProfile } from '@/lib/mockData'; 
+import { getSchoolProfile, getAnnouncements, getStudents, getClasses } from '@/lib/mockData'; 
+import type { SchoolProfileData, AnnouncementData, StudentData, ClassData } from '@/lib/types';
+import { useState, useEffect } from 'react';
+import { format, parseISO } from 'date-fns';
+import { id as LocaleID } from 'date-fns/locale';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  const schoolProfile = getSchoolProfile(); // Get school profile data
+  const [schoolProfile, setSchoolProfile] = useState<SchoolProfileData | null>(null);
+  const [relevantAnnouncements, setRelevantAnnouncements] = useState<AnnouncementData[]>([]);
+
+  useEffect(() => {
+    setSchoolProfile(getSchoolProfile());
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      const allAnnouncements = getAnnouncements().sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+      let filtered: AnnouncementData[] = [];
+
+      if (user.role === 'student') {
+        const students = getStudents();
+        const studentDetail = students.find(s => s.Email === user.email);
+        let studentClassId: string | undefined = undefined;
+
+        if (studentDetail) {
+          const classes = getClasses();
+          const studentClass = classes.find(c => c.Nama_Kelas === studentDetail.Kelas && c.jurusan === studentDetail.Program_Studi);
+          if (studentClass) {
+            studentClassId = studentClass.ID_Kelas;
+          }
+        }
+        
+        filtered = allAnnouncements.filter(ann => 
+          ann.targetAudience === 'all_students' || 
+          (ann.targetAudience === 'specific_class' && ann.targetClassId === studentClassId)
+        );
+      } else if (user.role === 'teacher') {
+        // Guru melihat pengumuman untuk semua guru dan semua siswa
+        filtered = allAnnouncements.filter(ann => 
+          ann.targetAudience === 'all_teachers' || ann.targetAudience === 'all_students'
+        );
+      } else if (user.isAdmin) {
+        // Admin mungkin tidak perlu melihat pengumuman di dasbor ini, karena mereka punya panel admin
+        // Tapi untuk konsistensi, bisa kita tampilkan semua, atau filter khusus admin jika ada.
+        // Untuk saat ini, admin akan melihat beberapa pengumuman umum.
+        filtered = allAnnouncements.filter(ann => ann.targetAudience === 'all_students' || ann.targetAudience === 'all_teachers').slice(0, 3);
+      }
+      // Batasi jumlah pengumuman yang ditampilkan, misal 3 terbaru
+      setRelevantAnnouncements(filtered.slice(0, 3));
+    }
+  }, [user]);
 
   // Mock data
   const currentModule = {
@@ -36,6 +84,33 @@ export default function DashboardPage() {
           Mari lanjutkan perjalanan belajar Anda di {schoolProfile?.namaSekolah || 'AdeptLearn'}.
         </p>
       </div>
+
+      {relevantAnnouncements.length > 0 && (
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-xl">
+              <Megaphone className="w-6 h-6 text-primary" />
+              Pengumuman Terbaru
+            </CardTitle>
+            <CardDescription>Informasi penting dari sekolah.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[250px] pr-4">
+              <ul className="space-y-4">
+                {relevantAnnouncements.map((ann) => (
+                  <li key={ann.id} className="p-4 border rounded-md bg-background">
+                    <h3 className="font-semibold text-md">{ann.title}</h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Dipublikasikan: {format(parseISO(ann.createdAt), 'dd MMMM yyyy, HH:mm', { locale: LocaleID })}
+                    </p>
+                    <p className="mt-2 text-sm text-foreground/90">{ann.content}</p>
+                  </li>
+                ))}
+              </ul>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <Card className="shadow-lg">
