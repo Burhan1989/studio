@@ -167,7 +167,7 @@ export interface SchoolProfileData {
   visi?: string;
   misi?: string;
   logo?: File | string;
-  landingPageSlides?: LandingPageSlide[]; // Diubah dari landingPageImageUrl
+  landingPageSlides?: LandingPageSlide[];
 }
 
 export interface MajorData {
@@ -190,6 +190,17 @@ export interface ScheduleItem {
   teacherName?: string;
   description?: string;
   category: 'Pelajaran' | 'Kuis' | 'Tugas' | 'Diskusi' | 'Lainnya';
+}
+
+export interface AnnouncementData {
+  id: string;
+  title: string;
+  content: string;
+  targetAudience: 'all_teachers' | 'all_students' | 'specific_class';
+  targetClassId?: string;
+  targetClassName?: string; 
+  createdAt: string; 
+  createdBy: string; 
 }
 
 export interface ChartConfig {

@@ -20,7 +20,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud, Network, ShieldCheck, CalendarDays, MessageSquare, Contact,ChevronDown } from 'lucide-react';
+import { GraduationCap, LayoutDashboard, BrainCircuit, BookOpen, ClipboardCheck, BarChart3, LogOut, Settings, UserCircle, Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, UploadCloud, Network, ShieldCheck, CalendarDays, MessageSquare, Contact,ChevronDown, Megaphone } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import type { UserRole, SchoolProfileData } from '@/lib/types';
 import { getSchoolProfile } from '@/lib/mockData';
@@ -49,10 +49,10 @@ interface NavItem {
   parentOnly?: boolean;
   teacherOnly?: boolean;
   studentOnly?: boolean;
-  general?: boolean; // Item ini umum untuk semua peran non-spesifik
+  general?: boolean; 
 }
 
-// "Profil Sekolah" dipisahkan agar menjadi item top-level untuk admin
+
 const baseNavItems: NavItem[] = [
   // General items
   { href: '/dashboard', label: 'Dasbor', icon: LayoutDashboard, general: true },
@@ -89,6 +89,7 @@ const baseNavItems: NavItem[] = [
   { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart, adminOnly: true },
   { href: '/admin/notifications', label: 'Notifikasi Guru', icon: MessageSquare, adminOnly: true },
   { href: '/admin/contacts/class-contacts', label: 'Kontak Siswa', icon: Contact, adminOnly: true },
+  { href: '/admin/announcements', label: 'Pengumuman', icon: Megaphone, adminOnly: true },
 ];
 
 const adminMenuGroups = {
@@ -113,9 +114,10 @@ const adminMenuGroups = {
     ]
   },
   toolsAndReports: {
-    label: "Alat & Laporan", // Profil Sekolah dihapus dari sini
+    label: "Alat & Lainnya", 
     icon: Settings,
     items: [
+      { href: '/admin/announcements', label: 'Pengumuman', icon: Megaphone },
       { href: '/admin/stats', label: 'Statistik Situs', icon: LineChart },
       { href: '/admin/notifications', label: 'Notifikasi Guru', icon: MessageSquare },
       { href: '/admin/contacts/class-contacts', label: 'Kontak Siswa', icon: Contact },
@@ -134,7 +136,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
     setCurrentSchoolProfile(getSchoolProfile());
   }, []);
 
-  const schoolLogoUrl = (typeof currentSchoolProfile?.logo === 'string' && currentSchoolProfile.logo.trim() !== '') ? currentSchoolProfile.logo : null;
+  const schoolLogoUrl = (currentSchoolProfile?.logo && typeof currentSchoolProfile.logo === 'string' && currentSchoolProfile.logo.trim() !== '') ? currentSchoolProfile.logo : null;
   const schoolName = currentSchoolProfile?.namaSekolah || 'AdeptLearn';
 
 
@@ -143,14 +145,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
     const userRole = user.role;
 
     let items = baseNavItems.filter(item => {
-      const isGeneralItem = item.general || (!item.adminOnly && !item.parentOnly && !item.teacherOnly && !item.studentOnly);
+      const isGeneralItem = !!item.general;
       const isProfileOrSettings = item.href === '/profile' || item.href === '/settings';
-      // Cek apakah item ini adalah salah satu item admin yang akan masuk ke accordion
       const isAdminAccordionItem = Object.values(adminMenuGroups).some(group => group.items.some(gi => gi.href === item.href));
 
       if (user.isAdmin) {
         // Tampilkan item adminOnly yang BUKAN bagian dari accordion, atau item general
-        return (item.adminOnly && !isAdminAccordionItem) || (isGeneralItem && !item.adminOnly);
+        return (item.adminOnly && !isAdminAccordionItem) || (isGeneralItem && !item.studentOnly && !item.teacherOnly && !item.parentOnly);
       }
       if (userRole === 'teacher') {
         return (item.teacherOnly || (isGeneralItem && !item.studentOnly && !item.adminOnly && !item.parentOnly));
@@ -159,16 +160,15 @@ export default function AppShell({ children }: { children: ReactNode }) {
         return (item.studentOnly || (isGeneralItem && !item.teacherOnly && !item.adminOnly && !item.parentOnly));
       }
       if (userRole === 'parent') {
-         // Orang tua hanya melihat item parentOnly dan item general tertentu (Profil & Pengaturan)
         return item.parentOnly || isProfileOrSettings;
       }
-      return isGeneralItem; 
+      return isGeneralItem && !item.adminOnly && !item.teacherOnly && !item.studentOnly && !item.parentOnly; 
     });
 
      items.sort((a, b) => {
         const order = [
           '/admin', 
-          '/admin/school-profile', // "Profil Sekolah" akan muncul setelah "Dasbor Admin"
+          '/admin/school-profile',
           '/dashboard', 
           '/parent/dashboard', 
           '/schedule', 
@@ -178,7 +178,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
           '/quizzes', 
           '/teacher/quizzes', 
           '/reports',
-          // Item admin lain akan ada di accordion, item general sisanya akan mengikuti
         ];
         const indexA = order.indexOf(a.href);
         const indexB = order.indexOf(b.href);
@@ -187,10 +186,10 @@ export default function AppShell({ children }: { children: ReactNode }) {
         if (indexA !== -1) return -1;
         if (indexB !== -1) return 1;
         
-        if (a.href === '/profile') return 1;
-        if (b.href === '/profile') return -1;
-        if (a.href === '/settings') return 1;
-        if (b.href === '/settings') return -1;
+        if (a.href === '/profile') return 100; // Urutkan Profil dan Pengaturan ke bawah
+        if (b.href === '/profile') return -100;
+        if (a.href === '/settings') return 101;
+        if (b.href === '/settings') return -101;
         
         return a.label.localeCompare(b.label);
     });
@@ -205,24 +204,66 @@ export default function AppShell({ children }: { children: ReactNode }) {
     <SidebarProvider defaultOpen>
       <Sidebar className="bg-sidebar border-r" collapsible="icon">
          <SidebarHeader className="p-2 border-b flex flex-col items-center group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:justify-center">
+            {/* Menu Pengguna di atas */}
+            <div className="w-full mb-2 group-data-[collapsible=icon]:hidden">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center justify-start w-full gap-2 p-1.5 h-auto rounded-md hover:bg-sidebar-accent">
+                        <Avatar className="w-8 h-8">
+                        <AvatarImage src={user.Profil_Foto || `https://avatar.vercel.sh/${user.name || user.email}.png`} alt={user.name || "Pengguna"} />
+                        <AvatarFallback>{user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col items-start">
+                            <span className="text-sm font-medium truncate max-w-[120px] text-sidebar-foreground">{user.name || "Pengguna"}</span>
+                            <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
+                        </div>
+                    </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent side="bottom" align="start" className="w-56 mt-1">
+                    <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user.name || "Pengguna"}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                            {user.email}
+                        </p>
+                        </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => router.push('/profile')}>
+                        <UserCircle className="w-4 h-4 mr-2" />
+                        Profil
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/settings')}>
+                        <Settings className="w-4 h-4 mr-2" />
+                        Pengaturan
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logout}>
+                        <LogOut className="w-4 h-4 mr-2" />
+                        Keluar
+                    </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+            {/* Logo dan Nama Sekolah */}
             <Link
                 href={user?.isAdmin ? "/admin" : (user?.role === 'parent' ? "/parent/dashboard" : "/dashboard")}
-                className="flex flex-row items-center gap-2 mb-2 group-data-[collapsible=icon]:hidden"
+                className="flex flex-col items-center gap-1 group-data-[collapsible=icon]:hidden"
             >
             {schoolLogoUrl ? (
               <Image
                 src={schoolLogoUrl}
                 alt={`${schoolName} Logo`}
-                width={24}
-                height={24}
-                className="h-7 w-7 object-contain"
+                width={32} 
+                height={32} 
+                className="object-contain h-8 w-auto max-w-[100px]"
                 data-ai-hint="school logo"
-                priority
+                priority 
               />
             ) : (
-              <GraduationCap className="w-7 h-7 text-primary" />
+              <GraduationCap className="w-8 h-8 text-primary" /> 
             )}
-            <span className="text-sm font-semibold text-sidebar-foreground truncate max-w-[120px]">
+            <span className="text-xs font-semibold text-sidebar-foreground truncate max-w-[130px] text-center">
               {schoolName}
             </span>
           </Link>
@@ -245,7 +286,6 @@ export default function AppShell({ children }: { children: ReactNode }) {
             )}
           </Link>
         </SidebarHeader>
-        <SidebarSeparator className="group-data-[collapsible=icon]:hidden" />
         <SidebarContent className="p-2">
           <SidebarMenu>
             {filteredNavItems.map((item) => (
@@ -267,7 +307,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           {user.isAdmin && (
             <Accordion type="multiple" className="w-full group-data-[collapsible=icon]:hidden">
               {Object.entries(adminMenuGroups).map(([key, group]) => (
-                 group.items.length > 0 && ( // Hanya render jika ada item
+                 group.items.length > 0 && ( 
                   <AccordionItem value={key} key={key} className="border-b-0">
                     <AccordionTrigger className="px-2 py-1.5 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground rounded-md hover:no-underline [&[data-state=open]>svg]:text-sidebar-accent-foreground">
                       <div className="flex items-center gap-2">
@@ -306,46 +346,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
             <div className="flex items-center">
                 <SidebarTrigger className="md:hidden" />
             </div>
-            {user && (
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center justify-start gap-2 p-1.5 h-auto rounded-full">
-                        <Avatar className="w-8 h-8">
-                        <AvatarImage src={user.Profil_Foto || `https://avatar.vercel.sh/${user.name || user.email}.png`} alt={user.name || "Pengguna"} />
-                        <AvatarFallback>{user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-col items-start hidden sm:flex">
-                            <span className="text-sm font-medium truncate max-w-[120px]">{user.name || "Pengguna"}</span>
-                            <span className="text-xs text-muted-foreground truncate max-w-[120px]">{user.email}</span>
-                        </div>
-                    </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent side="bottom" align="end" className="w-56 mt-2">
-                    <DropdownMenuLabel className="font-normal">
-                        <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{user.name || "Pengguna"}</p>
-                        <p className="text-xs leading-none text-muted-foreground">
-                            {user.email}
-                        </p>
-                        </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => router.push('/profile')}>
-                        <UserCircle className="w-4 h-4 mr-2" />
-                        Profil
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => router.push('/settings')}>
-                        <Settings className="w-4 h-4 mr-2" />
-                        Pengaturan
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logout}>
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Keluar
-                    </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            )}
+             {/* Menu pengguna dipindahkan ke SidebarHeader */}
+             <div></div> 
         </header>
         <main className="flex-1 p-4 overflow-auto md:p-6">
           {children}

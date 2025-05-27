@@ -3,14 +3,14 @@
 
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, Edit, PlusCircle, Activity, TrendingUp, MessageSquare, Clock, Contact, ChevronDown } from 'lucide-react';
+import { Shield, Users, BookCopy, FileQuestion, LineChart, UserCog, School, Users2 as ParentIcon, Building, Network, ShieldCheck, CalendarDays, Edit, PlusCircle, Activity, TrendingUp, MessageSquare, Clock, Contact, ChevronDown, Megaphone } from 'lucide-react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation'; // Ditambahkan usePathname
 import { useEffect, useState } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { getSchedules, getClasses, getTeachers, getStudents } from "@/lib/mockData";
+import { getSchedules, getClasses, getTeachers, getStudents } from "@/lib/mockData"; 
 import type { ScheduleItem, LoginHistoryEntry, UserRole } from "@/lib/types";
 import { format, parseISO, formatDistanceToNow } from 'date-fns';
 import { id as LocaleID } from 'date-fns/locale';
@@ -30,6 +30,7 @@ const LOGIN_HISTORY_KEY = 'adeptlearn-login-history';
 export default function AdminPage() {
   const { user, isLoading: authIsLoading } = useAuth();
   const router = useRouter();
+  const pathname = usePathname(); // Digunakan untuk dependensi useEffect
   const { toast } = useToast();
   const [recentSchedules, setRecentSchedules] = useState<ScheduleItem[]>([]);
   const [activeTeachersCount, setActiveTeachersCount] = useState(0);
@@ -69,7 +70,7 @@ export default function AdminPage() {
         setLoginHistory(JSON.parse(historyString));
       }
     }
-  }, []);
+  }, [pathname]); // Dependensi ditambahkan untuk re-fetch saat navigasi
 
 
   if (authIsLoading || !user || !user.isAdmin) {
@@ -131,7 +132,7 @@ export default function AdminPage() {
             <BookCopy className="w-5 h-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">15</div>
+            <div className="text-2xl font-bold">{getSchedules().length}</div> {/* Ganti dengan jumlah pelajaran jika ada */}
             <p className="text-xs text-muted-foreground">Jumlah pelajaran yang aktif (contoh).</p>
           </CardContent>
         </Card>
@@ -270,49 +271,50 @@ export default function AdminPage() {
         <CardContent className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full justify-between">
+                    <Button variant="outline" className="justify-between w-full">
                         Manajemen Pengguna <ChevronDown className="w-4 h-4 ml-2" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
                     <DropdownMenuLabel>Pengguna</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild><Link href="/admin/admins" className="flex items-center gap-2 w-full"><ShieldCheck className="w-4 h-4" /> Kelola Admin</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="/admin/teachers" className="flex items-center gap-2 w-full"><UserCog className="w-4 h-4" /> Kelola Guru</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="/admin/students" className="flex items-center gap-2 w-full"><Users className="w-4 h-4" /> Kelola Siswa</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="/admin/parents" className="flex items-center gap-2 w-full"><ParentIcon className="w-4 h-4" /> Kelola Orang Tua</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/admins" className="flex items-center w-full gap-2"><ShieldCheck className="w-4 h-4" /> Kelola Admin</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/teachers" className="flex items-center w-full gap-2"><UserCog className="w-4 h-4" /> Kelola Guru</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/students" className="flex items-center w-full gap-2"><Users className="w-4 h-4" /> Kelola Siswa</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/parents" className="flex items-center w-full gap-2"><ParentIcon className="w-4 h-4" /> Kelola Orang Tua</Link></DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
 
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full justify-between">
+                    <Button variant="outline" className="justify-between w-full">
                         Manajemen Akademik <ChevronDown className="w-4 h-4 ml-2" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
                     <DropdownMenuLabel>Akademik</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild><Link href="/admin/classes" className="flex items-center gap-2 w-full"><School className="w-4 h-4" /> Manajemen Kelas</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="/admin/majors" className="flex items-center gap-2 w-full"><Network className="w-4 h-4" /> Manajemen Jurusan</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="/admin/courses" className="flex items-center gap-2 w-full"><BookCopy className="w-4 h-4" /> Kelola Pelajaran</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="/admin/quizzes" className="flex items-center gap-2 w-full"><FileQuestion className="w-4 h-4" /> Kelola Kuis Admin</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/classes" className="flex items-center w-full gap-2"><School className="w-4 h-4" /> Manajemen Kelas</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/majors" className="flex items-center w-full gap-2"><Network className="w-4 h-4" /> Manajemen Jurusan</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/courses" className="flex items-center w-full gap-2"><BookCopy className="w-4 h-4" /> Kelola Pelajaran</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/quizzes" className="flex items-center w-full gap-2"><FileQuestion className="w-4 h-4" /> Kelola Kuis Admin</Link></DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
             
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="w-full justify-between">
-                        Alat &amp; Laporan <ChevronDown className="w-4 h-4 ml-2" />
+                    <Button variant="outline" className="justify-between w-full">
+                        Alat &amp; Lainnya <ChevronDown className="w-4 h-4 ml-2" />
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56">
                     <DropdownMenuLabel>Lainnya</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild><Link href="/admin/school-profile" className="flex items-center gap-2 w-full"><Building className="w-4 h-4" /> Profil Sekolah</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="/admin/stats" className="flex items-center gap-2 w-full"><LineChart className="w-4 h-4" /> Statistik Situs</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="/admin/notifications" className="flex items-center gap-2 w-full"><MessageSquare className="w-4 h-4" /> Notifikasi Guru</Link></DropdownMenuItem>
-                    <DropdownMenuItem asChild><Link href="/admin/contacts/class-contacts" className="flex items-center gap-2 w-full"><Contact className="w-4 h-4" /> Kontak Siswa</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/school-profile" className="flex items-center w-full gap-2"><Building className="w-4 h-4" /> Profil Sekolah</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/announcements" className="flex items-center w-full gap-2"><Megaphone className="w-4 h-4" /> Pengumuman</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/stats" className="flex items-center w-full gap-2"><LineChart className="w-4 h-4" /> Statistik Situs</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/notifications" className="flex items-center w-full gap-2"><MessageSquare className="w-4 h-4" /> Notifikasi Guru</Link></DropdownMenuItem>
+                    <DropdownMenuItem asChild><Link href="/admin/contacts/class-contacts" className="flex items-center w-full gap-2"><Contact className="w-4 h-4" /> Kontak Siswa</Link></DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </CardContent>
@@ -320,6 +322,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-
-    
