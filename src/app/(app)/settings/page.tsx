@@ -42,7 +42,10 @@ export default function SettingsPage() {
     const storedTheme = localStorage.getItem(THEME_STORAGE_KEY) as Theme | null;
     if (storedTheme) {
       setCurrentTheme(storedTheme);
-      // Tidak perlu memanggil applyThemeClasses di sini karena ThemeProvider sudah menanganinya saat mount awal
+      // ThemeProvider akan menerapkan tema saat mount awal, jadi tidak perlu applyThemeClasses di sini lagi
+      // kecuali jika ThemeProvider tidak ada atau ada kebutuhan khusus.
+      // Jika ThemeProvider sudah benar, baris di bawah ini bisa dikomentari:
+      // applyThemeClasses(storedTheme); 
     }
   }, []);
 
